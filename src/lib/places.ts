@@ -48,7 +48,7 @@ export const REPORT_TTL_MS = 60 * 60 * 1000;
 export function cumpitaStatus(reports: Report[], placeId: string, now = Date.now()) {
   const live = reports.filter((r) => r.placeId === placeId && now - r.ts < REPORT_TTL_MS).sort((a, b) => b.ts - a.ts);
   if (!live.length) return null;
-  const status = live[0].status;
+  const status = live[0]!.status;
   const same = live.filter((r) => r.status === status);
-  return { status, count: same.length, last: live[0].ts, expiresIn: REPORT_TTL_MS - (now - live[0].ts) };
+  return { status, count: same.length, last: live[0]!.ts, expiresIn: REPORT_TTL_MS - (now - live[0]!.ts) };
 }

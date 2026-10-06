@@ -22,7 +22,7 @@ const fmtDist = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).
 const ago = (ms: number) => { const m = Math.max(1, Math.round(ms / 60000)); return m < 60 ? `${m} min` : `${Math.round(m / 60)} h`; };
 
 function Index() {
-  const [loc, setLoc] = useState(ZONES[0]);
+  const [loc, setLoc] = useState<{ name: string; lat: number; lng: number }>(ZONES[0]!);
   const [locating, setLocating] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [cat, setCat] = useState<Category | "any">("any");
