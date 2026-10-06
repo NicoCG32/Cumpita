@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { MapPin, Star, Clock, Navigation, Pill, Wine, Check, X, Users, LocateFixed } from "lucide-react";
-import { PLACES, ZONES, distanceM, isOfficiallyOpen, hoursLabel, cumpitaStatus, type Report, type Category } from "@/lib/places";
+import { MapPin, Clock, Navigation, Phone, Loader2, Pill, Wine, Check, X, Users, LocateFixed } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getNearbyPlaces } from "@/lib/places.functions";
+import { ZONES, distanceM, isOfficiallyOpen, hoursLabel, cumpitaStatus, type Report, type Category } from "@/lib/places";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -50,14 +53,21 @@ function Index() {
     localStorage.setItem("cumpita-reports", JSON.stringify(next));
   };
 
-  const list = useMemo(() => PLACES.map((p) => {
-    const pos = { lat: loc.lat + p.dLat, lng: loc.lng + p.dLng };
+  const fetchPlaces = useServerFn(getNearbyPlaces);
+  const { data: places = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ["places", loc.lat.toFixed(3), loc.lng.toFixed(3)],
+    queryFn: () => fetchPlaces({ data: { lat: loc.lat, lng: loc.lng } }),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const list = useMemo(() => places.map((p) => {
+    const pos = { lat: p.lat, lng: p.lng };
     const cumpa = cumpitaStatus(reports, p.id, now);
     const official = isOfficiallyOpen(p, new Date(now));
-    return { ...p, dist: distanceM(loc, pos), pos, cumpa, official, effectiveOpen: cumpa ? cumpa.status === "open" : official };
+    return { ...p, dist: distanceM(loc, pos), pos, cumpa, official, effectiveOpen: cumpa ? cumpa.status === "open" : official === true };
   }).filter((p) => (cat === "any" || p.category === cat)
     && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa))
-    .sort((a, b) => a.dist - b.dist), [loc, reports, now, filter, cat]);
+    .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, loc, reports, now, filter, cat]);
 
   const chip = (active: boolean) => `shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`;
 
@@ -91,7 +101,9 @@ function Index() {
       </header>
 
       <main className="space-y-3 px-4 pt-2">
-        {list.length === 0 && <p className="py-16 text-center text-muted-foreground">Nada por aquí con esos filtros.</p>}
+        {isLoading && <p className="flex items-center justify-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" />Buscando locales reales cerca…</p>}
+        {isError && <div className="py-16 text-center text-muted-foreground"><p>No pudimos cargar los locales.</p><button onClick={() => refetch()} className="mt-3 font-semibold text-primary">Reintentar</button></div>}
+        {!isLoading && !isError && list.length === 0 && <p className="py-16 text-center text-muted-foreground">Nada por aquí con esos filtros.</p>}
         {list.map((p, i) => (
           <article key={p.id} className="rounded-2xl border bg-card p-4 shadow-sm">
             <div className="flex items-start gap-3">
@@ -104,18 +116,19 @@ function Index() {
                   <span className="shrink-0 font-display text-lg font-extrabold text-primary">{fmtDist(p.dist)}</span>
                 </div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">{p.category === "farmacia" ? "Farmacia" : "Botillería"}{i === 0 && " · la más cerca"}</p>
-                <p className="mt-1 truncate text-sm">{p.street}</p>
+                <p className="mt-1 truncate text-sm">{p.street ?? "Dirección no informada"}{p.city ? `, ${p.city}` : ""}</p>
                 <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{hoursLabel(p)}</span>
-                  <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-current text-star" />{p.rating.toFixed(1)}</span>
+                  {p.phone && <a href={`tel:${p.phone}`} className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />Llamar</a>}
                 </div>
               </div>
             </div>
 
             <div className="mt-3 flex items-center gap-2 text-xs">
-              <span className={`rounded-full px-2.5 py-1 font-semibold ${p.official ? "bg-open/15 text-open" : "bg-closed/15 text-closed"}`}>
-                Horario: {p.official ? "abierto" : "cerrado"}
+              <span className={`rounded-full px-2.5 py-1 font-semibold ${p.official === null ? "bg-muted text-muted-foreground" : p.official ? "bg-open/15 text-open" : "bg-closed/15 text-closed"}`}>
+                Horario: {p.official === null ? "sin datos" : p.official ? "abierto" : "cerrado"}
               </span>
+              <a href={p.osmUrl} target="_blank" rel="noreferrer" className="ml-auto text-muted-foreground underline">Fuente</a>
             </div>
 
             <div className={`mt-2 rounded-xl p-3 ${p.cumpa ? (p.cumpa.status === "open" ? "bg-open/10" : "bg-closed/10") : "bg-muted"}`}>
@@ -141,6 +154,7 @@ function Index() {
           </article>
         ))}
       </main>
+      <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos de locales © colaboradores de OpenStreetMap</p>
     </div>
   );
 }
