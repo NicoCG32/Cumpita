@@ -89,6 +89,7 @@ function Index() {
 
   return (
     <div className="mx-auto min-h-screen max-w-md bg-background pb-10">
+      <Toaster position="top-center" />
       <header className="sticky top-0 z-10 bg-background/90 px-4 pb-3 pt-5 backdrop-blur">
         <div className="flex items-center justify-between">
           <h1 className="font-display text-3xl font-extrabold tracking-tight">cumpita<span className="text-primary">.</span></h1>
