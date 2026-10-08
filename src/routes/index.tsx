@@ -162,7 +162,7 @@ function Index() {
           </article>
         ))}
       </main>
-      <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos de locales © colaboradores de OpenStreetMap</p>
+      <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: Google Places (si está activo) u OpenStreetMap</p>
     </div>
   );
 }
