@@ -72,7 +72,7 @@ async function fromGoogle(lat: number, lng: number, key: string): Promise<Place[
 export const getNearbyPlaces = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ lat: z.number(), lng: z.number() }).parse(d))
   .handler(async ({ data }): Promise<Place[]> => {
-    const key = process.env.GOOGLE_PLACES_API_KEY;
+    const key = process.env['GOOGLE_PLACES_API_KEY'];
     if (key) {
       try { return await fromGoogle(data.lat, data.lng, key); } catch { /* fall back */ }
     }
