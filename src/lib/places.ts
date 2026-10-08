@@ -4,14 +4,16 @@ export type Category = "farmacia" | "botilleria";
 export type Place = {
   id: string; name: string; category: Category; street: string | null; city: string | null;
   lat: number; lng: number; openingHours: string | null; phone: string | null; osmUrl: string;
+  rating?: number | null; ratingCount?: number | null; openNow?: boolean | null; hoursText?: string | null; source?: "osm" | "google";
 };
 
 export const ZONES = [
-  { name: "Providencia", lat: -33.4263, lng: -70.6157 },
-  { name: "Ñuñoa", lat: -33.4569, lng: -70.5976 },
-  { name: "Santiago Centro", lat: -33.4372, lng: -70.6506 },
-  { name: "Las Condes", lat: -33.408, lng: -70.567 },
-  { name: "Valparaíso", lat: -33.0472, lng: -71.6127 },
+  { city: "Calama", name: "Calama · Centro", lat: -22.4624, lng: -68.9272 },
+  { city: "Calama", name: "Calama · Granaderos", lat: -22.4550, lng: -68.9220 },
+  { city: "Calama", name: "Calama · Mall Plaza / Balmaceda", lat: -22.4685, lng: -68.9325 },
+  { city: "La Serena", name: "La Serena · Centro Histórico", lat: -29.9027, lng: -71.2520 },
+  { city: "La Serena", name: "La Serena · Mall Plaza / Balmaceda", lat: -29.9145, lng: -71.2515 },
+  { city: "La Serena", name: "La Serena · Cuatro Esquinas", lat: -29.9320, lng: -71.2480 },
 ];
 
 export function distanceM(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -23,12 +25,14 @@ export function distanceM(a: { lat: number; lng: number }, b: { lat: number; lng
 
 /** true/false when hours are known and parseable, null when unknown. */
 export function isOfficiallyOpen(p: Place, d = new Date()): boolean | null {
+  if (p.openNow != null) return p.openNow;
   if (!p.openingHours) return null;
   try { return new OpeningHours(p.openingHours, null).getState(d); } catch { return null; }
 }
 
 const DAYS: Record<string, string> = { Mo: "Lu", Tu: "Ma", We: "Mi", Th: "Ju", Fr: "Vi", Sa: "Sá", Su: "Do", PH: "Feriados", off: "cerrado" };
 export function hoursLabel(p: Place) {
+  if (p.hoursText) return p.hoursText;
   if (!p.openingHours) return "Horario no informado";
   if (p.openingHours.trim() === "24/7") return "Abierto 24 horas";
   return p.openingHours.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH|off)\b/g, (m) => DAYS[m] ?? m).replace(/;/g, " ·");
