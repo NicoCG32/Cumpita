@@ -85,7 +85,14 @@ function Index() {
         </button>
         {zoneOpen && (
           <div className="mt-2 flex flex-wrap gap-2">
-            {ZONES.map((z) => <button key={z.name} onClick={() => { setLoc(z); setZoneOpen(false); }} className={chip(loc.name === z.name)}>{z.name}</button>)}
+            {["Calama", "La Serena"].map((c) => (
+              <div key={c} className="w-full">
+                <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">{c}</p>
+                <div className="flex flex-wrap gap-2">
+                  {ZONES.filter((z) => z.city === c).map((z) => <button key={z.name} onClick={() => { setLoc(z); setZoneOpen(false); }} className={chip(loc.name === z.name)}>{z.name.split(" · ")[1]}</button>)}
+                </div>
+              </div>
+            ))}
           </div>
         )}
         <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
@@ -118,7 +125,8 @@ function Index() {
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">{p.category === "farmacia" ? "Farmacia" : "Botillería"}{i === 0 && " · la más cerca"}</p>
                 <p className="mt-1 truncate text-sm">{p.street ?? "Dirección no informada"}{p.city ? `, ${p.city}` : ""}</p>
                 <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{hoursLabel(p)}</span>
+                  <span className="flex min-w-0 items-center gap-1 truncate"><Clock className="h-3.5 w-3.5" />{hoursLabel(p)}</span>
+                  {p.rating != null && <span className="flex items-center gap-0.5 font-semibold text-foreground"><span className="text-star">★</span>{p.rating.toFixed(1)}{p.ratingCount ? <span className="font-normal text-muted-foreground">({p.ratingCount})</span> : null}</span>}
                   {p.phone && <a href={`tel:${p.phone}`} className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />Llamar</a>}
                 </div>
               </div>
@@ -128,7 +136,7 @@ function Index() {
               <span className={`rounded-full px-2.5 py-1 font-semibold ${p.official === null ? "bg-muted text-muted-foreground" : p.official ? "bg-open/15 text-open" : "bg-closed/15 text-closed"}`}>
                 Horario: {p.official === null ? "sin datos" : p.official ? "abierto" : "cerrado"}
               </span>
-              <a href={p.osmUrl} target="_blank" rel="noreferrer" className="ml-auto text-muted-foreground underline">Fuente</a>
+              <a href={p.osmUrl} target="_blank" rel="noreferrer" className="ml-auto text-muted-foreground underline">{p.source === "google" ? "Google" : "Fuente"}</a>
             </div>
 
             <div className={`mt-2 rounded-xl p-3 ${p.cumpa ? (p.cumpa.status === "open" ? "bg-open/10" : "bg-closed/10") : "bg-muted"}`}>
@@ -154,7 +162,7 @@ function Index() {
           </article>
         ))}
       </main>
-      <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos de locales © colaboradores de OpenStreetMap</p>
+      <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: Google Places (si está activo) u OpenStreetMap</p>
     </div>
   );
 }
