@@ -4,7 +4,10 @@ import { MapPin, Clock, Navigation, Phone, Loader2, Pill, Wine, Check, X, Users,
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNearbyPlaces } from "@/lib/places.functions";
-import { ZONES, distanceM, isOfficiallyOpen, hoursLabel, cumpitaStatus, type Report, type Category } from "@/lib/places";
+import { ZONES, distanceM, isOfficiallyOpen, hoursLabel, cumpitaStatus, REPORT_TTL_MS, type Report, type Category } from "@/lib/places";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,9 +37,17 @@ function Index() {
   const [zoneOpen, setZoneOpen] = useState(false);
 
   useEffect(() => {
-    try { setReports(JSON.parse(localStorage.getItem("cumpita-reports") || "[]")); } catch {}
+    const toReport = (r: { place_id: string; status: string; created_at: string }): Report =>
+      ({ placeId: r.place_id, status: r.status as Report["status"], ts: new Date(r.created_at).getTime() });
+    supabase.from("place_reports").select("place_id,status,created_at")
+      .gte("created_at", new Date(Date.now() - REPORT_TTL_MS).toISOString()).limit(1000)
+      .then(({ data }) => { if (data) setReports(data.map(toReport)); });
+    const channel = supabase.channel("place_reports")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "place_reports" },
+        (payload) => setReports((prev) => [...prev, toReport(payload.new as any)]))
+      .subscribe();
     const t = setInterval(() => setNow(Date.now()), 30000);
-    return () => clearInterval(t);
+    return () => { clearInterval(t); supabase.removeChannel(channel); };
   }, []);
 
   const locate = () => {
@@ -47,10 +58,15 @@ function Index() {
       () => setLocating(false), { timeout: 8000 });
   };
 
-  const report = (placeId: string, status: "open" | "closed") => {
-    const next = [...reports, { placeId, status, ts: Date.now() }];
-    setReports(next); setNow(Date.now());
-    localStorage.setItem("cumpita-reports", JSON.stringify(next));
+  const report = async (placeId: string, status: "open" | "closed") => {
+    const key = `cumpita-last-${placeId}`;
+    const last = Number(localStorage.getItem(key) || 0);
+    if (Date.now() - last < 10 * 60 * 1000) { toast("Ya reportaste este local hace poco. ¡Gracias, cumpita!"); return; }
+    const { error } = await supabase.from("place_reports").insert({ place_id: placeId, status });
+    if (error) { toast.error("No se pudo enviar tu reporte. Intenta de nuevo."); return; }
+    localStorage.setItem(key, String(Date.now()));
+    setNow(Date.now());
+    toast.success("¡Gracias! Tu reporte ya lo ven todos.");
   };
 
   const fetchPlaces = useServerFn(getNearbyPlaces);
@@ -73,6 +89,7 @@ function Index() {
 
   return (
     <div className="mx-auto min-h-screen max-w-md bg-background pb-10">
+      <Toaster position="top-center" />
       <header className="sticky top-0 z-10 bg-background/90 px-4 pb-3 pt-5 backdrop-blur">
         <div className="flex items-center justify-between">
           <h1 className="font-display text-3xl font-extrabold tracking-tight">cumpita<span className="text-primary">.</span></h1>
