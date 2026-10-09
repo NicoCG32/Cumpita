@@ -8,6 +8,8 @@ import { ZONES, distanceM, isOfficiallyOpen, hoursLabel, cumpitaStatus, REPORT_T
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { isTurno, calamaTurnoHoy } from "@/lib/turnos";
+import { Siren } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,7 +25,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Filter = "all" | "open" | "confirmed";
+type Filter = "all" | "open" | "confirmed" | "turno";
 const fmtDist = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`);
 const ago = (ms: number) => { const m = Math.max(1, Math.round(ms / 60000)); return m < 60 ? `${m} min` : `${Math.round(m / 60)} h`; };
 
@@ -80,9 +82,9 @@ function Index() {
     const pos = { lat: p.lat, lng: p.lng };
     const cumpa = cumpitaStatus(reports, p.id, now);
     const official = isOfficiallyOpen(p, new Date(now));
-    return { ...p, dist: distanceM(loc, pos), pos, cumpa, official, effectiveOpen: cumpa ? cumpa.status === "open" : official === true };
+    return { ...p, dist: distanceM(loc, pos), pos, cumpa, official, turno: isTurno(p, new Date(now)), effectiveOpen: cumpa ? cumpa.status === "open" : official === true };
   }).filter((p) => (cat === "any" || p.category === cat)
-    && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa))
+    && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa) && (filter !== "turno" || p.turno))
     .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, loc, reports, now, filter, cat]);
 
   const chip = (active: boolean) => `shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`;
@@ -116,6 +118,7 @@ function Index() {
           <button className={chip(filter === "all")} onClick={() => setFilter("all")}>Todas</button>
           <button className={chip(filter === "open")} onClick={() => setFilter("open")}>Abiertas ahora</button>
           <button className={chip(filter === "confirmed")} onClick={() => setFilter("confirmed")}>Confirmadas por cumpitas</button>
+          <button className={chip(filter === "turno")} onClick={() => setFilter("turno")}>De turno</button>
         </div>
         <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
           {([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, l]) => (
@@ -125,6 +128,13 @@ function Index() {
       </header>
 
       <main className="space-y-3 px-4 pt-2">
+        {loc.lat > -25 && cat !== "botilleria" && (() => { const t = calamaTurnoHoy(new Date(now)); return (
+          <a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Farmacia ${t.name} ${t.street} Calama`)}`} className="flex items-center gap-3 rounded-2xl bg-primary p-4 text-primary-foreground shadow-sm">
+            <Siren className="h-6 w-6 shrink-0" />
+            <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide opacity-90">De turno hoy en Calama · 09:00–21:00</p>
+              <p className="truncate font-display text-lg font-bold">{t.name} · {t.street}</p></div>
+          </a>); })()}
+        {loc.lat < -25 && filter === "turno" && <p className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">Aún no tenemos el calendario oficial de turnos de La Serena. Te mostraremos las farmacias de turno apenas lo carguemos.</p>}
         {isLoading && <p className="flex items-center justify-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" />Buscando locales reales cerca…</p>}
         {isError && <div className="py-16 text-center text-muted-foreground"><p>No pudimos cargar los locales.</p><button onClick={() => refetch()} className="mt-3 font-semibold text-primary">Reintentar</button></div>}
         {!isLoading && !isError && list.length === 0 && <p className="py-16 text-center text-muted-foreground">Nada por aquí con esos filtros.</p>}
@@ -140,6 +150,7 @@ function Index() {
                   <span className="shrink-0 font-display text-lg font-extrabold text-primary">{fmtDist(p.dist)}</span>
                 </div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">{p.category === "farmacia" ? "Farmacia" : "Botillería"}{i === 0 && " · la más cerca"}</p>
+                {p.turno && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-closed px-2 py-0.5 text-xs font-bold text-closed-foreground"><Siren className="h-3 w-3" />De turno hoy</span>}
                 <p className="mt-1 truncate text-sm">{p.street ?? "Dirección no informada"}{p.city ? `, ${p.city}` : ""}</p>
                 <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex min-w-0 items-center gap-1 truncate"><Clock className="h-3.5 w-3.5" />{hoursLabel(p)}</span>
@@ -153,7 +164,7 @@ function Index() {
               <span className={`rounded-full px-2.5 py-1 font-semibold ${p.official === null ? "bg-muted text-muted-foreground" : p.official ? "bg-open/15 text-open" : "bg-closed/15 text-closed"}`}>
                 Horario: {p.official === null ? "sin datos" : p.official ? "abierto" : "cerrado"}
               </span>
-              <a href={p.osmUrl} target="_blank" rel="noreferrer" className="ml-auto text-muted-foreground underline">{p.source === "google" ? "Google" : "Fuente"}</a>
+              <a href={p.osmUrl} target="_blank" rel="noreferrer" className="ml-auto text-muted-foreground underline">{p.source === "google" ? "Google" : p.source === "minsal" ? "MINSAL" : "Fuente"}</a>
             </div>
 
             <div className={`mt-2 rounded-xl p-3 ${p.cumpa ? (p.cumpa.status === "open" ? "bg-open/10" : "bg-closed/10") : "bg-muted"}`}>
@@ -179,7 +190,7 @@ function Index() {
           </article>
         ))}
       </main>
-      <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: Google Places (si está activo) u OpenStreetMap</p>
+      <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: MINSAL (farmacias y horarios), SEREMI de Salud (turnos de Calama), OpenStreetMap y Google Places</p>
     </div>
   );
 }
