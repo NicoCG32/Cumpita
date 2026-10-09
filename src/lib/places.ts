@@ -4,7 +4,9 @@ export type Category = "farmacia" | "botilleria";
 export type Place = {
   id: string; name: string; category: Category; street: string | null; city: string | null;
   lat: number; lng: number; openingHours: string | null; phone: string | null; osmUrl: string;
-  rating?: number | null; ratingCount?: number | null; openNow?: boolean | null; hoursText?: string | null; source?: "osm" | "google" | "minsal";
+  rating?: number | null; ratingCount?: number | null; openNow?: boolean | null; hoursText?: string | null; source?: "osm" | "google" | "minsal" | "turno";
+  /** Turno vigente obtenido en vivo (boletín diario MINSAL). */
+  liveTurno?: { from: string; to: string } | null;
 };
 
 export const ZONES = [

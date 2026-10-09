@@ -72,20 +72,25 @@ function Index() {
   };
 
   const fetchPlaces = useServerFn(getNearbyPlaces);
-  const { data: places = [], isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["places", loc.lat.toFixed(3), loc.lng.toFixed(3)],
     queryFn: () => fetchPlaces({ data: { lat: loc.lat, lng: loc.lng } }),
     staleTime: 10 * 60 * 1000,
   });
+  const places = data?.places ?? [];
+  const live = data?.live ?? false;
+  const liveList = places.filter((p) => p.liveTurno);
 
   const list = useMemo(() => places.map((p) => {
     const pos = { lat: p.lat, lng: p.lng };
     const cumpa = cumpitaStatus(reports, p.id, now);
     const official = isOfficiallyOpen(p, new Date(now));
-    return { ...p, dist: distanceM(loc, pos), pos, cumpa, official, turno: isTurno(p, new Date(now)), effectiveOpen: cumpa ? cumpa.status === "open" : official === true };
+    const turno = live ? !!p.liveTurno : isTurno(p, new Date(now));
+    return { ...p, dist: distanceM(loc, pos), pos, cumpa, official, turno, effectiveOpen: cumpa ? cumpa.status === "open" : official === true };
   }).filter((p) => (cat === "any" || p.category === cat)
     && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa) && (filter !== "turno" || p.turno))
-    .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, loc, reports, now, filter, cat]);
+    .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, live, loc, reports, now, filter, cat]);
+  const cityName = loc.lat > -25 ? "Calama" : "La Serena";
 
   const chip = (active: boolean) => `shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`;
 

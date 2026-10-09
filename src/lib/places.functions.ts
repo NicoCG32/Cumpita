@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { Place } from "./places";
 import { mergeMinsal } from "./turnos";
+import { liveTurnos, mergeTurnos } from "./turnos-live";
 
 const MIRRORS = [
   "https://overpass.kumi.systems/api/interpreter",
@@ -70,16 +71,21 @@ async function fromGoogle(lat: number, lng: number, key: string): Promise<Place[
   return [...ph.map((g) => map(g, "farmacia")), ...lq.map((g) => map(g, "botilleria"))];
 }
 
+async function base(lat: number, lng: number): Promise<Place[]> {
+  const key = process.env['GOOGLE_PLACES_API_KEY'];
+  if (key) {
+    try { return mergeMinsal(await fromGoogle(lat, lng, key)); } catch { /* fall back */ }
+  }
+  try { return mergeMinsal(await fromOsm(lat, lng)); } catch (e) {
+    const official = mergeMinsal([]);
+    if (official.length) return official;
+    throw e;
+  }
+}
+
 export const getNearbyPlaces = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ lat: z.number(), lng: z.number() }).parse(d))
-  .handler(async ({ data }): Promise<Place[]> => {
-    const key = process.env['GOOGLE_PLACES_API_KEY'];
-    if (key) {
-      try { return mergeMinsal(await fromGoogle(data.lat, data.lng, key)); } catch { /* fall back */ }
-    }
-    try { return mergeMinsal(await fromOsm(data.lat, data.lng)); } catch (e) {
-      const official = mergeMinsal([]);
-      if (official.length) return official;
-      throw e;
-    }
+  .handler(async ({ data }): Promise<{ places: Place[]; live: boolean }> => {
+    const [places, turnos] = await Promise.all([base(data.lat, data.lng), liveTurnos(data.lat, data.lng)]);
+    return turnos ? { places: mergeTurnos(places, turnos), live: true } : { places, live: false };
   });
