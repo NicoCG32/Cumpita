@@ -45,7 +45,7 @@ export function calamaTurnoHoy(d = new Date()) {
 }
 
 const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-const numsOf = (s: string) => s.match(/\d{3,4}/g) ?? [];
+const numsOf = (s: string): string[] => s.match(/\d{3,4}/g) ?? [];
 
 export function isTurno(p: Place, d = new Date()) {
   if (p.category !== "farmacia" || distanceM(p, { lat: -22.46, lng: -68.93 }) > 15000) return false;
