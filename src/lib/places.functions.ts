@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { Place } from "./places";
+import { mergeMinsal } from "./turnos";
 
 const MIRRORS = [
   "https://overpass.kumi.systems/api/interpreter",
@@ -74,7 +75,11 @@ export const getNearbyPlaces = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<Place[]> => {
     const key = process.env['GOOGLE_PLACES_API_KEY'];
     if (key) {
-      try { return await fromGoogle(data.lat, data.lng, key); } catch { /* fall back */ }
+      try { return mergeMinsal(await fromGoogle(data.lat, data.lng, key)); } catch { /* fall back */ }
     }
-    return fromOsm(data.lat, data.lng);
+    try { return mergeMinsal(await fromOsm(data.lat, data.lng)); } catch (e) {
+      const official = mergeMinsal([]);
+      if (official.length) return official;
+      throw e;
+    }
   });
