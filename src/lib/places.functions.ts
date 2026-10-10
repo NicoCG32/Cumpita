@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { Place } from "./places";
 import { mergeMinsal } from "./turnos";
+import { applyLegalHours } from "./botillerias";
 import { liveTurnos, mergeTurnos } from "./turnos-live";
 
 const MIRRORS = [
@@ -87,5 +88,6 @@ export const getNearbyPlaces = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ lat: z.number(), lng: z.number() }).parse(d))
   .handler(async ({ data }): Promise<{ places: Place[]; live: boolean }> => {
     const [places, turnos] = await Promise.all([base(data.lat, data.lng), liveTurnos(data.lat, data.lng)]);
-    return turnos ? { places: mergeTurnos(places, turnos), live: true } : { places, live: false };
+    const fixed = applyLegalHours(places);
+    return turnos ? { places: mergeTurnos(fixed, turnos), live: true } : { places: fixed, live: false };
   });
