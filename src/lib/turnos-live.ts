@@ -65,7 +65,7 @@ export function mergeTurnos(places: Place[], turnos: Place[]): Place[] {
     const t = turnos.find((t) => distanceM(t, p) < 35);
     if (!t) return p;
     used.add(t.id);
-    return { ...p, liveTurno: t.liveTurno ?? null, hoursText: t.hoursText ?? null, phone: p.phone ?? t.phone, street: t.street || p.street };
+    return { ...p, liveTurno: t.liveTurno ?? null, hoursText: t.hoursText ?? null, phone: p.phone ?? t.phone, street: t.street || p.street, name: t.name };
   });
   return [...turnos.filter((t) => !used.has(t.id)), ...merged];
 }
