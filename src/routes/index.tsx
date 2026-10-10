@@ -133,13 +133,19 @@ function Index() {
       </header>
 
       <main className="space-y-3 px-4 pt-2">
-        {loc.lat > -25 && cat !== "botilleria" && (() => { const t = calamaTurnoHoy(new Date(now)); return (
+        {cat !== "botilleria" && live && liveList.map((t) => (
+          <a key={t.id} target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}`} className="flex items-center gap-3 rounded-2xl bg-primary p-4 text-primary-foreground shadow-sm">
+            <Siren className="h-6 w-6 shrink-0" />
+            <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide opacity-90">De turno hoy en {cityName} · {t.liveTurno!.from === "00:00" && t.liveTurno!.to === "23:59" ? "24 horas" : `${t.liveTurno!.from}–${t.liveTurno!.to}`}</p>
+              <p className="truncate font-display text-lg font-bold">{t.name} · {t.street}</p></div>
+          </a>))}
+        {cat !== "botilleria" && !live && !isLoading && loc.lat > -25 && (() => { const t = calamaTurnoHoy(new Date(now)); return (
           <a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Farmacia ${t.name} ${t.street} Calama`)}`} className="flex items-center gap-3 rounded-2xl bg-primary p-4 text-primary-foreground shadow-sm">
             <Siren className="h-6 w-6 shrink-0" />
-            <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide opacity-90">De turno hoy en Calama · 09:00–21:00</p>
+            <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide opacity-90">De turno hoy en Calama · 09:00–21:00 (calendario)</p>
               <p className="truncate font-display text-lg font-bold">{t.name} · {t.street}</p></div>
           </a>); })()}
-        {loc.lat < -25 && filter === "turno" && <p className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">Aún no tenemos el calendario oficial de turnos de La Serena. Te mostraremos las farmacias de turno apenas lo carguemos.</p>}
+        {!live && !isLoading && loc.lat < -25 && filter === "turno" && <p className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">No pudimos obtener los turnos de La Serena en este momento. Intenta de nuevo en unos minutos.</p>}
         {isLoading && <p className="flex items-center justify-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" />Buscando locales reales cerca…</p>}
         {isError && <div className="py-16 text-center text-muted-foreground"><p>No pudimos cargar los locales.</p><button onClick={() => refetch()} className="mt-3 font-semibold text-primary">Reintentar</button></div>}
         {!isLoading && !isError && list.length === 0 && <p className="py-16 text-center text-muted-foreground">Nada por aquí con esos filtros.</p>}
