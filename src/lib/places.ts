@@ -7,6 +7,9 @@ export type Place = {
   rating?: number | null; ratingCount?: number | null; openNow?: boolean | null; hoursText?: string | null; source?: "osm" | "google" | "minsal" | "turno";
   /** Turno vigente obtenido en vivo (boletín diario MINSAL). */
   liveTurno?: { from: string; to: string } | null;
+  /** legal = solo máximo legal; confirmed = horario aprobado por revisión. */
+  hoursKind?: "legal" | "confirmed" | null;
+  verifiedAt?: string | null;
 };
 
 export const ZONES = [

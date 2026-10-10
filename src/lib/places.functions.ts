@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { Place } from "./places";
 import { mergeMinsal } from "./turnos";
-import { applyLegalHours } from "./botillerias";
+import { applyHours, type ApprovedHours } from "./botillerias";
 import { liveTurnos, mergeTurnos } from "./turnos-live";
 
 const MIRRORS = [
@@ -84,10 +84,19 @@ async function base(lat: number, lng: number): Promise<Place[]> {
   }
 }
 
+async function approvedHours(): Promise<ApprovedHours[]> {
+  const url = process.env['SUPABASE_URL'], key = process.env['SUPABASE_PUBLISHABLE_KEY'];
+  if (!url || !key) return [];
+  try {
+    const res = await fetch(`${url}/rest/v1/hours_proposals?status=eq.approved&select=place_id,weekday_open,weekday_close,weekend_open,weekend_close,reviewed_at&limit=2000`, { headers: { apikey: key } });
+    return res.ok ? await res.json() : [];
+  } catch { return []; }
+}
+
 export const getNearbyPlaces = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ lat: z.number(), lng: z.number() }).parse(d))
   .handler(async ({ data }): Promise<{ places: Place[]; live: boolean }> => {
-    const [places, turnos] = await Promise.all([base(data.lat, data.lng), liveTurnos(data.lat, data.lng)]);
-    const fixed = applyLegalHours(places);
+    const [places, turnos, approved] = await Promise.all([base(data.lat, data.lng), liveTurnos(data.lat, data.lng), approvedHours()]);
+    const fixed = applyHours(places, approved);
     return turnos ? { places: mergeTurnos(fixed, turnos), live: true } : { places: fixed, live: false };
   });
