@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, Clock, Navigation, Phone, Loader2, Pill, Wine, Check, X, Users, LocateFixed } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -40,6 +40,7 @@ function Index() {
   const [reports, setReports] = useState<Report[]>([]);
   const [now, setNow] = useState(Date.now());
   const [zoneOpen, setZoneOpen] = useState(false);
+  const [gpsOn, setGpsOn] = useState(false);
 
   useEffect(() => {
     const toReport = (r: { place_id: string; status: string; created_at: string }): Report =>
@@ -59,7 +60,7 @@ function Index() {
     if (!navigator.geolocation) return;
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (p) => { setLoc({ name: "Tu ubicación", lat: p.coords.latitude, lng: p.coords.longitude }); setLocating(false); },
+      (p) => { setLoc({ name: "Tu ubicación", lat: p.coords.latitude, lng: p.coords.longitude }); setLocating(false); setGpsOn(true); },
       () => setLocating(false), { timeout: 8000 });
   };
 
@@ -109,6 +110,30 @@ function Index() {
       if (!res.ok) toast.error(res.error); else setAi({ results: res.results, summary: res.summary });
     } catch { toast.error("No pudimos completar la búsqueda."); } finally { setAiBusy(false); }
   };
+  // Detección por permanencia: 5+ min a menos de 40 m de un local con estado desconocido = abierto.
+  const listRef = useRef(list); listRef.current = list;
+  const dwell = useRef<{ id: string; since: number; done: boolean } | null>(null);
+  useEffect(() => {
+    if (!gpsOn || !navigator.geolocation) return;
+    const w = navigator.geolocation.watchPosition((pos) => {
+      if (pos.coords.accuracy > 60) return;
+      const me = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      const near = listRef.current.map((p) => ({ p, d: distanceM(me, p) })).filter((x) => x.d < 40).sort((a, b) => a.d - b.d)[0]?.p;
+      if (!near || near.cumpa || near.official !== null) { dwell.current = null; return; }
+      if (dwell.current?.id !== near.id) { dwell.current = { id: near.id, since: Date.now(), done: false }; return; }
+      if (!dwell.current.done && Date.now() - dwell.current.since >= 5 * 60 * 1000) {
+        dwell.current.done = true;
+        const key = `cumpita-last-${near.id}`;
+        if (Date.now() - Number(localStorage.getItem(key) || 0) < 10 * 60 * 1000) return;
+        supabase.from("place_reports").insert({ place_id: near.id, status: "open" }).then(({ error }) => {
+          if (error) return;
+          localStorage.setItem(key, String(Date.now())); setNow(Date.now());
+          toast.success(`Llevas 5 min en ${near.name}: lo marcamos como abierto. ¡Gracias, cumpita!`, { action: { label: "Está cerrado", onClick: () => { localStorage.removeItem(key); report(near.id, "closed"); } } });
+        });
+      }
+    }, () => {}, { enableHighAccuracy: true, maximumAge: 30000 });
+    return () => navigator.geolocation.clearWatch(w);
+  }, [gpsOn]);
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("es-CL", { day: "numeric", month: "short", year: "numeric" });
   const cityName = loc.lat > -25 ? "Calama" : "La Serena";
 
@@ -121,7 +146,7 @@ function Index() {
         <div className="flex items-center justify-between">
           <h1 className="font-display text-3xl font-extrabold tracking-tight">cumpita<span className="text-primary">.</span></h1>
           <button onClick={locate} className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-2 text-xs font-semibold">
-            <LocateFixed className="h-4 w-4 text-primary" />{locating ? "Buscando…" : "Usar GPS"}
+            <LocateFixed className="h-4 w-4 text-primary" />{locating ? "Buscando…" : gpsOn ? "GPS activo" : "Usar GPS"}
           </button>
         </div>
         <button onClick={() => setZoneOpen((v) => !v)} className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
