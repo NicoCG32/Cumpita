@@ -9,7 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { isTurno, calamaTurnoHoy } from "@/lib/turnos";
-import { Siren } from "lucide-react";
+import { Siren, Sparkles, ShieldCheck, Scale, PencilLine } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { aiSearch } from "@/lib/ai-search.functions";
+import { ProposeHours } from "@/components/ProposeHours";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -71,6 +74,11 @@ function Index() {
     toast.success("¡Gracias! Tu reporte ya lo ven todos.");
   };
 
+  const runAi = useServerFn(aiSearch);
+  const [q, setQ] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [ai, setAi] = useState<{ results: { id: string; reason: string }[]; summary: string } | null>(null);
+  const [proposing, setProposing] = useState<string | null>(null);
   const fetchPlaces = useServerFn(getNearbyPlaces);
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["places", loc.lat.toFixed(3), loc.lng.toFixed(3)],
@@ -90,6 +98,18 @@ function Index() {
   }).filter((p) => (cat === "any" || p.category === cat)
     && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa) && (filter !== "turno" || p.turno))
     .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, live, loc, reports, now, filter, cat]);
+  const reasons = new Map(ai?.results.map((r) => [r.id, r.reason]) ?? []);
+  const shown = ai ? ai.results.map((r) => list.find((p) => p.id === r.id)).filter((p): p is (typeof list)[number] => !!p) : list;
+  const askAi = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (q.trim().length < 2 || aiBusy) return;
+    setAiBusy(true);
+    try {
+      const res = await runAi({ data: { query: q.trim(), candidates: list.map((p) => ({ id: p.id, name: p.name, category: p.category, dist: p.dist, street: p.street, hours: hoursLabel(p), open: p.cumpa ? p.cumpa.status === "open" : p.official, turno: p.turno })) } });
+      if (!res.ok) toast.error(res.error); else setAi({ results: res.results, summary: res.summary });
+    } catch { toast.error("No pudimos completar la búsqueda."); } finally { setAiBusy(false); }
+  };
+  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("es-CL", { day: "numeric", month: "short", year: "numeric" });
   const cityName = loc.lat > -25 ? "Calama" : "La Serena";
 
   const chip = (active: boolean) => `shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"}`;
@@ -130,6 +150,13 @@ function Index() {
             <button key={k} onClick={() => setCat(k)} className={`rounded-lg py-2 text-xs font-semibold ${cat === k ? "bg-card shadow-sm" : "text-muted-foreground"}`}>{l}</button>
           ))}
         </div>
+        <form onSubmit={askAi} className="mt-2 flex gap-2">
+          <input value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="Ej: necesito paracetamol ahora, o algo abierto pasadas las 12"
+            className="min-w-0 flex-1 rounded-xl border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+          <button disabled={aiBusy || isLoading} className="flex items-center gap-1 rounded-xl bg-primary px-3 text-sm font-bold text-primary-foreground disabled:opacity-60">
+            {aiBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}Buscar
+          </button>
+        </form>
       </header>
 
       <main className="space-y-3 px-4 pt-2">
@@ -146,10 +173,15 @@ function Index() {
               <p className="truncate font-display text-lg font-bold">{t.name} · {t.street}</p></div>
           </a>); })()}
         {!live && !isLoading && loc.lat < -25 && filter === "turno" && <p className="rounded-2xl bg-muted p-4 text-sm text-muted-foreground">No pudimos obtener los turnos de La Serena en este momento. Intenta de nuevo en unos minutos.</p>}
+        {ai && <div className="rounded-2xl border border-primary/40 bg-primary/5 p-3 text-sm">
+          <p className="flex items-center gap-1.5 font-semibold"><Sparkles className="h-4 w-4 text-primary" />{ai.summary || "Resultados para tu búsqueda"}</p>
+          {shown.length === 0 && <p className="mt-1 text-muted-foreground">Ningún local cercano calza con lo que buscas.</p>}
+          <button onClick={() => { setAi(null); setQ(""); }} className="mt-1 text-xs font-semibold text-primary underline">Ver todos los locales</button>
+        </div>}
         {isLoading && <p className="flex items-center justify-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" />Buscando locales reales cerca…</p>}
         {isError && <div className="py-16 text-center text-muted-foreground"><p>No pudimos cargar los locales.</p><button onClick={() => refetch()} className="mt-3 font-semibold text-primary">Reintentar</button></div>}
-        {!isLoading && !isError && list.length === 0 && <p className="py-16 text-center text-muted-foreground">Nada por aquí con esos filtros.</p>}
-        {list.map((p, i) => (
+        {!isLoading && !isError && !ai && list.length === 0 && <p className="py-16 text-center text-muted-foreground">Nada por aquí con esos filtros.</p>}
+        {shown.map((p, i) => (
           <article key={p.id} className="rounded-2xl border bg-card p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${p.category === "farmacia" ? "bg-pharmacy/15 text-pharmacy" : "bg-liquor/15 text-liquor"}`}>
@@ -160,7 +192,8 @@ function Index() {
                   <h2 className="truncate font-display text-lg font-bold">{p.name}</h2>
                   <span className="shrink-0 font-display text-lg font-extrabold text-primary">{fmtDist(p.dist)}</span>
                 </div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">{p.category === "farmacia" ? "Farmacia" : "Botillería"}{i === 0 && " · la más cerca"}</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{p.category === "farmacia" ? "Farmacia" : "Botillería"}{i === 0 && !ai && " · la más cerca"}</p>
+                {reasons.get(p.id) && <p className="mt-1 flex items-start gap-1 text-xs text-primary"><Sparkles className="mt-0.5 h-3 w-3 shrink-0" />{reasons.get(p.id)}</p>}
                 {p.turno && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-closed px-2 py-0.5 text-xs font-bold text-closed-foreground"><Siren className="h-3 w-3" />De turno hoy</span>}
                 <p className="mt-1 truncate text-sm">{p.street ?? "Dirección no informada"}{p.city ? `, ${p.city}` : ""}</p>
                 <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
@@ -171,6 +204,8 @@ function Index() {
               </div>
             </div>
 
+            {p.hoursKind === "confirmed" && <p className="mt-2 flex items-center gap-1 rounded-lg bg-open/10 px-2 py-1 text-xs font-semibold text-open"><ShieldCheck className="h-3.5 w-3.5" />Horario confirmado{p.verifiedAt ? ` · verificado el ${fmtDate(p.verifiedAt)}` : ""}</p>}
+            {p.hoursKind === "legal" && <p className="mt-2 flex items-center gap-1 rounded-lg border border-dashed px-2 py-1 text-xs text-muted-foreground"><Scale className="h-3.5 w-3.5" />Solo máximo legal, no es el horario real del local</p>}
             <div className="mt-3 flex items-center gap-2 text-xs">
               <span className={`rounded-full px-2.5 py-1 font-semibold ${p.official === null ? "bg-muted text-muted-foreground" : p.official ? "bg-open/15 text-open" : "bg-closed/15 text-closed"}`}>
                 Horario: {p.official === null ? "sin datos" : p.official ? "abierto" : "cerrado"}
@@ -198,10 +233,13 @@ function Index() {
               className="mt-3 flex items-center justify-center gap-1.5 text-sm font-semibold text-primary">
               <Navigation className="h-4 w-4" /> Cómo llegar
             </a>
+            {p.category === "botilleria" && (proposing === p.id
+              ? <ProposeHours placeId={p.id} placeName={p.name} onDone={() => setProposing(null)} />
+              : <button onClick={() => setProposing(p.id)} className="mt-2 flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-muted-foreground"><PencilLine className="h-3.5 w-3.5" />{p.hoursKind === "confirmed" ? "¿Cambió el horario? Propón una corrección" : "¿Conoces el horario real? Propónlo"}</button>)}
           </article>
         ))}
       </main>
-      <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: MINSAL (farmacias y horarios), SEREMI de Salud (turnos de Calama), OpenStreetMap y Google Places</p>
+      <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: MINSAL (farmacias y horarios), SEREMI de Salud (turnos de Calama), OpenStreetMap y Google Places · <Link to="/revision" className="underline">Revisión de horarios</Link></p>
     </div>
   );
 }

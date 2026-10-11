@@ -1,0 +1,97 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+import type { Tables } from "@/integrations/supabase/types";
+
+export const Route = createFileRoute("/revision")({
+  head: () => ({
+    meta: [
+      { title: "Revisión de horarios — Cumpita" },
+      { name: "description", content: "Panel para revisar y aprobar horarios de botillerías propuestos por la comunidad." },
+      { property: "og:title", content: "Revisión de horarios — Cumpita" },
+      { property: "og:description", content: "Aprueba horarios reales enviados por los cumpitas." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: Revision,
+});
+
+type Proposal = Tables<"hours_proposals">;
+
+function Revision() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [items, setItems] = useState<Proposal[]>([]);
+  const [email, setEmail] = useState(""); const [pass, setPass] = useState("");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setUserId(s?.user?.id ?? null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!userId) { setIsAdmin(null); return; }
+    supabase.rpc("has_role", { _user_id: userId, _role: "admin" }).then(({ data }) => setIsAdmin(!!data));
+  }, [userId]);
+
+  const load = () => supabase.from("hours_proposals").select("*").eq("status", "pending").order("created_at").then(({ data }) => setItems(data ?? []));
+  useEffect(() => { if (isAdmin) load(); }, [isAdmin]);
+
+  const auth = async (mode: "in" | "up") => {
+    const { error } = mode === "in"
+      ? await supabase.auth.signInWithPassword({ email, password: pass })
+      : await supabase.auth.signUp({ email, password: pass, options: { emailRedirectTo: `${window.location.origin}/revision` } });
+    if (error) toast.error(error.message); else if (mode === "up") toast.success("Revisa tu correo para confirmar la cuenta.");
+  };
+
+  const review = async (id: string, status: "approved" | "rejected") => {
+    const { error } = await supabase.from("hours_proposals").update({ status, reviewed_at: new Date().toISOString(), reviewed_by: userId }).eq("id", id);
+    if (error) { toast.error("No se pudo guardar."); return; }
+    toast.success(status === "approved" ? "Horario aprobado" : "Propuesta rechazada");
+    setItems((x) => x.filter((p) => p.id !== id));
+  };
+
+  return (
+    <div className="mx-auto min-h-screen max-w-md bg-background px-4 pb-10 pt-5">
+      <Toaster position="top-center" />
+      <Link to="/" className="text-sm text-muted-foreground">← Volver</Link>
+      <h1 className="mt-2 font-display text-2xl font-extrabold">Revisión de horarios</h1>
+      {!userId && (
+        <div className="mt-4 space-y-2">
+          <p className="text-sm text-muted-foreground">Ingresa con tu cuenta de revisor.</p>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="correo" className="w-full rounded-lg border bg-card px-3 py-2" />
+          <input type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="contraseña" className="w-full rounded-lg border bg-card px-3 py-2" />
+          <div className="flex gap-2">
+            <button onClick={() => auth("in")} className="flex-1 rounded-lg bg-primary py-2 font-bold text-primary-foreground">Entrar</button>
+            <button onClick={() => auth("up")} className="flex-1 rounded-lg bg-secondary py-2 font-semibold">Crear cuenta</button>
+          </div>
+        </div>
+      )}
+      {userId && isAdmin === false && <p className="mt-4 rounded-xl bg-muted p-4 text-sm">Tu cuenta aún no tiene permiso de revisor. <button className="underline" onClick={() => supabase.auth.signOut()}>Salir</button></p>}
+      {userId && isAdmin && (
+        <div className="mt-4 space-y-3">
+          <div className="flex justify-between text-sm"><span>{items.length} pendientes</span><button className="underline" onClick={() => supabase.auth.signOut()}>Salir</button></div>
+          {items.map((p) => (
+            <article key={p.id} className="rounded-2xl border bg-card p-4 text-sm shadow-sm">
+              <h2 className="font-display text-lg font-bold">{p.place_name}</h2>
+              <p className="text-xs text-muted-foreground">Enviado {new Date(p.created_at).toLocaleString("es-CL")}</p>
+              <p className="mt-2">Lu–Ju y Do: <b>{p.weekday_open}–{p.weekday_close}</b></p>
+              <p>Vi–Sá: <b>{p.weekend_open}–{p.weekend_close}</b></p>
+              <p className="mt-2 rounded-lg bg-muted p-2">{p.evidence_note}</p>
+              {p.evidence_url && <a href={p.evidence_url} target="_blank" rel="noreferrer noopener" className="mt-1 block truncate text-primary underline">{p.evidence_url}</a>}
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button onClick={() => review(p.id, "approved")} className="rounded-lg bg-open py-2 font-bold text-open-foreground">Aprobar</button>
+                <button onClick={() => review(p.id, "rejected")} className="rounded-lg bg-closed py-2 font-bold text-closed-foreground">Rechazar</button>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
