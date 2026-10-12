@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      cumpita_points: {
+        Row: {
+          id: string
+          nickname: string | null
+          points: number
+          reports_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          nickname?: string | null
+          points?: number
+          reports_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          nickname?: string | null
+          points?: number
+          reports_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       hours_proposals: {
         Row: {
           created_at: string
@@ -62,24 +89,78 @@ export type Database = {
         }
         Relationships: []
       }
+      place_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          place_id: string
+          place_name: string
+          read_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          place_id: string
+          place_name: string
+          read_at?: string | null
+          status: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          place_id?: string
+          place_name?: string
+          read_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       place_reports: {
         Row: {
           created_at: string
           id: string
           place_id: string
           status: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
           place_id: string
           status: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
           place_id?: string
           status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      place_subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          place_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          place_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          place_id?: string
+          user_id?: string
         }
         Relationships: []
       }
