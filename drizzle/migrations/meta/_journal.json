@@ -15,6 +15,13 @@
       "when": 1791593870170,
       "tag": "0001_hours_proposals_and_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791766338801,
+      "tag": "0002_subscriptions_and_points",
+      "breakpoints": true
     }
   ]
 }
