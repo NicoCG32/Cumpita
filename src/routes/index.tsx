@@ -161,7 +161,7 @@ function Index() {
 
   const toggleSub = async (placeId: string, placeName: string) => {
     if (!user) {
-      toast("Para recibir avisos necesitas una cuenta.", { action: { label: "Entrar", onClick: () => { window.location.href = "/revision"; } } });
+      toast("Para recibir avisos necesitas una cuenta.", { action: { label: "Entrar", onClick: () => { void signIn(); } } });
       return;
     }
     if (subs.has(placeId)) {
@@ -338,7 +338,7 @@ function Index() {
         {bellOpen && (
           <div className="mt-2 rounded-xl border bg-card p-3 text-sm">
             <p className="font-semibold">Tus avisos</p>
-            {!user && <p className="mt-1 text-xs text-muted-foreground">Entra a tu cuenta desde «Revisión de horarios» para recibir avisos.</p>}
+            {!user && <p className="mt-1 text-xs text-muted-foreground">Toca «Entrar» arriba para recibir avisos.</p>}
             {user && alerts.length === 0 && <p className="mt-1 text-xs text-muted-foreground">Sin avisos todavía. Toca «Avisarme» en un local para suscribirte.</p>}
             {alerts.slice(0, 10).map((a) => (
               <p key={a.id} className="mt-1.5 text-xs">🔔 <span className="font-semibold">{a.place_name}</span> fue reportado {a.status === "open" ? "abierto" : "cerrado"} hace {ago(now - new Date(a.created_at).getTime())}</p>
