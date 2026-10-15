@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapPin, Clock, Navigation, Phone, Loader2, Pill, Wine, Check, X, Users, LocateFixed, Bell, BellRing, Trophy, WifiOff } from "lucide-react";
+import { MapPin, Clock, Navigation, Phone, Loader2, Pill, Wine, Check, X, Users, LocateFixed, Bell, BellRing, Trophy, WifiOff, Share2, Moon, LogIn, LogOut } from "lucide-react";
+import { lovable } from "@/integrations/lovable";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNearbyPlaces } from "@/lib/places.functions";
@@ -29,7 +30,11 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Filter = "all" | "open" | "confirmed" | "turno";
+type Filter = "all" | "open" | "confirmed" | "turno" | "night";
+const TAGS = { card_ok: "💳 Pasa Redcompra/transferencia", cash_only: "💵 Solo efectivo", reja: "🔒 Atienden por reja", fila: "⏳ Hay fila", sin_fila: "⚡ Sin fila" } as const;
+type TagKey = keyof typeof TAGS;
+type TagRow = { place_id: string; tag: string; created_at: string };
+const TAG_TTL_MS = 3 * 60 * 60 * 1000;
 type Alert = { id: string; place_name: string; status: string; created_at: string; read_at: string | null };
 type TopCumpita = { user_id: string; nickname: string | null; points: number; reports_count: number };
 const fmtDist = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`);
@@ -57,6 +62,22 @@ function Index() {
   const [top, setTop] = useState<TopCumpita[]>([]);
   const [offline, setOffline] = useState(false);
   const [cached, setCached] = useState<Place[] | null>(null);
+  const [tags, setTags] = useState<TagRow[]>([]);
+  const [nick, setNick] = useState("");
+  const [editNick, setEditNick] = useState(false);
+
+  // Micro-reportes (pago, reja, fila) en vivo
+  useEffect(() => {
+    supabase.from("place_tags").select("place_id,tag,created_at")
+      .gte("created_at", new Date(Date.now() - TAG_TTL_MS).toISOString()).limit(2000)
+      .then(({ data }) => { if (data) setTags(data); });
+    const ch = supabase.channel("place_tags")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "place_tags" },
+        (payload) => setTags((prev) => [...prev, payload.new as TagRow]))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
 
   // Sesión + suscripciones + alertas + ranking
   useEffect(() => {
