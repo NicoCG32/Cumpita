@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MapPin, Clock, Navigation, Phone, Loader2, Pill, Wine, Check, X, Users, LocateFixed, Bell, BellRing, Trophy, WifiOff } from "lucide-react";
+import { MapPin, Clock, Navigation, Phone, Loader2, Pill, Wine, Check, X, Users, LocateFixed, Bell, BellRing, Trophy, WifiOff, Share2, Moon, LogIn, LogOut } from "lucide-react";
+import { lovable } from "@/integrations/lovable";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNearbyPlaces } from "@/lib/places.functions";
@@ -29,7 +30,11 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Filter = "all" | "open" | "confirmed" | "turno";
+type Filter = "all" | "open" | "confirmed" | "turno" | "night";
+const TAGS = { card_ok: "💳 Pasa Redcompra/transferencia", cash_only: "💵 Solo efectivo", reja: "🔒 Atienden por reja", fila: "⏳ Hay fila", sin_fila: "⚡ Sin fila" } as const;
+type TagKey = keyof typeof TAGS;
+type TagRow = { place_id: string; tag: string; created_at: string };
+const TAG_TTL_MS = 3 * 60 * 60 * 1000;
 type Alert = { id: string; place_name: string; status: string; created_at: string; read_at: string | null };
 type TopCumpita = { user_id: string; nickname: string | null; points: number; reports_count: number };
 const fmtDist = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`);
@@ -57,6 +62,22 @@ function Index() {
   const [top, setTop] = useState<TopCumpita[]>([]);
   const [offline, setOffline] = useState(false);
   const [cached, setCached] = useState<Place[] | null>(null);
+  const [tags, setTags] = useState<TagRow[]>([]);
+  const [nick, setNick] = useState("");
+  const [editNick, setEditNick] = useState(false);
+
+  // Micro-reportes (pago, reja, fila) en vivo
+  useEffect(() => {
+    supabase.from("place_tags").select("place_id,tag,created_at")
+      .gte("created_at", new Date(Date.now() - TAG_TTL_MS).toISOString()).limit(2000)
+      .then(({ data }) => { if (data) setTags(data); });
+    const ch = supabase.channel("place_tags")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "place_tags" },
+        (payload) => setTags((prev) => [...prev, payload.new as TagRow]))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
 
   // Sesión + suscripciones + alertas + ranking
   useEffect(() => {
@@ -140,7 +161,7 @@ function Index() {
 
   const toggleSub = async (placeId: string, placeName: string) => {
     if (!user) {
-      toast("Para recibir avisos necesitas una cuenta.", { action: { label: "Entrar", onClick: () => { window.location.href = "/revision"; } } });
+      toast("Para recibir avisos necesitas una cuenta.", { action: { label: "Entrar", onClick: () => { void signIn(); } } });
       return;
     }
     if (subs.has(placeId)) {
@@ -150,6 +171,50 @@ function Index() {
       const { error } = await supabase.from("place_subscriptions").insert({ user_id: user.id, place_id: placeId });
       if (!error) { setSubs((s) => new Set(s).add(placeId)); toast.success(`Te avisaremos cuando reporten ${placeName} abierto.`); }
     }
+  };
+
+  const signIn = async () => {
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    if (r && "error" in r && r.error) toast.error("No pudimos iniciar sesión con Google.");
+  };
+
+  const saveNick = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    const n = nick.trim().slice(0, 20);
+    if (n.length < 2) { toast.error("El apodo debe tener al menos 2 letras."); return; }
+    const { data: ex } = await supabase.from("cumpita_points").select("id").eq("user_id", user.id).maybeSingle();
+    const { error } = ex
+      ? await supabase.from("cumpita_points").update({ nickname: n }).eq("user_id", user.id)
+      : await supabase.from("cumpita_points").insert({ user_id: user.id, nickname: n, points: 0, reports_count: 0 });
+    if (error) { toast.error("No se pudo guardar tu apodo."); return; }
+    setEditNick(false); toast.success(`Listo, ahora eres ${n}.`);
+    const { data: t } = await supabase.from("cumpita_points").select("user_id,nickname,points,reports_count").order("points", { ascending: false }).limit(10);
+    if (t) setTop(t as TopCumpita[]);
+  };
+
+  const addTag = async (placeId: string, tag: TagKey) => {
+    const key = `cumpita-tag-${placeId}-${tag}`;
+    if (Date.now() - Number(localStorage.getItem(key) || 0) < 30 * 60 * 1000) { toast("Ya marcaste eso hace poco."); return; }
+    const { error } = await supabase.from("place_tags").insert({ place_id: placeId, tag, user_id: user?.id ?? null });
+    if (error) { toast.error("No se pudo guardar."); return; }
+    localStorage.setItem(key, String(Date.now()));
+    toast.success("¡Gracias! Ya lo ven todos.");
+  };
+
+  const tagsFor = (placeId: string): [TagKey, number][] => {
+    const m = new Map<TagKey, number>();
+    for (const t of tags) if (t.place_id === placeId && now - new Date(t.created_at).getTime() < TAG_TTL_MS && t.tag in TAGS) m.set(t.tag as TagKey, (m.get(t.tag as TagKey) ?? 0) + 1);
+    return [...m.entries()];
+  };
+
+  const shareText = (p: { name: string; street?: string | null; lat: number; lng: number; category: string; cumpa: ReturnType<typeof cumpitaStatus>; turno: boolean }) => {
+    const kind = p.category === "farmacia" ? "La farmacia" : "La botillería";
+    const where = p.street ? ` (${p.street})` : "";
+    const st = p.cumpa
+      ? `está ${p.cumpa.status === "open" ? "abierta" : "cerrada"} (confirmado hace ${ago(now - p.cumpa.last)} por ${p.cumpa.count} cumpita${p.cumpa.count > 1 ? "s" : ""})`
+      : p.turno ? "está de turno hoy" : "está cerca";
+    return `Wena, ${kind} ${p.name}${where} ${st} en cumpita. 📍 https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
   };
 
   const openBell = async () => {
@@ -198,7 +263,8 @@ function Index() {
     const turno = live ? !!p.liveTurno : isTurno(p, new Date(now));
     return { ...p, dist: distanceM(loc, pos), pos, cumpa, official, turno, effectiveOpen: cumpa ? cumpa.status === "open" : official === true };
   }).filter((p) => (cat === "any" || p.category === cat)
-    && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa) && (filter !== "turno" || p.turno))
+    && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa) && (filter !== "turno" || p.turno)
+    && (filter !== "night" || (p.category === "farmacia" ? p.turno || (p.liveTurno?.from === "00:00" && p.liveTurno?.to === "23:59") : p.cumpa?.status === "open")))
     .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, live, loc, reports, now, filter, cat]);
   const reasons = new Map(ai?.results.map((r) => [r.id, r.reason]) ?? []);
   const shown = ai ? ai.results.map((r) => list.find((p) => p.id === r.id)).filter((p): p is (typeof list)[number] => !!p) : list;
@@ -257,6 +323,9 @@ function Index() {
         <div className="flex items-center justify-between">
           <h1 className="font-display text-3xl font-extrabold tracking-tight">cumpita<span className="text-primary">.</span></h1>
           <div className="flex items-center gap-2">
+            {user
+              ? <button onClick={() => supabase.auth.signOut()} className="flex items-center rounded-full bg-secondary p-2" aria-label="Salir"><LogOut className="h-4 w-4" /></button>
+              : <button onClick={signIn} className="flex items-center gap-1 rounded-full bg-primary px-3 py-2 text-xs font-bold text-primary-foreground"><LogIn className="h-4 w-4" />Entrar</button>}
             <button onClick={openBell} className="relative flex items-center rounded-full bg-secondary p-2" aria-label="Avisos">
               {unread > 0 ? <BellRing className="h-4 w-4 text-primary" /> : <Bell className="h-4 w-4" />}
               {unread > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">{unread}</span>}
@@ -269,7 +338,7 @@ function Index() {
         {bellOpen && (
           <div className="mt-2 rounded-xl border bg-card p-3 text-sm">
             <p className="font-semibold">Tus avisos</p>
-            {!user && <p className="mt-1 text-xs text-muted-foreground">Entra a tu cuenta desde «Revisión de horarios» para recibir avisos.</p>}
+            {!user && <p className="mt-1 text-xs text-muted-foreground">Toca «Entrar» arriba para recibir avisos.</p>}
             {user && alerts.length === 0 && <p className="mt-1 text-xs text-muted-foreground">Sin avisos todavía. Toca «Avisarme» en un local para suscribirte.</p>}
             {alerts.slice(0, 10).map((a) => (
               <p key={a.id} className="mt-1.5 text-xs">🔔 <span className="font-semibold">{a.place_name}</span> fue reportado {a.status === "open" ? "abierto" : "cerrado"} hace {ago(now - new Date(a.created_at).getTime())}</p>
@@ -296,6 +365,7 @@ function Index() {
           <button className={chip(filter === "open")} onClick={() => setFilter("open")}>Abiertas ahora</button>
           <button className={chip(filter === "confirmed")} onClick={() => setFilter("confirmed")}>Confirmadas por cumpitas</button>
           <button className={chip(filter === "turno")} onClick={() => setFilter("turno")}>De turno</button>
+          <button className={`${chip(filter === "night")} flex items-center gap-1`} onClick={() => setFilter("night")}><Moon className="h-3.5 w-3.5" />Modo madrugada</button>
         </div>
         <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
           {([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, l]) => (
@@ -389,10 +459,21 @@ function Index() {
               )}
             </div>
 
-            <a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&destination=${p.pos.lat},${p.pos.lng}`}
-              className="mt-3 flex items-center justify-center gap-1.5 text-sm font-semibold text-primary">
-              <Navigation className="h-4 w-4" /> Cómo llegar
-            </a>
+            <div className="mt-2">
+              {tagsFor(p.id).length > 0 && <div className="flex flex-wrap gap-1">{tagsFor(p.id).map(([k, n]) => <span key={k} className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">{TAGS[k]}{n > 1 ? ` ×${n}` : ""}</span>)}</div>}
+              {canReport(p) && <div className="-mx-1 mt-1.5 flex gap-1 overflow-x-auto px-1">{(Object.keys(TAGS) as TagKey[]).map((k) => <button key={k} onClick={() => addTag(p.id, k)} className="shrink-0 rounded-full border px-2 py-1 text-xs text-muted-foreground active:scale-95">{TAGS[k]}</button>)}</div>}
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&destination=${p.pos.lat},${p.pos.lng}`}
+                className="flex items-center justify-center gap-1.5 rounded-lg bg-secondary py-2 text-sm font-semibold text-primary">
+                <Navigation className="h-4 w-4" /> Cómo llegar
+              </a>
+              <a target="_blank" rel="noreferrer" href={`https://wa.me/?text=${encodeURIComponent(shareText(p))}`}
+                className="flex items-center justify-center gap-1.5 rounded-lg bg-open/15 py-2 text-sm font-semibold text-open">
+                <Share2 className="h-4 w-4" /> WhatsApp
+              </a>
+            </div>
             {p.category === "botilleria" && (proposing === p.id
               ? <ProposeHours placeId={p.id} placeName={p.name} onDone={() => setProposing(null)} />
               : <button onClick={() => setProposing(p.id)} className="mt-2 flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-muted-foreground"><PencilLine className="h-3.5 w-3.5" />{p.hoursKind === "confirmed" ? "¿Cambió el horario? Propón una corrección" : "¿Conoces el horario real? Propónlo"}</button>)}
@@ -403,6 +484,9 @@ function Index() {
           <section className="rounded-2xl border bg-card p-4">
             <p className="flex items-center gap-2 font-display text-lg font-bold"><Trophy className="h-5 w-5 text-primary" />Top cumpitas</p>
             {myPoints && <p className="mt-1 text-xs text-muted-foreground">Tú: {badgeFor(myPoints.points)} · {myPoints.points} puntos</p>}
+            {user && (editNick
+              ? <form onSubmit={saveNick} className="mt-2 flex gap-2"><input value={nick} onChange={(e) => setNick(e.target.value)} maxLength={20} placeholder="Tu apodo, ej: CumpitaCalameño" className="min-w-0 flex-1 rounded-lg border bg-background px-2 py-1 text-sm" /><button className="rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground">Guardar</button></form>
+              : <button onClick={() => { setNick(myPoints?.nickname ?? ""); setEditNick(true); }} className="mt-1 text-xs font-semibold text-primary underline">Cambiar mi apodo</button>)}
             <ol className="mt-2 space-y-1.5">
               {top.map((t, i) => (
                 <li key={t.user_id} className="flex items-center gap-2 text-sm">
@@ -413,7 +497,7 @@ function Index() {
                 </li>
               ))}
             </ol>
-            {!user && <p className="mt-2 text-xs text-muted-foreground">Crea tu cuenta para sumar puntos con cada reporte.</p>}
+            {!user && <button onClick={signIn} className="mt-2 text-xs font-semibold text-primary underline">Entra con Google para sumar puntos con cada reporte</button>}
           </section>
         )}
       </main>
