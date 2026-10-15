@@ -164,6 +164,30 @@ export type Database = {
         }
         Relationships: []
       }
+      place_tags: {
+        Row: {
+          created_at: string
+          id: string
+          place_id: string
+          tag: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          place_id: string
+          tag: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          place_id?: string
+          tag?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
