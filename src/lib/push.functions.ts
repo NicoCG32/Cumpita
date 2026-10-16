@@ -4,21 +4,26 @@ import { z } from "zod";
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/firebase_messaging";
 const admin = async () => (await import("@/integrations/supabase/client.server")).supabaseAdmin;
 
+const secretSchema = z.string().min(32).max(128);
+const newSecret = () => Array.from(crypto.getRandomValues(new Uint8Array(24)), (b) => b.toString(16).padStart(2, "0")).join("");
+
 // Registra "voy en camino" a un local para este dispositivo (45 min).
+// Solo quien tiene el secreto emitido por el servidor puede reemplazar o borrar su registro.
 export const startEnRoute = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({ token: z.string().min(20).max(4096), placeId: z.string().min(1).max(200), placeName: z.string().min(1).max(200) }).parse(d))
+  .inputValidator((d) => z.object({ token: z.string().min(20).max(4096), placeId: z.string().min(1).max(200), placeName: z.string().min(1).max(200), secret: secretSchema.optional() }).parse(d))
   .handler(async ({ data }) => {
     const db = await admin();
-    await db.from("en_route").delete().eq("token", data.token);
-    const { error } = await db.from("en_route").insert({ token: data.token, place_id: data.placeId, place_name: data.placeName });
-    return { ok: !error };
+    if (data.secret) await db.from("en_route").delete().eq("token", data.token).eq("secret", data.secret);
+    const secret = newSecret();
+    const { error } = await db.from("en_route").insert({ token: data.token, place_id: data.placeId, place_name: data.placeName, secret });
+    return { ok: !error, secret: error ? null : secret };
   });
 
 export const stopEnRoute = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({ token: z.string().min(20).max(4096) }).parse(d))
+  .inputValidator((d) => z.object({ token: z.string().min(20).max(4096), secret: secretSchema }).parse(d))
   .handler(async ({ data }) => {
     const db = await admin();
-    await db.from("en_route").delete().eq("token", data.token);
+    await db.from("en_route").delete().eq("token", data.token).eq("secret", data.secret);
     return { ok: true };
   });
 
