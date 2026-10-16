@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { distanceM, type Place } from "./places";
-import { mergeMinsal } from "./turnos";
+import { mergeMinsal, minsalPlaces } from "./turnos";
 import { applyHours, type ApprovedHours } from "./botillerias";
 import { liveTurnos, mergeTurnos } from "./turnos-live";
 
@@ -150,6 +150,25 @@ async function allPlaces(lat: number, lng: number) {
   return turnos ? { places: mergeTurnos(fixed, turnos), live: true } : { places: fixed, live: false };
 }
 
+/** Encuentra coordenadas de un local solo con su id (enlaces compartidos sin lat/lng). */
+async function locateId(id: string): Promise<{ lat: number; lng: number } | null> {
+  const m = minsalPlaces().find((p) => p.id === id);
+  if (m) return m;
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (id.startsWith("c/")) {
+      const { data } = await supabaseAdmin.from("place_suggestions").select("lat,lng").eq("id", id.slice(2)).eq("status", "approved").maybeSingle();
+      return data?.lat != null && data?.lng != null ? { lat: data.lat, lng: data.lng } : null;
+    }
+    const { data } = await supabaseAdmin.from("places_cache").select("places").limit(200);
+    for (const row of data ?? []) {
+      const hit = (row.places as unknown as Place[]).find((p) => p.id === id);
+      if (hit) return { lat: hit.lat, lng: hit.lng };
+    }
+  } catch { /* sin datos */ }
+  return null;
+}
+
 export const getNearbyPlaces = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ lat: z.number(), lng: z.number() }).parse(d))
   .handler(async ({ data }): Promise<{ places: Place[]; live: boolean }> => {
@@ -157,10 +176,15 @@ export const getNearbyPlaces = createServerFn({ method: "GET" })
   });
 
 export const getPlaceById = createServerFn({ method: "GET" })
-  .inputValidator((d) => z.object({ id: z.string().min(1).max(200), lat: z.number(), lng: z.number() }).parse(d))
+  .inputValidator((d) => z.object({ id: z.string().min(1).max(200), lat: z.number().optional(), lng: z.number().optional() }).parse(d))
   .handler(async ({ data }): Promise<{ place: Place | null; cumpa: { status: "open" | "closed"; last: number; count: number } | null }> => {
-    const all = (await allPlaces(data.lat, data.lng)).places;
-    const place = all.find((p) => p.id === data.id) ?? null;
+    let pos = data.lat != null && data.lng != null ? { lat: data.lat, lng: data.lng } : await locateId(data.id);
+    let place: Place | null = null;
+    if (pos) place = (await allPlaces(pos.lat, pos.lng)).places.find((p) => p.id === data.id) ?? null;
+    if (!place && data.lat != null) {
+      pos = await locateId(data.id);
+      if (pos) place = (await allPlaces(pos.lat, pos.lng)).places.find((p) => p.id === data.id) ?? null;
+    }
     let cumpa = null;
     const url = process.env['SUPABASE_URL'], key = process.env['SUPABASE_PUBLISHABLE_KEY'];
     if (place && url && key) {
