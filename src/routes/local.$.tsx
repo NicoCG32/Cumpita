@@ -3,6 +3,7 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Check, Clock, MapPin, Navigation, Phone, Share2, Star, Users, X } from "lucide-react";
 import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PLACE_TAGS, TAG_TTL, type PlaceTagKey } from "@/lib/tags";
 import { distanceM } from "@/lib/places";
@@ -99,6 +100,7 @@ function LocalPage() {
   const share = `Wena, mira ${p.name}${p.street ? ` (${p.street})` : ""} en cumpita.\n${url}`;
   return (
     <div className="mx-auto min-h-screen max-w-md bg-background px-4 pb-10 pt-5">
+      <Toaster position="top-center" />
       <Link to="/" className="flex items-center gap-1 text-sm font-semibold text-primary"><ArrowLeft className="h-4 w-4" />Todos los locales</Link>
       <div className="mt-4 rounded-2xl border bg-card p-5">
         <div className="flex items-start justify-between gap-2">
