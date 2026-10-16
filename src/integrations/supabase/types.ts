@@ -218,6 +218,24 @@ export type Database = {
         }
         Relationships: []
       }
+      places_cache: {
+        Row: {
+          key: string
+          places: Json
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          places: Json
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          places?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
