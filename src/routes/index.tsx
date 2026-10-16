@@ -519,7 +519,7 @@ function Index() {
               <button onClick={() => toggleSub(p.id, p.name)} className={`flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${subs.has(p.id) ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
                 {subs.has(p.id) ? <BellRing className="h-3 w-3" /> : <Bell className="h-3 w-3" />}{subs.has(p.id) ? "Avisándote" : "Avisarme"}
               </button>
-              <a href={p.osmUrl} target="_blank" rel="noreferrer" className="ml-auto text-muted-foreground underline">{p.source === "google" ? "Google" : p.source === "minsal" ? "MINSAL" : "Fuente"}</a>
+              <a href={p.osmUrl} target="_blank" rel="noreferrer" className="ml-auto text-muted-foreground underline">{p.source === "google" ? "Google" : p.source === "minsal" ? "MINSAL" : p.source === "community" ? "Cumpitas" : "Fuente"}</a>
             </div>
 
             <div className={`mt-2 rounded-xl p-3 ${p.cumpa ? (p.cumpa.status === "open" ? "bg-open/10" : "bg-closed/10") : "bg-muted"}`}>
@@ -593,7 +593,7 @@ function Index() {
           ))}
         </div>
       </div>
-      <SuggestPlace city={loc.name} pos={userPos} />
+      <SuggestPlace city={loc.name} pos={userPos ?? { lat: loc.lat, lng: loc.lng }} places={places} />
       <div className="h-16" />
       <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: MINSAL (farmacias y horarios), SEREMI de Salud (turnos de Calama), OpenStreetMap y Google Places · <Link to="/revision" className="underline">Revisión de horarios</Link></p>
     </div>

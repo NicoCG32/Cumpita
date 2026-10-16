@@ -64,6 +64,13 @@
       "when": 1792114700808,
       "tag": "0008_night_tags_and_suggestions",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792115047453,
+      "tag": "0009_public_approved_suggestions",
+      "breakpoints": true
     }
   ]
 }

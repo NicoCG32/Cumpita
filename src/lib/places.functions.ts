@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import type { Place } from "./places";
+import { distanceM, type Place } from "./places";
 import { mergeMinsal } from "./turnos";
 import { applyHours, type ApprovedHours } from "./botillerias";
 import { liveTurnos, mergeTurnos } from "./turnos-live";
@@ -129,20 +129,37 @@ async function approvedHours(): Promise<ApprovedHours[]> {
   } catch { return []; }
 }
 
+async function communityPlaces(lat: number, lng: number): Promise<Place[]> {
+  const url = process.env['SUPABASE_URL'], key = process.env['SUPABASE_PUBLISHABLE_KEY'];
+  if (!url || !key) return [];
+  try {
+    const res = await fetch(`${url}/rest/v1/place_suggestions?status=eq.approved&kind=eq.missing&select=id,name,category,city,address,lat,lng,reviewed_at&limit=2000`, { headers: { apikey: key } });
+    const rows: { id: string; name: string | null; category: string | null; city: string | null; address: string | null; lat: number; lng: number }[] = res.ok ? await res.json() : [];
+    return rows.filter((r) => r.name && distanceM({ lat, lng }, r) <= 4000).map((r) => ({
+      id: `c/${r.id}`, name: r.name!, category: r.category === "farmacia" ? "farmacia" : "botilleria",
+      street: r.address, city: r.city, lat: r.lat, lng: r.lng, openingHours: null, phone: null,
+      osmUrl: `https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lng}`, source: "community" as const,
+    }));
+  } catch { return []; }
+}
+
+async function allPlaces(lat: number, lng: number) {
+  const [places, community, turnos, approved] = await Promise.all([base(lat, lng), communityPlaces(lat, lng), liveTurnos(lat, lng), approvedHours()]);
+  const extra = community.filter((c) => !places.some((p) => distanceM(p, c) < 40));
+  const fixed = applyHours([...places, ...extra], approved);
+  return turnos ? { places: mergeTurnos(fixed, turnos), live: true } : { places: fixed, live: false };
+}
+
 export const getNearbyPlaces = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ lat: z.number(), lng: z.number() }).parse(d))
   .handler(async ({ data }): Promise<{ places: Place[]; live: boolean }> => {
-    const [places, turnos, approved] = await Promise.all([base(data.lat, data.lng), liveTurnos(data.lat, data.lng), approvedHours()]);
-    const fixed = applyHours(places, approved);
-    return turnos ? { places: mergeTurnos(fixed, turnos), live: true } : { places: fixed, live: false };
+    return allPlaces(data.lat, data.lng);
   });
 
 export const getPlaceById = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ id: z.string().min(1).max(200), lat: z.number(), lng: z.number() }).parse(d))
   .handler(async ({ data }): Promise<{ place: Place | null; cumpa: { status: "open" | "closed"; last: number; count: number } | null }> => {
-    const [places, turnos, approved] = await Promise.all([base(data.lat, data.lng), liveTurnos(data.lat, data.lng), approvedHours()]);
-    const fixed = applyHours(places, approved);
-    const all = turnos ? mergeTurnos(fixed, turnos) : fixed;
+    const all = (await allPlaces(data.lat, data.lng)).places;
     const place = all.find((p) => p.id === data.id) ?? null;
     let cumpa = null;
     const url = process.env['SUPABASE_URL'], key = process.env['SUPABASE_PUBLISHABLE_KEY'];

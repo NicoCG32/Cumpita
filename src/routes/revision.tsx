@@ -49,7 +49,7 @@ function Revision() {
   const reviewSug = async (id: string, status: "approved" | "rejected") => {
     const { error } = await supabase.from("place_suggestions").update({ status, reviewed_at: new Date().toISOString(), reviewed_by: userId }).eq("id", id);
     if (error) { toast.error("No se pudo guardar."); return; }
-    toast.success(status === "approved" ? "Marcado como revisado" : "Descartado");
+    toast.success(status === "approved" ? "Aprobado: ya aparece en la app" : "Descartado");
     setSugs((x) => x.filter((p) => p.id !== id));
   };
 
@@ -108,9 +108,9 @@ function Revision() {
               {g.name && <h3 className="font-display text-lg font-bold">{g.name}</h3>}
               {g.address && <p>{g.address}</p>}
               {g.note && <p className="mt-2 rounded-lg bg-muted p-2">{g.note}</p>}
-              {g.lat != null && g.lng != null && <a href={`https://www.google.com/maps/search/?api=1&query=${g.lat},${g.lng}`} target="_blank" rel="noreferrer" className="mt-1 block text-primary underline">Ver dónde estaba quien lo envió</a>}
+              {g.lat != null && g.lng != null && <a href={`https://www.google.com/maps/search/?api=1&query=${g.lat},${g.lng}`} target="_blank" rel="noreferrer" className="mt-1 block text-primary underline">Ver ubicación en el mapa (aquí aparecerá)</a>}
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <button onClick={() => reviewSug(g.id, "approved")} className="rounded-lg bg-open py-2 font-bold text-open-foreground">Revisado</button>
+                <button onClick={() => reviewSug(g.id, "approved")} className="rounded-lg bg-open py-2 font-bold text-open-foreground">{g.kind === "missing" ? "Aprobar y publicar" : "Revisado"}</button>
                 <button onClick={() => reviewSug(g.id, "rejected")} className="rounded-lg bg-closed py-2 font-bold text-closed-foreground">Descartar</button>
               </div>
             </article>
