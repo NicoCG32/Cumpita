@@ -447,13 +447,16 @@ function Index() {
           <button className={chip(filter === "confirmed")} onClick={() => setFilter("confirmed")}>Confirmadas por cumpitas</button>
           <button className={chip(filter === "turno")} onClick={() => setFilter("turno")}>De turno</button>
           <button className={`${chip(filter === "night")} flex items-center gap-1`} onClick={() => setFilter("night")}><Moon className="h-3.5 w-3.5" />Modo madrugada</button>
+          {(["hielo", "card_ok", "cigarros"] as TagKey[]).map((k) => (
+            <button key={k} className={chip(tagFilter.has(k))} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}>{k === "card_ok" ? "💳 Acepta tarjeta" : TAGS[k]}</button>
+          ))}
         </div>
         {filtersOpen && <div className="animate-fade-up -mx-4 mt-2 flex flex-wrap gap-2 px-4 pb-1">
           <div className="flex shrink-0 rounded-full bg-secondary p-0.5">
             <button onClick={() => setMode("walk")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "walk" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚶 A pie (&lt;800 m)</button>
             <button onClick={() => setMode("car")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "car" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚗 En auto</button>
           </div>
-          {(["card_ok", "reja", "sin_fila", "hielo"] as TagKey[]).map((k) => (
+          {(["card_ok", "cash_only", "reja", "sin_fila", "hielo", "cigarros", "promo"] as TagKey[]).map((k) => (
             <button key={k} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}
               className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${tagFilter.has(k) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{TAGS[k]}</button>
           ))}
