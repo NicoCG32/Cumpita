@@ -15,6 +15,10 @@ import { Link } from "@tanstack/react-router";
 import { aiSearch } from "@/lib/ai-search.functions";
 import { ProposeHours } from "@/components/ProposeHours";
 import type { User } from "@supabase/supabase-js";
+import { lazy, Suspense } from "react";
+import { ClientOnly } from "@tanstack/react-router";
+import { List, Map as MapIcon } from "lucide-react";
+const MapView = lazy(() => import("@/components/MapView"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -65,6 +69,7 @@ function Index() {
   const [tags, setTags] = useState<TagRow[]>([]);
   const [nick, setNick] = useState("");
   const [editNick, setEditNick] = useState(false);
+  const [view, setView] = useState<"feed" | "map">("feed");
 
   // Micro-reportes (pago, reja, fila) en vivo
   useEffect(() => {
@@ -404,7 +409,14 @@ function Index() {
         {isLoading && <p className="flex items-center justify-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" />Buscando locales reales cerca…</p>}
         {isError && !offline && <div className="py-16 text-center text-muted-foreground"><p>No pudimos cargar los locales.</p><button onClick={() => refetch()} className="mt-3 font-semibold text-primary">Reintentar</button></div>}
         {!isLoading && !isError && !ai && list.length === 0 && <p className="py-16 text-center text-muted-foreground">Nada por aquí con esos filtros.</p>}
-        {shown.map((p, i) => (
+        {view === "map" && !isLoading && (
+          <ClientOnly fallback={<div className="h-[65vh] rounded-2xl bg-muted" />}>
+            <Suspense fallback={<div className="flex h-[65vh] items-center justify-center rounded-2xl bg-muted"><Loader2 className="h-5 w-5 animate-spin" /></div>}>
+              <MapView places={shown} origin={userPos ?? loc} />
+            </Suspense>
+          </ClientOnly>
+        )}
+        {view === "feed" && shown.map((p, i) => (
           <article key={p.id} className="rounded-2xl border bg-card p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${p.category === "farmacia" ? "bg-pharmacy/15 text-pharmacy" : "bg-liquor/15 text-liquor"}`}>
@@ -501,6 +513,16 @@ function Index() {
           </section>
         )}
       </main>
+      <div className="fixed inset-x-0 bottom-4 z-[500] flex justify-center">
+        <div className="flex rounded-full border bg-card p-1 shadow-lg">
+          {(["feed", "map"] as const).map((v) => (
+            <button key={v} onClick={() => setView(v)} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold ${view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+              {v === "feed" ? <List className="h-4 w-4" /> : <MapIcon className="h-4 w-4" />}{v === "feed" ? "Lista" : "Mapa"}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="h-16" />
       <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: MINSAL (farmacias y horarios), SEREMI de Salud (turnos de Calama), OpenStreetMap y Google Places · <Link to="/revision" className="underline">Revisión de horarios</Link></p>
     </div>
   );
