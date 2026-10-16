@@ -136,3 +136,23 @@ export const getNearbyPlaces = createServerFn({ method: "GET" })
     const fixed = applyHours(places, approved);
     return turnos ? { places: mergeTurnos(fixed, turnos), live: true } : { places: fixed, live: false };
   });
+
+export const getPlaceById = createServerFn({ method: "GET" })
+  .inputValidator((d) => z.object({ id: z.string().min(1).max(200), lat: z.number(), lng: z.number() }).parse(d))
+  .handler(async ({ data }): Promise<{ place: Place | null; cumpa: { status: "open" | "closed"; last: number; count: number } | null }> => {
+    const [places, turnos, approved] = await Promise.all([base(data.lat, data.lng), liveTurnos(data.lat, data.lng), approvedHours()]);
+    const fixed = applyHours(places, approved);
+    const all = turnos ? mergeTurnos(fixed, turnos) : fixed;
+    const place = all.find((p) => p.id === data.id) ?? null;
+    let cumpa = null;
+    const url = process.env['SUPABASE_URL'], key = process.env['SUPABASE_PUBLISHABLE_KEY'];
+    if (place && url && key) {
+      try {
+        const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        const res = await fetch(`${url}/rest/v1/place_reports?place_id=eq.${encodeURIComponent(data.id)}&created_at=gte.${since}&select=status,created_at&order=created_at.desc&limit=50`, { headers: { apikey: key } });
+        const rows: { status: "open" | "closed"; created_at: string }[] = res.ok ? await res.json() : [];
+        if (rows[0]) cumpa = { status: rows[0].status, last: new Date(rows[0].created_at).getTime(), count: rows.filter((r) => r.status === rows[0]!.status).length };
+      } catch { /* sin estado */ }
+    }
+    return { place, cumpa };
+  });

@@ -26,6 +26,7 @@ function Revision() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [items, setItems] = useState<Proposal[]>([]);
+  const [sugs, setSugs] = useState<Tables<"place_suggestions">[]>([]);
   const [email, setEmail] = useState(""); const [pass, setPass] = useState("");
 
   useEffect(() => {
@@ -40,7 +41,17 @@ function Revision() {
   }, [userId]);
 
   const load = () => supabase.from("hours_proposals").select("*").eq("status", "pending").order("created_at").then(({ data }) => setItems(data ?? []));
-  useEffect(() => { if (isAdmin) load(); }, [isAdmin]);
+  useEffect(() => {
+    if (!isAdmin) return;
+    load();
+    supabase.from("place_suggestions").select("*").eq("status", "pending").order("created_at").then(({ data }) => setSugs(data ?? []));
+  }, [isAdmin]);
+  const reviewSug = async (id: string, status: "approved" | "rejected") => {
+    const { error } = await supabase.from("place_suggestions").update({ status, reviewed_at: new Date().toISOString(), reviewed_by: userId }).eq("id", id);
+    if (error) { toast.error("No se pudo guardar."); return; }
+    toast.success(status === "approved" ? "Marcado como revisado" : "Descartado");
+    setSugs((x) => x.filter((p) => p.id !== id));
+  };
 
   const auth = async (mode: "in" | "up") => {
     const { error } = mode === "in"
@@ -87,6 +98,20 @@ function Revision() {
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <button onClick={() => review(p.id, "approved")} className="rounded-lg bg-open py-2 font-bold text-open-foreground">Aprobar</button>
                 <button onClick={() => review(p.id, "rejected")} className="rounded-lg bg-closed py-2 font-bold text-closed-foreground">Rechazar</button>
+              </div>
+            </article>
+          ))}
+          <h2 className="pt-4 font-display text-xl font-extrabold">Locales que faltan e ideas ({sugs.length})</h2>
+          {sugs.map((g) => (
+            <article key={g.id} className="rounded-2xl border bg-card p-4 text-sm shadow-sm">
+              <p className="text-xs font-bold uppercase text-muted-foreground">{g.kind === "missing" ? `Local que falta · ${g.category === "farmacia" ? "Farmacia" : "Botillería"}` : "Idea o error"} · {g.city}</p>
+              {g.name && <h3 className="font-display text-lg font-bold">{g.name}</h3>}
+              {g.address && <p>{g.address}</p>}
+              {g.note && <p className="mt-2 rounded-lg bg-muted p-2">{g.note}</p>}
+              {g.lat != null && g.lng != null && <a href={`https://www.google.com/maps/search/?api=1&query=${g.lat},${g.lng}`} target="_blank" rel="noreferrer" className="mt-1 block text-primary underline">Ver dónde estaba quien lo envió</a>}
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button onClick={() => reviewSug(g.id, "approved")} className="rounded-lg bg-open py-2 font-bold text-open-foreground">Revisado</button>
+                <button onClick={() => reviewSug(g.id, "rejected")} className="rounded-lg bg-closed py-2 font-bold text-closed-foreground">Descartar</button>
               </div>
             </article>
           ))}

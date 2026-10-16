@@ -16,6 +16,9 @@ import { aiSearch } from "@/lib/ai-search.functions";
 import { startEnRoute, stopEnRoute, notifyClosed } from "@/lib/push.functions";
 import { enablePush, savedPushToken, pushMessage } from "@/lib/push-client";
 import { ProposeHours } from "@/components/ProposeHours";
+import { SuggestPlace } from "@/components/SuggestPlace";
+import { useFavorites } from "@/lib/favorites";
+import { Star } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { lazy, Suspense } from "react";
 import { ClientOnly } from "@tanstack/react-router";
@@ -43,8 +46,8 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Filter = "all" | "open" | "confirmed" | "turno" | "night";
-const TAGS = { card_ok: "💳 Pasa Redcompra/transferencia", cash_only: "💵 Solo efectivo", reja: "🔒 Atienden por reja", fila: "⏳ Hay fila", sin_fila: "⚡ Sin fila" } as const;
+type Filter = "all" | "open" | "confirmed" | "turno" | "night" | "fav";
+const TAGS = { card_ok: "💳 Pasa Redcompra/transferencia", cash_only: "💵 Solo efectivo", reja: "🔒 Atienden por reja", fila: "⏳ Hay fila", sin_fila: "⚡ Sin fila", hielo: "🧊 Hay hielo", cigarros: "🚬 Hay cigarros", promo: "🏷️ Buena promo" } as const;
 type TagKey = keyof typeof TAGS;
 type TagRow = { place_id: string; tag: string; created_at: string };
 const TAG_TTL_MS = 3 * 60 * 60 * 1000;
@@ -63,6 +66,7 @@ function Index() {
   const [loc, setLoc] = useState<{ name: string; lat: number; lng: number }>(ZONES[0]!);
   const [locating, setLocating] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
+  const { favs, toggle: toggleFav } = useFavorites();
   const [cat, setCat] = useState<Category | "any">("any");
   const [reports, setReports] = useState<Report[]>([]);
   const [now, setNow] = useState(Date.now());
@@ -258,7 +262,7 @@ function Index() {
       ? `está ${p.cumpa.status === "open" ? "abierta" : "cerrada"} (confirmado hace ${ago(now - p.cumpa.last)} por ${p.cumpa.count} cumpita${p.cumpa.count > 1 ? "s" : ""})`
       : p.turno ? "está de turno hoy" : "está cerca";
     const tg = tagsFor(p.id).map(([k]) => TAGS[k]).join(" · ");
-    return `Wena, ${kind} ${p.name}${where} ${st} en cumpita.${tg ? `\n${tg}` : ""}\n📍 Google Maps: https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}\n🚗 Waze: https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`;
+    return `Wena, ${kind} ${p.name}${where} ${st} en cumpita.${tg ? `\n${tg}` : ""}\n👉 Ficha en vivo: ${typeof window !== "undefined" ? window.location.origin : "https://cumpita.lovable.app"}/local/${p.id}?lat=${loc.lat}&lng=${loc.lng}\n📍 Google Maps: https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}\n🚗 Waze: https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`;
   };
 
   const openBell = async () => {
@@ -309,10 +313,10 @@ function Index() {
   }).filter((p) => (cat === "any" || p.category === cat)
     && (mode === "car" || p.dist <= WALK_RADIUS_M)
     && [...tagFilter].every((k) => tagsFor(p.id).some(([t]) => t === k))
-    && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa) && (filter !== "turno" || p.turno)
+    && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa) && (filter !== "turno" || p.turno) && (filter !== "fav" || favs.has(p.id))
     && (filter !== "night" || (p.category === "farmacia" ? p.turno || (p.liveTurno?.from === "00:00" && p.liveTurno?.to === "23:59") : p.cumpa?.status === "open")))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, live, loc, reports, now, filter, cat, mode, tagFilter, tags]);
+    .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, live, loc, reports, now, filter, cat, mode, tagFilter, tags, favs]);
   const enRouteName = enRoute ? places.find((p) => p.id === enRoute)?.name ?? null : null;
   const reasons = new Map(ai?.results.map((r) => [r.id, r.reason]) ?? []);
   const shown = ai ? ai.results.map((r) => list.find((p) => p.id === r.id)).filter((p): p is (typeof list)[number] => !!p) : list;
@@ -422,6 +426,7 @@ function Index() {
         )}
         <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
           <button className={chip(filter === "all")} onClick={() => setFilter("all")}>Todas</button>
+          <button className={`${chip(filter === "fav")} flex items-center gap-1`} onClick={() => setFilter("fav")}><Star className="h-3.5 w-3.5" />Favoritos</button>
           <button className={chip(filter === "open")} onClick={() => setFilter("open")}>Abiertas ahora</button>
           <button className={chip(filter === "confirmed")} onClick={() => setFilter("confirmed")}>Confirmadas por cumpitas</button>
           <button className={chip(filter === "turno")} onClick={() => setFilter("turno")}>De turno</button>
@@ -432,7 +437,7 @@ function Index() {
             <button onClick={() => setMode("walk")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "walk" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚶 A pie (&lt;800 m)</button>
             <button onClick={() => setMode("car")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "car" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚗 En auto</button>
           </div>
-          {(["card_ok", "reja", "sin_fila"] as TagKey[]).map((k) => (
+          {(["card_ok", "reja", "sin_fila", "hielo"] as TagKey[]).map((k) => (
             <button key={k} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}
               className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${tagFilter.has(k) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{TAGS[k]}</button>
           ))}
@@ -490,7 +495,7 @@ function Index() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                  <h2 className="truncate font-display text-lg font-bold">{p.name}</h2>
+                  <h2 className="flex min-w-0 items-center gap-1 font-display text-lg font-bold"><Link to="/local/$" params={{ _splat: p.id }} search={{ lat: loc.lat, lng: loc.lng }} className="truncate">{p.name}</Link><button aria-label={favs.has(p.id) ? "Quitar de favoritos" : "Guardar en favoritos"} onClick={() => toggleFav(p.id)} className={`shrink-0 ${favs.has(p.id) ? "text-star" : "text-muted-foreground"}`}><Star className="h-4 w-4" fill={favs.has(p.id) ? "currentColor" : "none"} /></button></h2>
                   <span className="shrink-0 font-display text-lg font-extrabold text-primary">{fmtDist(p.dist)}</span>
                 </div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">{p.category === "farmacia" ? "Farmacia" : "Botillería"}{i === 0 && !ai && " · la más cerca"}</p>
@@ -588,6 +593,7 @@ function Index() {
           ))}
         </div>
       </div>
+      <SuggestPlace city={loc.name} pos={userPos} />
       <div className="h-16" />
       <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: MINSAL (farmacias y horarios), SEREMI de Salud (turnos de Calama), OpenStreetMap y Google Places · <Link to="/revision" className="underline">Revisión de horarios</Link></p>
     </div>
