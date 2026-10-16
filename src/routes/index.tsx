@@ -13,6 +13,8 @@ import { isTurno, calamaTurnoHoy } from "@/lib/turnos";
 import { Siren, Sparkles, ShieldCheck, Scale, PencilLine } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { aiSearch } from "@/lib/ai-search.functions";
+import { startEnRoute, stopEnRoute, notifyClosed } from "@/lib/push.functions";
+import { enablePush, savedPushToken, pushMessage } from "@/lib/push-client";
 import { ProposeHours } from "@/components/ProposeHours";
 import type { User } from "@supabase/supabase-js";
 import { lazy, Suspense } from "react";
@@ -74,6 +76,10 @@ function Index() {
   const [mode, setMode] = useState<"walk" | "car">("car");
   const [tagFilter, setTagFilter] = useState<Set<TagKey>>(new Set());
   const [enRoute, setEnRoute] = useState<string | null>(null);
+  const arrived = useRef<Set<string>>(new Set());
+  const startRoute = useServerFn(startEnRoute);
+  const stopRoute = useServerFn(stopEnRoute);
+  const sendClosed = useServerFn(notifyClosed);
   const enRouteRef = useRef(enRoute); enRouteRef.current = enRoute;
 
   // Micro-reportes (pago, reja, fila) en vivo
@@ -173,6 +179,22 @@ function Index() {
     setNow(Date.now());
     if (user) void awardPoint(user);
     toast.success(user ? "¡Gracias! Tu reporte ya lo ven todos y sumaste un punto." : "¡Gracias! Tu reporte ya lo ven todos.");
+    if (status === "closed") void sendClosed({ data: { placeId, senderToken: savedPushToken() ?? undefined } }).catch(() => {});
+  };
+
+  const cancelRoute = () => {
+    setEnRoute(null);
+    const t = savedPushToken(); if (t) void stopRoute({ data: { token: t } }).catch(() => {});
+  };
+
+  const goTo = (placeId: string, placeName: string) => {
+    setEnRoute(placeId);
+    if (!gpsOn) locate();
+    toast(`Vas en camino a ${placeName}. Te avisamos si alguien reporta que cerró.`);
+    void enablePush().then(async (r) => {
+      if (r.status === "registered") await startRoute({ data: { token: r.token, placeId, placeName } });
+      else toast(pushMessage[r.status]);
+    }).catch(() => {});
   };
 
   const toggleSub = async (placeId: string, placeName: string) => {
@@ -309,6 +331,18 @@ function Index() {
       const me = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       setUserPos(me);
       const near = listRef.current.map((p) => ({ p, d: distanceM(me, p) })).filter((x) => x.d < 40).sort((a, b) => a.d - b.d)[0]?.p;
+      // Aviso de llegada: pregunta una vez por local si sigue abierto
+      if (near && !arrived.current.has(near.id)) {
+        arrived.current.add(near.id);
+        const recent = Date.now() - Number(localStorage.getItem(`cumpita-last-${near.id}`) || 0) < 10 * 60 * 1000;
+        if (enRouteRef.current === near.id) { setEnRoute(null); const t = savedPushToken(); if (t) void stopRoute({ data: { token: t } }); }
+        if (!recent) {
+          navigator.vibrate?.(200);
+          toast(`📍 Llegaste a ${near.name}. ¿Sigue abierto?`, { duration: 20000,
+            action: { label: "Sí, abierto", onClick: () => { void report(near.id, "open"); } },
+            cancel: { label: "Cerró", onClick: () => { void report(near.id, "closed"); } } });
+        }
+      }
       if (!near || near.cumpa || near.official !== null) { dwell.current = null; return; }
       if (dwell.current?.id !== near.id) { dwell.current = { id: near.id, since: Date.now(), done: false }; return; }
       if (!dwell.current.done && Date.now() - dwell.current.since >= 5 * 60 * 1000) {
@@ -398,7 +432,7 @@ function Index() {
               className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${tagFilter.has(k) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{TAGS[k]}</button>
           ))}
         </div>
-        {enRouteName && <p className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="truncate">🧭 En camino a {enRouteName}: te avisamos si cierra</span><button onClick={() => setEnRoute(null)} className="shrink-0 underline">Cancelar</button></p>}
+        {enRouteName && <p className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="truncate">🧭 En camino a {enRouteName}: te avisamos si cierra</span><button onClick={cancelRoute} className="shrink-0 underline">Cancelar</button></p>}
         <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
           {([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, l]) => (
             <button key={k} onClick={() => setCat(k)} className={`rounded-lg py-2 text-xs font-semibold ${cat === k ? "bg-card shadow-sm" : "text-muted-foreground"}`}>{l}</button>
@@ -504,7 +538,7 @@ function Index() {
             </div>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <a target="_blank" rel="noreferrer" onClick={() => { setEnRoute(p.id); toast(`Vas en camino a ${p.name}. Te avisamos si alguien reporta que cerró.`); }} href={`https://www.google.com/maps/dir/?api=1&destination=${p.pos.lat},${p.pos.lng}`}
+              <a target="_blank" rel="noreferrer" onClick={() => goTo(p.id, p.name)} href={`https://www.google.com/maps/dir/?api=1&destination=${p.pos.lat},${p.pos.lng}`}
                 className="flex items-center justify-center gap-1.5 rounded-lg bg-secondary py-2 text-sm font-semibold text-primary">
                 <Navigation className="h-4 w-4" /> Cómo llegar
               </a>
