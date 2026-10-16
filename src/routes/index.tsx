@@ -443,7 +443,6 @@ function Index() {
         <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
           <button onClick={() => setFiltersOpen((v) => !v)} className={`${chip(filtersOpen || tagFilter.size > 0 || mode === "walk")} flex items-center gap-1`}><SlidersHorizontal className="h-3.5 w-3.5" />Filtros{tagFilter.size + (mode === "walk" ? 1 : 0) > 0 ? ` · ${tagFilter.size + (mode === "walk" ? 1 : 0)}` : ""}</button>
           <button className={chip(filter === "all")} onClick={() => setFilter("all")}>Todas</button>
-          <button className={`${chip(filter === "fav")} flex items-center gap-1`} onClick={() => setFilter("fav")}><Star className="h-3.5 w-3.5" />Favoritos</button>
           <button className={chip(filter === "open")} onClick={() => setFilter("open")}>Abiertas ahora</button>
           <button className={chip(filter === "confirmed")} onClick={() => setFilter("confirmed")}>Confirmadas por cumpitas</button>
           <button className={chip(filter === "turno")} onClick={() => setFilter("turno")}>De turno</button>
