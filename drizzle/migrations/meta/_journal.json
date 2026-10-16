@@ -57,6 +57,13 @@
       "when": 1792113600503,
       "tag": "0007_places_cache",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792114700808,
+      "tag": "0008_night_tags_and_suggestions",
+      "breakpoints": true
     }
   ]
 }

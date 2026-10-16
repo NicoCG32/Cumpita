@@ -194,6 +194,54 @@ export type Database = {
         }
         Relationships: []
       }
+      place_suggestions: {
+        Row: {
+          address: string | null
+          category: string | null
+          city: string | null
+          created_at: string
+          id: string
+          kind: string
+          lat: number | null
+          lng: number | null
+          name: string | null
+          note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          address?: string | null
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          lat?: number | null
+          lng?: number | null
+          name?: string | null
+          note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          address?: string | null
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          lat?: number | null
+          lng?: number | null
+          name?: string | null
+          note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       place_tags: {
         Row: {
           created_at: string
