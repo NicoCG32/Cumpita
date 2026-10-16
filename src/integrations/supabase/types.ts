@@ -41,6 +41,33 @@ export type Database = {
         }
         Relationships: []
       }
+      en_route: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          place_id: string
+          place_name: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          place_id: string
+          place_name: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          place_id?: string
+          place_name?: string
+          token?: string
+        }
+        Relationships: []
+      }
       hours_proposals: {
         Row: {
           created_at: string
