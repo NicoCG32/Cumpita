@@ -17,6 +17,7 @@ import { startEnRoute, stopEnRoute, notifyClosed } from "@/lib/push.functions";
 import { enablePush, savedPushToken, pushMessage } from "@/lib/push-client";
 import { ProposeHours } from "@/components/ProposeHours";
 import { SuggestPlace } from "@/components/SuggestPlace";
+import { InstallBanner } from "@/components/InstallBanner";
 import { useFavorites } from "@/lib/favorites";
 import { Star } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
@@ -470,6 +471,7 @@ function Index() {
           </button>
         </form>
       </header>
+      <InstallBanner />
 
       <main className="space-y-3 px-4 pt-2">
         {offline && <p className="flex items-center gap-2 rounded-2xl bg-muted p-3 text-xs font-semibold text-muted-foreground"><WifiOff className="h-4 w-4" />Sin conexión: mostrando los últimos datos que cargamos.</p>}
