@@ -72,12 +72,48 @@ async function fromGoogle(lat: number, lng: number, key: string): Promise<Place[
   return [...ph.map((g) => map(g, "farmacia")), ...lq.map((g) => map(g, "botilleria"))];
 }
 
-async function base(lat: number, lng: number): Promise<Place[]> {
+const FRESH_MS = 6 * 60 * 60 * 1000;
+const mem = new Map<string, { at: number; places: Place[] }>();
+
+async function cacheGet(key: string): Promise<{ at: number; places: Place[] } | null> {
+  const m = mem.get(key);
+  if (m) return m;
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.from("places_cache").select("places, updated_at").eq("key", key).maybeSingle();
+    if (!data) return null;
+    const v = { at: new Date(data.updated_at).getTime(), places: data.places as unknown as Place[] };
+    mem.set(key, v);
+    return v;
+  } catch { return null; }
+}
+
+async function cacheSet(key: string, places: Place[]) {
+  mem.set(key, { at: Date.now(), places });
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("places_cache").upsert({ key, places: places as any, updated_at: new Date().toISOString() });
+  } catch { /* ignore */ }
+}
+
+async function fetchFresh(lat: number, lng: number): Promise<Place[]> {
   const key = process.env['GOOGLE_PLACES_API_KEY'];
   if (key) {
     try { return mergeMinsal(await fromGoogle(lat, lng, key)); } catch { /* fall back */ }
   }
-  try { return mergeMinsal(await fromOsm(lat, lng)); } catch (e) {
+  return mergeMinsal(await fromOsm(lat, lng));
+}
+
+async function base(lat: number, lng: number): Promise<Place[]> {
+  const ck = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+  const cached = await cacheGet(ck);
+  if (cached && Date.now() - cached.at < FRESH_MS) return cached.places;
+  try {
+    const fresh = await fetchFresh(lat, lng);
+    if (fresh.length) await cacheSet(ck, fresh);
+    return fresh;
+  } catch (e) {
+    if (cached) return cached.places;
     const official = mergeMinsal([]);
     if (official.length) return official;
     throw e;
