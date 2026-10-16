@@ -44,6 +44,7 @@ type TopCumpita = { user_id: string; nickname: string | null; points: number; re
 const fmtDist = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`);
 const ago = (ms: number) => { const m = Math.max(1, Math.round(ms / 60000)); return m < 60 ? `${m} min` : `${Math.round(m / 60)} h`; };
 const REPORT_RADIUS_M = 300;
+const WALK_RADIUS_M = 800;
 const CACHE_KEY = "cumpita-places-cache";
 
 const badgeFor = (points: number) =>
@@ -70,6 +71,10 @@ function Index() {
   const [nick, setNick] = useState("");
   const [editNick, setEditNick] = useState(false);
   const [view, setView] = useState<"feed" | "map">("feed");
+  const [mode, setMode] = useState<"walk" | "car">("car");
+  const [tagFilter, setTagFilter] = useState<Set<TagKey>>(new Set());
+  const [enRoute, setEnRoute] = useState<string | null>(null);
+  const enRouteRef = useRef(enRoute); enRouteRef.current = enRoute;
 
   // Micro-reportes (pago, reja, fila) en vivo
   useEffect(() => {
@@ -115,6 +120,12 @@ function Index() {
         (payload) => {
           const r = payload.new as { place_id: string; status: string; created_at: string };
           setReports((prev) => [...prev, toReport(r)]);
+          if (r.status === "closed" && enRouteRef.current === r.place_id) {
+            const name = listRef.current.find((p) => p.id === r.place_id)?.name ?? "El local";
+            navigator.vibrate?.([300, 150, 300]);
+            toast.error(`¡Ojo! Acaban de reportar que ${name} cerró mientras ibas en camino.`, { duration: 15000 });
+            setEnRoute(null);
+          }
           if (r.status === "open" && user && subsRef.current.has(r.place_id)) {
             const name = listRef.current.find((p) => p.id === r.place_id)?.name ?? "Un local";
             toast.success(`🔔 ${name} acaba de ser reportado abierto`);
@@ -213,13 +224,14 @@ function Index() {
     return [...m.entries()];
   };
 
-  const shareText = (p: { name: string; street?: string | null; lat: number; lng: number; category: string; cumpa: ReturnType<typeof cumpitaStatus>; turno: boolean }) => {
+  const shareText = (p: { id: string; name: string; street?: string | null; lat: number; lng: number; category: string; cumpa: ReturnType<typeof cumpitaStatus>; turno: boolean }) => {
     const kind = p.category === "farmacia" ? "La farmacia" : "La botillería";
     const where = p.street ? ` (${p.street})` : "";
     const st = p.cumpa
       ? `está ${p.cumpa.status === "open" ? "abierta" : "cerrada"} (confirmado hace ${ago(now - p.cumpa.last)} por ${p.cumpa.count} cumpita${p.cumpa.count > 1 ? "s" : ""})`
       : p.turno ? "está de turno hoy" : "está cerca";
-    return `Wena, ${kind} ${p.name}${where} ${st} en cumpita. 📍 https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+    const tg = tagsFor(p.id).map(([k]) => TAGS[k]).join(" · ");
+    return `Wena, ${kind} ${p.name}${where} ${st} en cumpita.${tg ? `\n${tg}` : ""}\n📍 Google Maps: https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}\n🚗 Waze: https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`;
   };
 
   const openBell = async () => {
@@ -268,9 +280,13 @@ function Index() {
     const turno = live ? !!p.liveTurno : isTurno(p, new Date(now));
     return { ...p, dist: distanceM(loc, pos), pos, cumpa, official, turno, effectiveOpen: cumpa ? cumpa.status === "open" : official === true };
   }).filter((p) => (cat === "any" || p.category === cat)
+    && (mode === "car" || p.dist <= WALK_RADIUS_M)
+    && [...tagFilter].every((k) => tagsFor(p.id).some(([t]) => t === k))
     && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa) && (filter !== "turno" || p.turno)
     && (filter !== "night" || (p.category === "farmacia" ? p.turno || (p.liveTurno?.from === "00:00" && p.liveTurno?.to === "23:59") : p.cumpa?.status === "open")))
-    .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, live, loc, reports, now, filter, cat]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, live, loc, reports, now, filter, cat, mode, tagFilter, tags]);
+  const enRouteName = enRoute ? places.find((p) => p.id === enRoute)?.name ?? null : null;
   const reasons = new Map(ai?.results.map((r) => [r.id, r.reason]) ?? []);
   const shown = ai ? ai.results.map((r) => list.find((p) => p.id === r.id)).filter((p): p is (typeof list)[number] => !!p) : list;
   const askAi = async (e: React.FormEvent) => {
@@ -372,6 +388,17 @@ function Index() {
           <button className={chip(filter === "turno")} onClick={() => setFilter("turno")}>De turno</button>
           <button className={`${chip(filter === "night")} flex items-center gap-1`} onClick={() => setFilter("night")}><Moon className="h-3.5 w-3.5" />Modo madrugada</button>
         </div>
+        <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1">
+          <div className="flex shrink-0 rounded-full bg-secondary p-0.5">
+            <button onClick={() => setMode("walk")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "walk" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚶 A pie (&lt;800 m)</button>
+            <button onClick={() => setMode("car")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "car" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚗 En auto</button>
+          </div>
+          {(["card_ok", "reja", "sin_fila"] as TagKey[]).map((k) => (
+            <button key={k} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${tagFilter.has(k) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{TAGS[k]}</button>
+          ))}
+        </div>
+        {enRouteName && <p className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="truncate">🧭 En camino a {enRouteName}: te avisamos si cierra</span><button onClick={() => setEnRoute(null)} className="shrink-0 underline">Cancelar</button></p>}
         <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
           {([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, l]) => (
             <button key={k} onClick={() => setCat(k)} className={`rounded-lg py-2 text-xs font-semibold ${cat === k ? "bg-card shadow-sm" : "text-muted-foreground"}`}>{l}</button>
@@ -477,7 +504,7 @@ function Index() {
             </div>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/dir/?api=1&destination=${p.pos.lat},${p.pos.lng}`}
+              <a target="_blank" rel="noreferrer" onClick={() => { setEnRoute(p.id); toast(`Vas en camino a ${p.name}. Te avisamos si alguien reporta que cerró.`); }} href={`https://www.google.com/maps/dir/?api=1&destination=${p.pos.lat},${p.pos.lng}`}
                 className="flex items-center justify-center gap-1.5 rounded-lg bg-secondary py-2 text-sm font-semibold text-primary">
                 <Navigation className="h-4 w-4" /> Cómo llegar
               </a>
