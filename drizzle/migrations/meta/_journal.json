@@ -43,6 +43,13 @@
       "when": 1792110976504,
       "tag": "0005_en_route_push",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792112995643,
+      "tag": "0006_security_hardening",
+      "breakpoints": true
     }
   ]
 }
