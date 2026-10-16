@@ -22,7 +22,7 @@ import { Star } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { lazy, Suspense } from "react";
 import { ClientOnly } from "@tanstack/react-router";
-import { List, Map as MapIcon } from "lucide-react";
+import { List, Map as MapIcon, SlidersHorizontal, Sun, ChevronDown, MoreHorizontal } from "lucide-react";
 const MapView = lazy(() => import("@/components/MapView"));
 
 export const Route = createFileRoute("/")({
@@ -83,7 +83,17 @@ function Index() {
   const [tags, setTags] = useState<TagRow[]>([]);
   const [nick, setNick] = useState("");
   const [editNick, setEditNick] = useState(false);
-  const [view, setView] = useState<"feed" | "map">("feed");
+  const [view, setView] = useState<"feed" | "map" | "rank">("feed");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [more, setMore] = useState<string | null>(null);
+  const [dark, setDark] = useState<boolean | null>(null);
+  useEffect(() => {
+    const saved = localStorage.getItem("cumpita-theme");
+    const h = new Date().getHours();
+    setDark(saved ? saved === "dark" : h >= 20 || h < 7 || window.matchMedia("(prefers-color-scheme: dark)").matches);
+  }, []);
+  useEffect(() => { if (dark !== null) document.documentElement.classList.toggle("dark", dark); }, [dark]);
+  const toggleDark = () => setDark((d) => { const n = !d; localStorage.setItem("cumpita-theme", n ? "dark" : "light"); navigator.vibrate?.(10); return n; });
   const [mode, setMode] = useState<"walk" | "car">("car");
   const [tagFilter, setTagFilter] = useState<Set<TagKey>>(new Set());
   const [enRoute, setEnRoute] = useState<string | null>(null);
@@ -385,8 +395,9 @@ function Index() {
       <Toaster position="top-center" />
       <header className="sticky top-0 z-10 bg-background/90 px-4 pb-3 pt-5 backdrop-blur">
         <div className="flex items-center justify-between">
-          <h1 className="font-display text-3xl font-extrabold tracking-tight">cumpita<span className="text-primary">.</span></h1>
-          <div className="flex items-center gap-2">
+          <h1 className="font-display text-2xl font-extrabold tracking-tight">cumpita<span className="text-primary">.</span></h1>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <button onClick={toggleDark} className="flex items-center rounded-full bg-secondary p-2" aria-label="Cambiar tema">{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
             {user
               ? <button onClick={() => supabase.auth.signOut()} className="flex items-center rounded-full bg-secondary p-2" aria-label="Salir"><LogOut className="h-4 w-4" /></button>
               : <button onClick={signIn} className="flex items-center gap-1 rounded-full bg-primary px-3 py-2 text-xs font-bold text-primary-foreground"><LogIn className="h-4 w-4" />Entrar</button>}
@@ -395,7 +406,7 @@ function Index() {
               {unread > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">{unread}</span>}
             </button>
             <button onClick={locate} className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-2 text-xs font-semibold">
-              <LocateFixed className="h-4 w-4 text-primary" />{locating ? "Buscando…" : gpsOn ? "GPS activo" : "Usar GPS"}
+              <LocateFixed className={`h-4 w-4 ${gpsOn ? "text-open" : "text-primary"} ${locating ? "animate-pulse" : ""}`} />{locating ? "…" : gpsOn ? "GPS" : "GPS"}
             </button>
           </div>
         </div>
@@ -410,7 +421,7 @@ function Index() {
           </div>
         )}
         <button onClick={() => setZoneOpen((v) => !v)} className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4" /> Cerca de <span className="font-semibold text-foreground underline decoration-primary decoration-2 underline-offset-4">{loc.name}</span>
+          <MapPin className="h-4 w-4" /> Cerca de <span className="truncate font-semibold text-foreground">{loc.name}</span><ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${zoneOpen ? "rotate-180" : ""}`} />
         </button>
         {zoneOpen && (
           <div className="mt-2 flex flex-wrap gap-2">
@@ -424,7 +435,13 @@ function Index() {
             ))}
           </div>
         )}
-        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
+        <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
+          {([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, l]) => (
+            <button key={k} onClick={() => setCat(k)} className={`rounded-lg py-2 text-xs font-semibold ${cat === k ? "bg-card shadow-sm" : "text-muted-foreground"}`}>{l}</button>
+          ))}
+        </div>
+        <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+          <button onClick={() => setFiltersOpen((v) => !v)} className={`${chip(filtersOpen || tagFilter.size > 0 || mode === "walk")} flex items-center gap-1`}><SlidersHorizontal className="h-3.5 w-3.5" />Filtros{tagFilter.size + (mode === "walk" ? 1 : 0) > 0 ? ` · ${tagFilter.size + (mode === "walk" ? 1 : 0)}` : ""}</button>
           <button className={chip(filter === "all")} onClick={() => setFilter("all")}>Todas</button>
           <button className={`${chip(filter === "fav")} flex items-center gap-1`} onClick={() => setFilter("fav")}><Star className="h-3.5 w-3.5" />Favoritos</button>
           <button className={chip(filter === "open")} onClick={() => setFilter("open")}>Abiertas ahora</button>
@@ -432,7 +449,7 @@ function Index() {
           <button className={chip(filter === "turno")} onClick={() => setFilter("turno")}>De turno</button>
           <button className={`${chip(filter === "night")} flex items-center gap-1`} onClick={() => setFilter("night")}><Moon className="h-3.5 w-3.5" />Modo madrugada</button>
         </div>
-        <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1">
+        {filtersOpen && <div className="animate-fade-up -mx-4 mt-2 flex flex-wrap gap-2 px-4 pb-1">
           <div className="flex shrink-0 rounded-full bg-secondary p-0.5">
             <button onClick={() => setMode("walk")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "walk" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚶 A pie (&lt;800 m)</button>
             <button onClick={() => setMode("car")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "car" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚗 En auto</button>
@@ -441,15 +458,10 @@ function Index() {
             <button key={k} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}
               className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${tagFilter.has(k) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{TAGS[k]}</button>
           ))}
-        </div>
+        </div>}
         {enRouteName && <p className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="truncate">🧭 En camino a {enRouteName}: te avisamos si cierra</span><button onClick={cancelRoute} className="shrink-0 underline">Cancelar</button></p>}
-        <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
-          {([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setCat(k)} className={`rounded-lg py-2 text-xs font-semibold ${cat === k ? "bg-card shadow-sm" : "text-muted-foreground"}`}>{l}</button>
-          ))}
-        </div>
         <form onSubmit={askAi} className="mt-2 flex gap-2">
-          <input value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="Ej: necesito paracetamol ahora, o algo abierto pasadas las 12"
+          <input aria-label="Buscar con IA" value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="¿Qué necesitas? Ej: paracetamol ahora"
             className="min-w-0 flex-1 rounded-xl border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
           <button disabled={aiBusy || isLoading} className="flex items-center gap-1 rounded-xl bg-primary px-3 text-sm font-bold text-primary-foreground disabled:opacity-60">
             {aiBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}Buscar
@@ -477,18 +489,22 @@ function Index() {
           {shown.length === 0 && <p className="mt-1 text-muted-foreground">Ningún local cercano calza con lo que buscas.</p>}
           <button onClick={() => { setAi(null); setQ(""); }} className="mt-1 text-xs font-semibold text-primary underline">Ver todos los locales</button>
         </div>}
-        {isLoading && <p className="flex items-center justify-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" />Buscando locales reales cerca…</p>}
+        {isLoading && [0, 1, 2].map((i) => (
+          <div key={i} className="rounded-2xl border bg-card p-4" aria-hidden>
+            <div className="flex gap-3"><div className="shimmer h-11 w-11 rounded-xl" /><div className="flex-1 space-y-2"><div className="shimmer h-4 w-2/3 rounded" /><div className="shimmer h-3 w-1/3 rounded" /><div className="shimmer h-3 w-1/2 rounded" /></div></div>
+            <div className="shimmer mt-3 h-16 rounded-xl" />
+          </div>))}
         {isError && !offline && <div className="py-16 text-center text-muted-foreground"><p>No pudimos cargar los locales.</p><button onClick={() => refetch()} className="mt-3 font-semibold text-primary">Reintentar</button></div>}
         {!isLoading && !isError && !ai && list.length === 0 && <p className="py-16 text-center text-muted-foreground">Nada por aquí con esos filtros.</p>}
-        {view === "map" && !isLoading && (
+        {view === "map" && !isLoading && (<div className="animate-fade-up">
           <ClientOnly fallback={<div className="h-[65vh] rounded-2xl bg-muted" />}>
             <Suspense fallback={<div className="flex h-[65vh] items-center justify-center rounded-2xl bg-muted"><Loader2 className="h-5 w-5 animate-spin" /></div>}>
               <MapView places={shown} origin={userPos ?? loc} />
             </Suspense>
-          </ClientOnly>
+          </ClientOnly></div>
         )}
-        {view === "feed" && shown.map((p, i) => (
-          <article key={p.id} className="rounded-2xl border bg-card p-4 shadow-sm">
+        {view === "feed" && !isLoading && shown.map((p, i) => (
+          <article key={p.id} style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }} className={`animate-fade-up rounded-2xl border border-l-4 bg-card p-4 shadow-sm ${p.turno ? "border-l-closed" : p.cumpa ? (p.cumpa.status === "open" ? "border-l-open" : "border-l-closed opacity-80") : p.official ? "border-l-open/50" : "border-l-border"}`}>
             <div className="flex items-start gap-3">
               <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${p.category === "farmacia" ? "bg-pharmacy/15 text-pharmacy" : "bg-liquor/15 text-liquor"}`}>
                 {p.category === "farmacia" ? <Pill className="h-5 w-5" /> : <Wine className="h-5 w-5" />}
@@ -544,10 +560,10 @@ function Index() {
 
             <div className="mt-2">
               {tagsFor(p.id).length > 0 && <div className="flex flex-wrap gap-1">{tagsFor(p.id).map(([k, n]) => <span key={k} className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">{TAGS[k]}{n > 1 ? ` ×${n}` : ""}</span>)}</div>}
-              {canReport(p) && <div className="-mx-1 mt-1.5 flex gap-1 overflow-x-auto px-1">{(Object.keys(TAGS) as TagKey[]).map((k) => <button key={k} onClick={() => addTag(p.id, k)} className="shrink-0 rounded-full border px-2 py-1 text-xs text-muted-foreground active:scale-95">{TAGS[k]}</button>)}</div>}
+              {canReport(p) && more === p.id && <div className="-mx-1 mt-1.5 flex gap-1 overflow-x-auto px-1">{(Object.keys(TAGS) as TagKey[]).map((k) => <button key={k} onClick={() => addTag(p.id, k)} className="shrink-0 rounded-full border px-2 py-1 text-xs text-muted-foreground active:scale-95">{TAGS[k]}</button>)}</div>}
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-2">
               <a target="_blank" rel="noreferrer" onClick={() => goTo(p.id, p.name)} href={`https://www.google.com/maps/dir/?api=1&destination=${p.pos.lat},${p.pos.lng}`}
                 className="flex items-center justify-center gap-1.5 rounded-lg bg-secondary py-2 text-sm font-semibold text-primary">
                 <Navigation className="h-4 w-4" /> Cómo llegar
@@ -556,14 +572,16 @@ function Index() {
                 className="flex items-center justify-center gap-1.5 rounded-lg bg-open/15 py-2 text-sm font-semibold text-open">
                 <Share2 className="h-4 w-4" /> WhatsApp
               </a>
+              <button aria-label="Más opciones" onClick={() => setMore((m) => m === p.id ? null : p.id)} className={`flex items-center justify-center rounded-lg px-3 ${more === p.id ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}><MoreHorizontal className="h-4 w-4" /></button>
             </div>
-            {p.category === "botilleria" && (proposing === p.id
+            {more === p.id && p.category === "botilleria" && (proposing === p.id
               ? <ProposeHours placeId={p.id} placeName={p.name} onDone={() => setProposing(null)} />
               : <button onClick={() => setProposing(p.id)} className="mt-2 flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-muted-foreground"><PencilLine className="h-3.5 w-3.5" />{p.hoursKind === "confirmed" ? "¿Cambió el horario? Propón una corrección" : "¿Conoces el horario real? Propónlo"}</button>)}
           </article>
         ))}
 
-        {top.length > 0 && (
+        {view === "rank" && top.length === 0 && <p className="py-16 text-center text-muted-foreground">Aún no hay ranking. ¡Reporta un local y sé el primero!</p>}
+        {view === "rank" && top.length > 0 && (
           <section className="rounded-2xl border bg-card p-4">
             <p className="flex items-center gap-2 font-display text-lg font-bold"><Trophy className="h-5 w-5 text-primary" />Top cumpitas</p>
             {myPoints && <p className="mt-1 text-xs text-muted-foreground">Tú: {badgeFor(myPoints.points)} · {myPoints.points} puntos</p>}
@@ -584,15 +602,18 @@ function Index() {
           </section>
         )}
       </main>
-      <div className="fixed inset-x-0 bottom-4 z-[500] flex justify-center">
-        <div className="flex rounded-full border bg-card p-1 shadow-lg">
-          {(["feed", "map"] as const).map((v) => (
-            <button key={v} onClick={() => setView(v)} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold ${view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-              {v === "feed" ? <List className="h-4 w-4" /> : <MapIcon className="h-4 w-4" />}{v === "feed" ? "Lista" : "Mapa"}
-            </button>
-          ))}
+      <nav className="fixed inset-x-0 bottom-0 z-[500] border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+        <div className="mx-auto grid max-w-md grid-cols-4">
+          {([["feed", "Locales", List], ["map", "Mapa", MapIcon], ["fav", "Favoritos", Star], ["rank", "Ranking", Trophy]] as const).map(([k, l, Icon]) => {
+            const active = k === "fav" ? view === "feed" && filter === "fav" : k === "feed" ? view === "feed" && filter !== "fav" : view === k;
+            return (
+              <button key={k} onClick={() => { navigator.vibrate?.(8); if (k === "fav") { setView("feed"); setFilter("fav"); } else { if (k === "feed" && filter === "fav") setFilter("all"); setView(k); } window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold transition-colors ${active ? "text-primary" : "text-muted-foreground"}`}>
+                <Icon className={`h-5 w-5 transition-transform ${active ? "scale-110" : ""}`} />{l}
+              </button>);
+          })}
         </div>
-      </div>
+      </nav>
       <SuggestPlace city={loc.name} pos={userPos ?? { lat: loc.lat, lng: loc.lng }} places={places} />
       <div className="h-16" />
       <p className="px-4 pt-6 text-center text-xs text-muted-foreground">Datos: MINSAL (farmacias y horarios), SEREMI de Salud (turnos de Calama), OpenStreetMap y Google Places · <Link to="/revision" className="underline">Revisión de horarios</Link></p>
