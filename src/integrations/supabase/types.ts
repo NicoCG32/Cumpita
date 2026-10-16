@@ -48,6 +48,7 @@ export type Database = {
           id: string
           place_id: string
           place_name: string
+          secret: string
           token: string
         }
         Insert: {
@@ -56,6 +57,7 @@ export type Database = {
           id?: string
           place_id: string
           place_name: string
+          secret: string
           token: string
         }
         Update: {
@@ -64,6 +66,7 @@ export type Database = {
           id?: string
           place_id?: string
           place_name?: string
+          secret?: string
           token?: string
         }
         Relationships: []
@@ -238,6 +241,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_point: { Args: never; Returns: undefined }
+      get_leaderboard: {
+        Args: never
+        Returns: {
+          is_me: boolean
+          nickname: string
+          points: number
+          reports_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
