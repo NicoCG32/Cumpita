@@ -42,7 +42,7 @@ type TagKey = keyof typeof TAGS;
 type TagRow = { place_id: string; tag: string; created_at: string };
 const TAG_TTL_MS = 3 * 60 * 60 * 1000;
 type Alert = { id: string; place_name: string; status: string; created_at: string; read_at: string | null };
-type TopCumpita = { user_id: string; nickname: string | null; points: number; reports_count: number };
+type TopCumpita = { nickname: string | null; points: number; reports_count: number; is_me: boolean | null };
 const fmtDist = (m: number) => (m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`);
 const ago = (ms: number) => { const m = Math.max(1, Math.round(ms / 60000)); return m < 60 ? `${m} min` : `${Math.round(m / 60)} h`; };
 const REPORT_RADIUS_M = 300;
@@ -99,8 +99,7 @@ function Index() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
-    supabase.from("cumpita_points").select("user_id,nickname,points,reports_count")
-      .order("points", { ascending: false }).limit(10)
+    supabase.rpc("get_leaderboard")
       .then(({ data }) => { if (data) setTop(data as TopCumpita[]); });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -158,14 +157,10 @@ function Index() {
   };
 
   const awardPoint = async (u: User) => {
-    const { data } = await supabase.from("cumpita_points").select("points,reports_count").eq("user_id", u.id).maybeSingle();
-    if (data) {
-      await supabase.from("cumpita_points").update({ points: data.points + 1, reports_count: data.reports_count + 1, updated_at: new Date().toISOString() }).eq("user_id", u.id);
-    } else {
-      const nickname = u.email?.split("@")[0]?.slice(0, 20) || "Cumpita";
-      await supabase.from("cumpita_points").insert({ user_id: u.id, nickname, points: 1, reports_count: 1 });
-    }
-    const { data: t } = await supabase.from("cumpita_points").select("user_id,nickname,points,reports_count").order("points", { ascending: false }).limit(10);
+    const { data } = await supabase.from("cumpita_points").select("id").eq("user_id", u.id).maybeSingle();
+    if (!data) await supabase.from("cumpita_points").insert({ user_id: u.id, nickname: u.email?.split("@")[0]?.slice(0, 20) || "Cumpita" });
+    await supabase.rpc("award_point");
+    const { data: t } = await supabase.rpc("get_leaderboard");
     if (t) setTop(t as TopCumpita[]);
   };
 
@@ -184,7 +179,7 @@ function Index() {
 
   const cancelRoute = () => {
     setEnRoute(null);
-    const t = savedPushToken(); if (t) void stopRoute({ data: { token: t } }).catch(() => {});
+    const t = savedPushToken(), sc = localStorage.getItem("cumpita-route-secret"); if (t && sc) void stopRoute({ data: { token: t, secret: sc } }).catch(() => {});
   };
 
   const goTo = (placeId: string, placeName: string) => {
@@ -192,7 +187,10 @@ function Index() {
     if (!gpsOn) locate();
     toast(`Vas en camino a ${placeName}. Te avisamos si alguien reporta que cerró.`);
     void enablePush().then(async (r) => {
-      if (r.status === "registered") await startRoute({ data: { token: r.token, placeId, placeName } });
+      if (r.status === "registered") {
+        const res = await startRoute({ data: { token: r.token, placeId, placeName, secret: localStorage.getItem("cumpita-route-secret") ?? undefined } });
+        if (res.secret) localStorage.setItem("cumpita-route-secret", res.secret);
+      }
       else toast(pushMessage[r.status]);
     }).catch(() => {});
   };
@@ -224,10 +222,10 @@ function Index() {
     const { data: ex } = await supabase.from("cumpita_points").select("id").eq("user_id", user.id).maybeSingle();
     const { error } = ex
       ? await supabase.from("cumpita_points").update({ nickname: n }).eq("user_id", user.id)
-      : await supabase.from("cumpita_points").insert({ user_id: user.id, nickname: n, points: 0, reports_count: 0 });
+      : await supabase.from("cumpita_points").insert({ user_id: user.id, nickname: n });
     if (error) { toast.error("No se pudo guardar tu apodo."); return; }
     setEditNick(false); toast.success(`Listo, ahora eres ${n}.`);
-    const { data: t } = await supabase.from("cumpita_points").select("user_id,nickname,points,reports_count").order("points", { ascending: false }).limit(10);
+    const { data: t } = await supabase.rpc("get_leaderboard");
     if (t) setTop(t as TopCumpita[]);
   };
 
@@ -335,7 +333,7 @@ function Index() {
       if (near && !arrived.current.has(near.id)) {
         arrived.current.add(near.id);
         const recent = Date.now() - Number(localStorage.getItem(`cumpita-last-${near.id}`) || 0) < 10 * 60 * 1000;
-        if (enRouteRef.current === near.id) { setEnRoute(null); const t = savedPushToken(); if (t) void stopRoute({ data: { token: t } }); }
+        if (enRouteRef.current === near.id) { setEnRoute(null); const t = savedPushToken(), sc = localStorage.getItem("cumpita-route-secret"); if (t && sc) void stopRoute({ data: { token: t, secret: sc } }); }
         if (!recent) {
           navigator.vibrate?.(200);
           toast(`📍 Llegaste a ${near.name}. ¿Sigue abierto?`, { duration: 20000,
@@ -362,7 +360,7 @@ function Index() {
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("es-CL", { day: "numeric", month: "short", year: "numeric" });
   const cityName = loc.lat > -25 ? "Calama" : "La Serena";
   const unread = alerts.filter((a) => !a.read_at).length;
-  const myPoints = user ? top.find((t) => t.user_id === user.id) : null;
+  const myPoints = user ? top.find((t) => t.is_me) : null;
 
   // Anti-trolling: solo se puede reportar estando a menos de 300 m del local (con GPS activo)
   const canReport = (p: (typeof list)[number]) => userPos != null && distanceM(userPos, p) <= REPORT_RADIUS_M;
@@ -562,9 +560,9 @@ function Index() {
               : <button onClick={() => { setNick(myPoints?.nickname ?? ""); setEditNick(true); }} className="mt-1 text-xs font-semibold text-primary underline">Cambiar mi apodo</button>)}
             <ol className="mt-2 space-y-1.5">
               {top.map((t, i) => (
-                <li key={t.user_id} className="flex items-center gap-2 text-sm">
+                <li key={i} className="flex items-center gap-2 text-sm">
                   <span className="w-5 text-center font-bold text-muted-foreground">{i + 1}</span>
-                  <span className="min-w-0 flex-1 truncate font-semibold">{t.nickname ?? "Cumpita"}{user && t.user_id === user.id ? " (tú)" : ""}</span>
+                  <span className="min-w-0 flex-1 truncate font-semibold">{t.nickname ?? "Cumpita"}{t.is_me ? " (tú)" : ""}</span>
                   <span className="text-xs text-muted-foreground">{badgeFor(t.points)}</span>
                   <span className="font-display font-extrabold text-primary">{t.points}</span>
                 </li>
