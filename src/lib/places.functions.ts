@@ -4,7 +4,7 @@ import { distanceM, type Place } from "./places";
 import { mergeMinsal, minsalPlaces } from "./turnos";
 import { applyHours, type ApprovedHours } from "./botillerias";
 import { liveTurnos, mergeTurnos } from "./turnos-live";
-import { asCategory, CATEGORIES, osmCategory } from "./categories";
+import { asCategory, osmCategory } from "./categories";
 
 const MIRRORS = [
   "https://overpass.kumi.systems/api/interpreter",
@@ -37,7 +37,7 @@ async function fromOsm(lat: number, lng: number): Promise<Place[]> {
       const category = osmCategory(t);
       if (!category) return null;
       const street = [t["addr:street"], t["addr:housenumber"]].filter(Boolean).join(" ");
-      const name = t.amenity === "fuel" ? [t.brand || t.name || "Servicentro", t["shop:name"] || (t.shop === "convenience" ? "tienda" : "")].filter(Boolean).join(" · ") : t.name || t.brand || CATEGORIES[category].label;
+      const name = t.amenity === "fuel" ? [t.brand || t.name || "Servicentro", t["shop:name"] || (t.shop === "convenience" ? "tienda" : "")].filter(Boolean).join(" · ") : t.name || t.brand || ({ farmacia: "Farmacia", botilleria: "Botillería", libreria: "Librería", minimarket: "Almacén" } as const)[category];
       return {
         id: `${e.type}/${e.id}`, name,
         category, street: street || null, city: t["addr:city"] || null,

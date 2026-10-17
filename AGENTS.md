@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep main-screen account, location changes, and advanced filters in controlled bottom sheets using shared Sheet and Button components; this preserves feed space and accessible dismissal.
+- Place categories and their labels live in src/lib/categories.ts (CATEGORIES, osmCategory); add new categories there so feed, map, suggestions and detail stay consistent.
