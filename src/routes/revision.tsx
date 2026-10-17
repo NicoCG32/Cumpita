@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { catLabel } from "@/lib/categories";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import type { Tables } from "@/integrations/supabase/types";
@@ -111,7 +112,7 @@ function Revision() {
           <h2 className="pt-4 font-display text-xl font-extrabold">Locales que faltan e ideas ({sugs.length})</h2>
           {sugs.map((g) => (
             <article key={g.id} className="rounded-2xl border bg-card p-4 text-sm shadow-sm">
-              <p className="text-xs font-bold uppercase text-muted-foreground">{g.kind === "missing" ? `Local que falta · ${g.category === "farmacia" ? "Farmacia" : "Botillería"}` : "Idea o error"} · {g.city}</p>
+              <p className="text-xs font-bold uppercase text-muted-foreground">{g.kind === "missing" ? `Local que falta · ${catLabel(g.category ?? "")}` : "Idea o error"} · {g.city}</p>
               {g.name && <h3 className="font-display text-lg font-bold">{g.name}</h3>}
               {g.address && <p>{g.address}</p>}
               {g.note && <p className="mt-2 rounded-lg bg-muted p-2">{g.note}</p>}

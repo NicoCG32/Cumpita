@@ -27,6 +27,8 @@ import { lazy, Suspense } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import { List, Map as MapIcon, SlidersHorizontal, Sun, ChevronDown, MoreHorizontal, Search, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PLACE_TAGS } from "@/lib/tags";
+import { CATEGORIES, CATEGORY_KEYS } from "@/lib/categories";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 const MapView = lazy(() => import("@/components/MapView"));
 
@@ -52,7 +54,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Filter = "all" | "open" | "confirmed" | "turno" | "night" | "fav";
-const TAGS = { card_ok: "💳 Pasa Redcompra/transferencia", cash_only: "💵 Solo efectivo", reja: "🔒 Atienden por reja", fila: "⏳ Hay fila", sin_fila: "⚡ Sin fila", hielo: "🧊 Hay hielo", cigarros: "🚬 Hay cigarros", promo: "🏷️ Buena promo" } as const;
+const TAGS = PLACE_TAGS;
 type TagKey = keyof typeof TAGS;
 type TagRow = { place_id: string; tag: string; created_at: string };
 const TAG_TTL_MS = 3 * 60 * 60 * 1000;
@@ -473,7 +475,7 @@ function Index() {
           <h3 className="mb-2 mt-5 text-sm font-semibold">Distancia</h3>
           <div className="flex gap-2"><Button variant={mode === "walk" ? "default" : "secondary"} onClick={() => setMode("walk")}>A pie (&lt;800 m)</Button><Button variant={mode === "car" ? "default" : "secondary"} onClick={() => setMode("car")}>En auto</Button></div>
           <h3 className="mb-2 mt-5 text-sm font-semibold">Lo que necesitas</h3>
-          <div className="flex flex-wrap gap-2">{(["card_ok", "cash_only", "reja", "sin_fila", "hielo", "cigarros", "promo"] as TagKey[]).map((k) => <Button key={k} size="sm" variant={tagFilter.has(k) ? "default" : "secondary"} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}>{TAGS[k]}</Button>)}</div>
+          <div className="flex flex-wrap gap-2">{(["card_ok", "cash_only", "reja", "sin_fila", "hielo", "cigarros", "promo", "cartulinas", "fotocopias", "pan", "carbon"] as TagKey[]).map((k) => <Button key={k} size="sm" variant={tagFilter.has(k) ? "default" : "secondary"} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}>{TAGS[k]}</Button>)}</div>
           <div className="mt-6 flex gap-2"><Button variant="ghost" onClick={() => { setFilter("all"); setTagFilter(new Set()); setMode("car"); }}>Limpiar</Button><Button className="flex-1" onClick={() => setFiltersOpen(false)}>Ver locales</Button></div>
         </SheetContent>
       </Sheet>
@@ -481,7 +483,7 @@ function Index() {
         {bellOpen && <section className="mb-3 border-b pb-3 text-sm" aria-label="Tus avisos"><p className="font-semibold">Tus avisos</p>{!user && <Button variant="link" size="sm" onClick={signIn}>Vincular con Google para recibir avisos</Button>}{user && alerts.length === 0 && <p className="mt-1 text-xs text-muted-foreground">Sin avisos todavía.</p>}{alerts.slice(0, 10).map((a) => <p key={a.id} className="mt-1.5 text-xs">{a.place_name}: {a.status === "open" ? "abierto" : "cerrado"} hace {ago(now - new Date(a.created_at).getTime())}</p>)}</section>}
         {view !== "rank" && <>
           <div className="flex items-center gap-1">
-            <div className="flex min-w-0 flex-1 gap-1">{([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, label]) => <Button key={k} variant={cat === k ? "secondary" : "ghost"} size="sm" className="min-w-0 flex-1 px-2" onClick={() => setCat(k)}>{label}</Button>)}</div>
+            <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto [scrollbar-width:none]">{([["any", "Todo"], ...CATEGORY_KEYS.map((k) => [k, `${CATEGORIES[k].emoji} ${CATEGORIES[k].short}`])] as [typeof cat, string][]).map(([k, label]) => <Button key={k} variant={cat === k ? "secondary" : "ghost"} size="sm" className="shrink-0 px-2.5" onClick={() => setCat(k)}>{label}</Button>)}</div>
             <Button variant="ghost" size="icon" onClick={() => setSearchOpen((v) => !v)} aria-label="Buscar locales" aria-expanded={searchOpen} title="Buscar locales"><Search /></Button>
             <Button variant="ghost" size="icon" className="relative" onClick={() => setFiltersOpen(true)} aria-label="Filtrar locales" title="Filtrar locales"><SlidersHorizontal />{(filter !== "all" || tagFilter.size > 0 || mode === "walk") && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary" />}</Button>
           </div>
@@ -501,13 +503,13 @@ function Index() {
               <p key={i} className="truncate">Hace {ago(now - r.ts)} un cumpita confirmó <b className={r.status === "open" ? "text-open" : "text-closed"}>{r.status === "open" ? "abierto" : "cerrado"}</b> en {r.name}</p>
             ))}
           </section>)}
-        {cat !== "botilleria" && live && liveList.map((t) => (
+        {(cat === "any" || cat === "farmacia") && live && liveList.map((t) => (
           <a key={t.id} target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}`} className="flex items-center gap-3 rounded-2xl bg-primary p-4 text-primary-foreground shadow-sm">
             <Siren className="h-6 w-6 shrink-0" />
             <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide opacity-90">De turno hoy en {cityName} · {t.liveTurno!.from === "00:00" && t.liveTurno!.to === "23:59" ? "24 horas" : `${t.liveTurno!.from}–${t.liveTurno!.to}`}</p>
               <p className="truncate font-display text-lg font-bold">{t.name} · {t.street}</p></div>
           </a>))}
-        {cat !== "botilleria" && !live && !isLoading && loc.lat > -25 && (() => { const t = calamaTurnoHoy(new Date(now)); return (
+        {(cat === "any" || cat === "farmacia") && !live && !isLoading && loc.lat > -25 && (() => { const t = calamaTurnoHoy(new Date(now)); return (
           <a target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Farmacia ${t.name} ${t.street} Calama`)}`} className="flex items-center gap-3 rounded-2xl bg-primary p-4 text-primary-foreground shadow-sm">
             <Siren className="h-6 w-6 shrink-0" />
             <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide opacity-90">De turno hoy en Calama · 09:00–21:00 (calendario)</p>
@@ -536,15 +538,15 @@ function Index() {
         {view === "feed" && !isLoading && shown.map((p, i) => (
           <article key={p.id} style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }} className={`animate-fade-up rounded-2xl border border-l-4 bg-card p-4 shadow-sm ${p.turno ? "border-l-closed" : p.cumpa ? (p.cumpa.status === "open" ? "border-l-open" : "border-l-closed opacity-80") : p.official ? "border-l-open/50" : "border-l-border"}`}>
             <div className="flex items-start gap-3">
-              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${p.category === "farmacia" ? "bg-pharmacy/15 text-pharmacy" : "bg-liquor/15 text-liquor"}`}>
-                {p.category === "farmacia" ? <Pill className="h-5 w-5" /> : <Wine className="h-5 w-5" />}
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${p.category === "farmacia" ? "bg-pharmacy/15 text-pharmacy" : p.category === "botilleria" ? "bg-liquor/15 text-liquor" : "bg-primary/15 text-primary"}`}>
+                {p.category === "farmacia" ? <Pill className="h-5 w-5" /> : p.category === "botilleria" ? <Wine className="h-5 w-5" /> : <span className="text-xl" aria-hidden>{CATEGORIES[p.category].emoji}</span>}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
                   <h2 className="flex min-w-0 items-center gap-1 font-display text-lg font-bold"><Link to="/local/$" params={{ _splat: p.id }} search={{ lat: loc.lat, lng: loc.lng }} className="truncate">{p.name}</Link><button aria-label={favs.has(p.id) ? "Quitar de favoritos" : "Guardar en favoritos"} onClick={() => toggleFav(p.id)} className={`shrink-0 ${favs.has(p.id) ? "text-star" : "text-muted-foreground"}`}><Star className="h-4 w-4" fill={favs.has(p.id) ? "currentColor" : "none"} /></button></h2>
                   <span className="shrink-0 font-display text-lg font-extrabold text-primary">{fmtDist(p.dist)}</span>
                 </div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">{p.category === "farmacia" ? "Farmacia" : "Botillería"}{i === 0 && !ai && " · la más cerca"}</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{CATEGORIES[p.category].label}{i === 0 && !ai && " · la más cerca"}</p>
                 {reasons.get(p.id) && <p className="mt-1 flex items-start gap-1 text-xs text-primary"><Sparkles className="mt-0.5 h-3 w-3 shrink-0" />{reasons.get(p.id)}</p>}
                 {p.turno && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-closed px-2 py-0.5 text-xs font-bold text-closed-foreground"><Siren className="h-3 w-3" />De turno hoy</span>}
                 <p className="mt-1 truncate text-sm">{p.street ?? "Dirección no informada"}{p.city ? `, ${p.city}` : ""}</p>

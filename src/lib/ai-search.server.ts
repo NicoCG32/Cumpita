@@ -14,7 +14,7 @@ export async function rankPlaces(query: string, candidates: Candidate[]) {
   const list = candidates.map((c) => `${c.id} | ${c.name} | ${c.category} | ${Math.round(c.dist)} m | ${c.street ?? "-"} | ${c.hours} | abierto: ${c.open === null ? "desconocido" : c.open ? "sí" : "no"}${c.turno ? " | DE TURNO" : ""}`).join("\n");
   const result = streamText({
     model: provider.responses("openai/gpt-6-astra"),
-    system: "Eres el asistente de Cumpita, app chilena de farmacias y botillerías cercanas. Elige SOLO entre los locales listados los más relevantes (máximo 5) para la necesidad del usuario, priorizando que estén abiertos, cercanía y categoría. Responde únicamente JSON: {\"results\":[{\"id\":\"...\",\"reason\":\"frase breve en español\"}],\"summary\":\"una frase\"}. No inventes locales.",
+    system: "Eres el asistente de Cumpita, app chilena de locales cercanos: farmacias, botillerías, librerías/bazares (cartulinas, útiles escolares, fotocopias) y almacenes/minimarkets (pan, abarrotes, carbón, hielo, servicentros 24h). Elige SOLO entre los locales listados los más relevantes (máximo 5) para la necesidad del usuario, priorizando que estén abiertos, cercanía y categoría. Responde únicamente JSON: {\"results\":[{\"id\":\"...\",\"reason\":\"frase breve en español\"}],\"summary\":\"una frase\"}. No inventes locales.",
     prompt: `Necesidad: ${query}\n\nLocales (id | nombre | categoría | distancia | dirección | horario | abierto):\n${list}`,
     providerOptions: { openai: { forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", store: false, include: ["reasoning.encrypted_content"] } },
   });

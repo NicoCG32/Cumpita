@@ -2,9 +2,10 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MapPinPlus, MessageSquare, TriangleAlert } from "lucide-react";
-import { distanceM, type Place } from "@/lib/places";
+import { distanceM, type Place, type Category } from "@/lib/places";
+import { CATEGORIES, CATEGORY_KEYS } from "@/lib/categories";
 
-const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\b(farmacia|farmacias|botilleria|botillerias|licoreria|la|el|los|las|de)\b/g, "").replace(/[^a-z0-9]/g, "");
+const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\b(farmacia|farmacias|botilleria|botillerias|licoreria|libreria|bazar|almacen|minimarket|la|el|los|las|de)\b/g, "").replace(/[^a-z0-9]/g, "");
 
 /** Locales parecidos ya cargados: mismo nombre a menos de 400 m, o misma categoría a menos de 40 m. */
 export function findDuplicates(places: Place[], name: string, cat: Place["category"], pos: { lat: number; lng: number }) {
@@ -18,7 +19,7 @@ export function findDuplicates(places: Place[], name: string, cat: Place["catego
 
 export function SuggestPlace({ city, pos, places }: { city: string; pos: { lat: number; lng: number }; places: Place[] }) {
   const [open, setOpen] = useState<null | "missing" | "feedback">(null);
-  const [name, setName] = useState(""); const [cat, setCat] = useState<"farmacia" | "botilleria">("botilleria");
+  const [name, setName] = useState(""); const [cat, setCat] = useState<Category>("botilleria");
   const [address, setAddress] = useState(""); const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [dups, setDups] = useState<{ p: Place; d: number }[] | null>(null);
@@ -54,7 +55,7 @@ export function SuggestPlace({ city, pos, places }: { city: string; pos: { lat: 
           {open === "missing" && <>
             <input className={input} placeholder="Nombre del local" value={name} maxLength={120} onChange={(e) => { setName(e.target.value); setDups(null); }} />
             <div className="grid grid-cols-2 gap-2">
-              {(["botilleria", "farmacia"] as const).map((c) => <button key={c} onClick={() => { setCat(c); setDups(null); }} className={`rounded-lg border py-2 text-sm font-semibold ${cat === c ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{c === "farmacia" ? "Farmacia" : "Botillería"}</button>)}
+              {CATEGORY_KEYS.map((c) => <button key={c} onClick={() => { setCat(c); setDups(null); }} className={`rounded-lg border py-2 text-sm font-semibold ${cat === c ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{CATEGORIES[c].emoji} {CATEGORIES[c].label}</button>)}
             </div>
             <input className={input} placeholder="Esquina o dirección" value={address} maxLength={200} onChange={(e) => setAddress(e.target.value)} />
           </>}

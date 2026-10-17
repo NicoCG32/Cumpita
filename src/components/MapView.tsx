@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Footprints, Car, X, Loader2 } from "lucide-react";
+import { CATEGORIES } from "@/lib/categories";
+import type { Category } from "@/lib/places";
 
 export type MapPlace = {
-  id: string; name: string; category: "farmacia" | "botilleria"; street: string | null;
+  id: string; name: string; category: Category; street: string | null;
   lat: number; lng: number; dist: number; turno: boolean; effectiveOpen: boolean;
   cumpa: { status: "open" | "closed" } | null; official: boolean | null;
 };
@@ -51,7 +53,7 @@ export default function MapView({ places, origin }: { places: MapPlace[]; origin
     for (const p of places) {
       const icon = L.divIcon({
         className: "",
-        html: `<div class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background text-sm shadow-md ${pinClass(p)}">${p.category === "farmacia" ? "💊" : "🍷"}</div>`,
+        html: `<div class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background text-sm shadow-md ${pinClass(p)}">${p.category === "botilleria" ? "🍷" : CATEGORIES[p.category].emoji}</div>`,
         iconSize: [32, 32], iconAnchor: [16, 16],
       });
       L.marker([p.lat, p.lng], { icon }).on("click", () => setSel(p)).addTo(g);

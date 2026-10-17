@@ -4,15 +4,19 @@ import { distanceM, type Place } from "./places";
 import { mergeMinsal, minsalPlaces } from "./turnos";
 import { applyHours, type ApprovedHours } from "./botillerias";
 import { liveTurnos, mergeTurnos } from "./turnos-live";
+import { asCategory, osmCategory } from "./categories";
 
 const MIRRORS = [
   "https://overpass.kumi.systems/api/interpreter",
   "https://lz4.overpass-api.de/api/interpreter",
   "https://overpass-api.de/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ];
 
 async function fromOsm(lat: number, lng: number): Promise<Place[]> {
-  const q = `[out:json][timeout:25];(nwr["amenity"="pharmacy"](around:4000,${lat},${lng});nwr["shop"="alcohol"](around:4000,${lat},${lng});nwr["shop"="beverages"](around:4000,${lat},${lng}););out center tags;`;
+  const a = `(around:4000,${lat},${lng})`;
+  const q = `[out:json][timeout:25];(nwr["amenity"="pharmacy"]${a};nwr["shop"~"^(alcohol|beverages|stationery|copyshop|books|convenience|supermarket|general|kiosk)$"]${a};nwr["amenity"="fuel"]["shop"]${a};);out center tags;`;
   let json: { elements: any[] } | null = null;
   for (const url of MIRRORS) {
     try {
@@ -30,11 +34,12 @@ async function fromOsm(lat: number, lng: number): Promise<Place[]> {
       const t = e.tags ?? {};
       const plat = e.lat ?? e.center?.lat, plng = e.lon ?? e.center?.lon;
       if (plat == null || plng == null) return null;
-      const category = t.amenity === "pharmacy" ? "farmacia" : "botilleria";
+      const category = osmCategory(t);
+      if (!category) return null;
       const street = [t["addr:street"], t["addr:housenumber"]].filter(Boolean).join(" ");
+      const name = t.amenity === "fuel" ? [t.brand || t.name || "Servicentro", t["shop:name"] || (t.shop === "convenience" ? "tienda" : "")].filter(Boolean).join(" · ") : t.name || t.brand || ({ farmacia: "Farmacia", botilleria: "Botillería", libreria: "Librería", minimarket: "Almacén" } as const)[category];
       return {
-        id: `${e.type}/${e.id}`,
-        name: t.name || t.brand || (category === "farmacia" ? "Farmacia" : "Botillería"),
+        id: `${e.type}/${e.id}`, name,
         category, street: street || null, city: t["addr:city"] || null,
         lat: plat, lng: plng, openingHours: t.opening_hours || null,
         phone: t.phone || t["contact:phone"] || null,
@@ -55,7 +60,7 @@ async function fromGoogle(lat: number, lng: number, key: string): Promise<Place[
     if (!res.ok) throw new Error("google " + res.status);
     return ((await res.json()).places ?? []) as any[];
   };
-  const [ph, lq] = await Promise.all([search("pharmacy"), search("liquor_store")]);
+  const [ph, lq, bk, cv] = await Promise.all([search("pharmacy"), search("liquor_store"), search("book_store").catch(() => []), search("convenience_store").catch(() => [])]);
   const map = (g: any, category: Place["category"]): Place => {
     const wd: string[] = g.currentOpeningHours?.weekdayDescriptions ?? [];
     const today = wd[(new Date().getDay() + 6) % 7];
@@ -69,7 +74,7 @@ async function fromGoogle(lat: number, lng: number, key: string): Promise<Place[
       source: "google",
     };
   };
-  return [...ph.map((g) => map(g, "farmacia")), ...lq.map((g) => map(g, "botilleria"))];
+  return [...ph.map((g) => map(g, "farmacia")), ...lq.map((g) => map(g, "botilleria")), ...bk.map((g) => map(g, "libreria")), ...cv.map((g) => map(g, "minimarket"))];
 }
 
 const FRESH_MS = 6 * 60 * 60 * 1000;
@@ -105,7 +110,7 @@ async function fetchFresh(lat: number, lng: number): Promise<Place[]> {
 }
 
 async function base(lat: number, lng: number): Promise<Place[]> {
-  const ck = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+  const ck = `v2:${lat.toFixed(2)},${lng.toFixed(2)}`;
   const cached = await cacheGet(ck);
   if (cached && Date.now() - cached.at < FRESH_MS) return cached.places;
   try {
@@ -114,6 +119,8 @@ async function base(lat: number, lng: number): Promise<Place[]> {
     return fresh;
   } catch (e) {
     if (cached) return cached.places;
+    const legacy = await cacheGet(ck.slice(3));
+    if (legacy) return legacy.places;
     const official = mergeMinsal([]);
     if (official.length) return official;
     throw e;
@@ -136,7 +143,7 @@ async function communityPlaces(lat: number, lng: number): Promise<Place[]> {
     const res = await fetch(`${url}/rest/v1/place_suggestions?status=eq.approved&kind=eq.missing&select=id,name,category,city,address,lat,lng,reviewed_at&limit=2000`, { headers: { apikey: key } });
     const rows: { id: string; name: string | null; category: string | null; city: string | null; address: string | null; lat: number; lng: number }[] = res.ok ? await res.json() : [];
     return rows.filter((r) => r.name && distanceM({ lat, lng }, r) <= 4000).map((r) => ({
-      id: `c/${r.id}`, name: r.name!, category: r.category === "farmacia" ? "farmacia" : "botilleria",
+      id: `c/${r.id}`, name: r.name!, category: asCategory(r.category),
       street: r.address, city: r.city, lat: r.lat, lng: r.lng, openingHours: null, phone: null,
       osmUrl: `https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lng}`, source: "community" as const,
     }));

@@ -1,6 +1,6 @@
 import OpeningHours from "opening_hours";
 
-export type Category = "farmacia" | "botilleria";
+export type Category = "farmacia" | "botilleria" | "libreria" | "minimarket";
 export type Place = {
   id: string; name: string; category: Category; street: string | null; city: string | null;
   lat: number; lng: number; openingHours: string | null; phone: string | null; osmUrl: string;
