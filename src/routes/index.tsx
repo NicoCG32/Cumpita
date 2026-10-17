@@ -18,6 +18,8 @@ import { enablePush, savedPushToken, pushMessage } from "@/lib/push-client";
 import { ProposeHours } from "@/components/ProposeHours";
 import { SuggestPlace } from "@/components/SuggestPlace";
 import { InstallBanner } from "@/components/InstallBanner";
+import { Onboarding, ONBOARD_KEY } from "@/components/Onboarding";
+import owl from "@/assets/cumpita-owl.png";
 import { useFavorites } from "@/lib/favorites";
 import { Star } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
@@ -88,6 +90,8 @@ function Index() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [more, setMore] = useState<string | null>(null);
   const [dark, setDark] = useState<boolean | null>(null);
+  const [onboard, setOnboard] = useState(false);
+  useEffect(() => { if (!localStorage.getItem(ONBOARD_KEY)) setOnboard(true); }, []);
   useEffect(() => {
     const saved = localStorage.getItem("cumpita-theme");
     const h = new Date().getHours();
@@ -186,7 +190,7 @@ function Index() {
 
   const awardPoint = async (u: User) => {
     const { data } = await supabase.from("cumpita_points").select("id").eq("user_id", u.id).maybeSingle();
-    if (!data) await supabase.from("cumpita_points").insert({ user_id: u.id, nickname: u.email?.split("@")[0]?.slice(0, 20) || "Cumpita" });
+    if (!data) await supabase.from("cumpita_points").insert({ user_id: u.id, nickname: localStorage.getItem("cumpita-nick") || u.email?.split("@")[0]?.slice(0, 20) || "Cumpita" });
     await supabase.rpc("award_point");
     const { data: t } = await supabase.rpc("get_leaderboard");
     if (t) setTop(t as TopCumpita[]);
@@ -416,9 +420,10 @@ function Index() {
   return (
     <div className="mx-auto min-h-screen max-w-md bg-background pb-10">
       <Toaster position="top-center" />
+      {onboard && <Onboarding onDone={({ zone, gps }) => { setOnboard(false); if (gps) locate(); else setLoc(zone ?? ZONES[0]!); }} />}
       <header className="sticky top-0 z-10 bg-background/90 px-4 pb-3 pt-5 backdrop-blur">
         <div className="flex items-center justify-between">
-          <h1 className="font-display text-2xl font-extrabold tracking-tight">cumpita<span className="text-primary">.</span></h1>
+          <h1 className="flex items-center gap-1.5 font-display text-2xl font-extrabold tracking-tight"><img src={owl} alt="" width={32} height={32} className="h-8 w-8" />cumpita<span className="-ml-1.5 text-primary">.</span></h1>
           <div className="flex shrink-0 items-center gap-1.5">
             <button onClick={toggleDark} className="flex items-center rounded-full bg-secondary p-2" aria-label="Cambiar tema">{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
             {user
@@ -458,9 +463,21 @@ function Index() {
             ))}
           </div>
         )}
-        <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-secondary p-1">
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {([["farmacia", "turno", "💊", "Farmacia de turno", "La más cerca, ya"], ["botilleria", "open", "🍻", "Botillería abierta", "Confirmadas ahora"]] as const).map(([c, f, e, t, d]) => {
+            const on = cat === c && filter === f;
+            return (
+              <button key={c} onClick={() => { navigator.vibrate?.(10); if (on) { setCat("any"); setFilter("all"); } else { setCat(c); setFilter(f); } }}
+                className={`flex items-center gap-2 rounded-2xl border-2 p-3 text-left transition ${on ? "border-primary bg-primary/10" : "border-transparent bg-card shadow-sm"}`}>
+                <span className="text-2xl">{e}</span>
+                <span className="min-w-0"><span className="block truncate font-display text-sm font-bold leading-tight">{t}</span><span className="block truncate text-[11px] text-muted-foreground">{d}</span></span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-2 flex gap-1 rounded-xl bg-secondary p-1">
           {([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setCat(k)} className={`rounded-lg py-2 text-xs font-semibold ${cat === k ? "bg-card shadow-sm" : "text-muted-foreground"}`}>{l}</button>
+            <button key={k} onClick={() => setCat(k)} className={`flex-1 rounded-lg py-1.5 text-xs font-semibold ${cat === k ? "bg-card shadow-sm" : "text-muted-foreground"}`}>{l}</button>
           ))}
         </div>
         <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
