@@ -12,11 +12,11 @@ export const asCategory = (s: string | null | undefined): Category => (s && s in
 export const catLabel = (c: string) => CATEGORIES[asCategory(c)].label;
 
 /** Clasifica tags OSM. null = no nos interesa. */
-export function osmCategory(t: Record<string, string>): Category | null {
+export function osmCategory(t: { amenity?: string; shop?: string; brand?: string }): Category | null {
   if (t.amenity === "pharmacy") return "farmacia";
   if (t.shop === "alcohol" || t.shop === "beverages") return "botilleria";
   if (t.shop === "stationery" || t.shop === "copyshop" || t.shop === "books") return "libreria";
   if (t.shop === "convenience" || t.shop === "supermarket" || t.shop === "general" || t.shop === "kiosk") return "minimarket";
-  if (t.amenity === "fuel" && (t.shop || t["brand"])) return "minimarket";
+  if (t.amenity === "fuel" && (t.shop || t.brand)) return "minimarket";
   return null;
 }
