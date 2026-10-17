@@ -45,7 +45,14 @@ function Revision() {
     if (!isAdmin) return;
     load();
     supabase.from("place_suggestions").select("*").eq("status", "pending").order("created_at").then(({ data }) => setSugs(data ?? []));
+    supabase.from("hidden_places").select("*").order("created_at", { ascending: false }).then(({ data }) => setHidden(data ?? []));
   }, [isAdmin]);
+  const [hidden, setHidden] = useState<Tables<"hidden_places">[]>([]);
+  const restore = async (id: string) => {
+    const { error } = await supabase.from("hidden_places").delete().eq("place_id", id);
+    if (error) { toast.error("No se pudo reactivar."); return; }
+    toast.success("Local reactivado"); setHidden((x) => x.filter((h) => h.place_id !== id));
+  };
   const reviewSug = async (id: string, status: "approved" | "rejected") => {
     const { error } = await supabase.from("place_suggestions").update({ status, reviewed_at: new Date().toISOString(), reviewed_by: userId }).eq("id", id);
     if (error) { toast.error("No se pudo guardar."); return; }
@@ -113,6 +120,13 @@ function Revision() {
                 <button onClick={() => reviewSug(g.id, "approved")} className="rounded-lg bg-open py-2 font-bold text-open-foreground">{g.kind === "missing" ? "Aprobar y publicar" : "Revisado"}</button>
                 <button onClick={() => reviewSug(g.id, "rejected")} className="rounded-lg bg-closed py-2 font-bold text-closed-foreground">Descartar</button>
               </div>
+            </article>
+          ))}
+          <h2 className="pt-4 font-display text-xl font-extrabold">Locales dados de baja ({hidden.length})</h2>
+          {hidden.map((h) => (
+            <article key={h.place_id} className="flex items-center justify-between gap-2 rounded-2xl border bg-card p-3 text-sm">
+              <div className="min-w-0"><p className="truncate font-bold">{h.place_name}</p><p className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleString("es-CL")}</p></div>
+              <button onClick={() => restore(h.place_id)} className="rounded-lg bg-secondary px-3 py-1.5 text-xs font-bold">Reactivar</button>
             </article>
           ))}
         </div>
