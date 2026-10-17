@@ -108,7 +108,7 @@ async function fetchFresh(lat: number, lng: number): Promise<Place[]> {
 }
 
 async function base(lat: number, lng: number): Promise<Place[]> {
-  const ck = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+  const ck = `v2:${lat.toFixed(2)},${lng.toFixed(2)}`;
   const cached = await cacheGet(ck);
   if (cached && Date.now() - cached.at < FRESH_MS) return cached.places;
   try {
