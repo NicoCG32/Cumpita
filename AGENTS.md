@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep main-screen account, location changes, and advanced filters in controlled bottom sheets using shared Sheet and Button components; this preserves feed space and accessible dismissal.
