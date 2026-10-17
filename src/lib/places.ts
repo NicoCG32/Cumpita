@@ -19,6 +19,13 @@ export const ZONES = [
   { city: "La Serena", name: "La Serena · Centro Histórico", lat: -29.9027, lng: -71.2520 },
   { city: "La Serena", name: "La Serena · Mall Plaza / Balmaceda", lat: -29.9145, lng: -71.2515 },
   { city: "La Serena", name: "La Serena · Cuatro Esquinas", lat: -29.9320, lng: -71.2480 },
+  { city: "Calama", name: "Calama · Kamac Mayu", lat: -22.4440, lng: -68.9050 },
+  { city: "Calama", name: "Calama · Villa Ayquina", lat: -22.4730, lng: -68.9150 },
+  { city: "Coquimbo", name: "Coquimbo · Centro / Puerto", lat: -29.9533, lng: -71.3436 },
+  { city: "Coquimbo", name: "Coquimbo · El Llano", lat: -29.9660, lng: -71.3330 },
+  { city: "Coquimbo", name: "Coquimbo · Sindempart", lat: -29.9790, lng: -71.3030 },
+  { city: "Coquimbo", name: "Coquimbo · Peñuelas", lat: -29.9440, lng: -71.2830 },
+  { city: "Coquimbo", name: "Coquimbo · La Cantera", lat: -29.9890, lng: -71.3230 },
 ];
 
 export function distanceM(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
