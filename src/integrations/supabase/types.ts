@@ -332,6 +332,12 @@ export type Database = {
     }
     Functions: {
       award_point: { Args: never; Returns: undefined }
+      get_hidden_place_ids: {
+        Args: never
+        Returns: {
+          place_id: string
+        }[]
+      }
       get_leaderboard: {
         Args: never
         Returns: {
