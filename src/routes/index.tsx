@@ -98,6 +98,12 @@ function Index() {
   const [mode, setMode] = useState<"walk" | "car">("car");
   const [tagFilter, setTagFilter] = useState<Set<TagKey>>(new Set());
   const [enRoute, setEnRoute] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [hiddenNow, setHiddenNow] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
   const arrived = useRef<Set<string>>(new Set());
   const startRoute = useServerFn(startEnRoute);
   const stopRoute = useServerFn(stopEnRoute);
@@ -267,13 +273,23 @@ function Index() {
   };
 
   const shareText = (p: { id: string; name: string; street?: string | null; lat: number; lng: number; category: string; cumpa: ReturnType<typeof cumpitaStatus>; turno: boolean }) => {
-    const kind = p.category === "farmacia" ? "La farmacia" : "La botillería";
     const where = p.street ? ` (${p.street})` : "";
-    const st = p.cumpa
-      ? `está ${p.cumpa.status === "open" ? "abierta" : "cerrada"} (confirmado hace ${ago(now - p.cumpa.last)} por ${p.cumpa.count} cumpita${p.cumpa.count > 1 ? "s" : ""})`
-      : p.turno ? "está de turno hoy" : "está cerca";
     const tg = tagsFor(p.id).map(([k]) => TAGS[k]).join(" · ");
-    return `Wena, ${kind} ${p.name}${where} ${st} en cumpita.${tg ? `\n${tg}` : ""}\n👉 Ficha en vivo: ${typeof window !== "undefined" ? window.location.origin : "https://cumpita.lovable.app"}/local/${p.id}?lat=${loc.lat}&lng=${loc.lng}\n📍 Google Maps: https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}\n🚗 Waze: https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`;
+    const link = `${typeof window !== "undefined" ? window.location.origin : "https://cumpita.lovable.app"}/local/${p.id}`;
+    let head: string;
+    if (p.cumpa?.status === "open") head = `Cabros, ${p.name}${where} está ABIERTO 🟢 (confirmado hace ${ago(now - p.cumpa.last)} por ${p.cumpa.count} cumpita${p.cumpa.count > 1 ? "s" : ""})`;
+    else if (p.cumpa?.status === "closed") head = `Ojo: ${p.name}${where} está CERRADO 🔴 por si iban a ir (confirmado hace ${ago(now - p.cumpa.last)})`;
+    else if (p.turno) head = `Ojo cumpitas: ${p.name}${where} está de TURNO hoy 💊`;
+    else head = `${p.name}${where} queda cerca, ¿alguien sabe si está abierto?`;
+    return `${head}${tg ? `\n${tg}` : ""}\n👉 Revisa en vivo: ${link}\n🚗 Waze: https://waze.com/ul?ll=${p.lat},${p.lng}&navigate=yes`;
+  };
+
+  const hidePlace = async (id: string, name: string) => {
+    if (!user || !confirm(`¿Dar de baja "${name}"? Dejará de aparecer para todos.`)) return;
+    const { error } = await supabase.from("hidden_places").insert({ place_id: id, place_name: name, hidden_by: user.id });
+    if (error) { toast.error("No se pudo dar de baja."); return; }
+    setHiddenNow((s) => new Set(s).add(id)); setMore(null);
+    toast.success("Local dado de baja. Puedes reactivarlo en /revision.");
   };
 
   const openBell = async () => {
@@ -315,7 +331,13 @@ function Index() {
   const live = data?.live ?? false;
   const liveList = places.filter((p) => p.liveTurno);
 
-  const list = useMemo(() => places.map((p) => {
+  const pulse = useMemo(() => {
+    const byId = new Map(places.map((p) => [p.id, p.name]));
+    return [...reports].filter((r) => byId.has(r.placeId)).sort((a, b) => b.ts - a.ts).slice(0, 3)
+      .map((r) => ({ ...r, name: byId.get(r.placeId)! }));
+  }, [places, reports]);
+
+  const list = useMemo(() => places.filter((p) => !hiddenNow.has(p.id)).map((p) => {
     const pos = { lat: p.lat, lng: p.lng };
     const cumpa = cumpitaStatus(reports, p.id, now);
     const official = isOfficiallyOpen(p, new Date(now));
@@ -475,6 +497,13 @@ function Index() {
 
       <main className="space-y-3 px-4 pt-2">
         {offline && <p className="flex items-center gap-2 rounded-2xl bg-muted p-3 text-xs font-semibold text-muted-foreground"><WifiOff className="h-4 w-4" />Sin conexión: mostrando los últimos datos que cargamos.</p>}
+        {view === "feed" && pulse.length > 0 && (
+          <section aria-label="Pulso cumpita" className="rounded-2xl border bg-card px-3 py-2 text-xs">
+            <p className="mb-1 flex items-center gap-1.5 font-bold uppercase tracking-wide text-muted-foreground"><span className="h-2 w-2 animate-pulse rounded-full bg-open" />Pulso cumpita</p>
+            {pulse.map((r, i) => (
+              <p key={i} className="truncate">Hace {ago(now - r.ts)} un cumpita confirmó <b className={r.status === "open" ? "text-open" : "text-closed"}>{r.status === "open" ? "abierto" : "cerrado"}</b> en {r.name}</p>
+            ))}
+          </section>)}
         {cat !== "botilleria" && live && liveList.map((t) => (
           <a key={t.id} target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}`} className="flex items-center gap-3 rounded-2xl bg-primary p-4 text-primary-foreground shadow-sm">
             <Siren className="h-6 w-6 shrink-0" />
@@ -581,6 +610,8 @@ function Index() {
             {more === p.id && p.category === "botilleria" && (proposing === p.id
               ? <ProposeHours placeId={p.id} placeName={p.name} onDone={() => setProposing(null)} />
               : <button onClick={() => setProposing(p.id)} className="mt-2 flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-muted-foreground"><PencilLine className="h-3.5 w-3.5" />{p.hoursKind === "confirmed" ? "¿Cambió el horario? Propón una corrección" : "¿Conoces el horario real? Propónlo"}</button>)}
+            {more === p.id && isAdmin && (
+              <button onClick={() => hidePlace(p.id, p.name)} className="mt-2 w-full rounded-lg border border-closed/40 py-2 text-xs font-bold text-closed">🛠 Admin: marcar como cerrado definitivamente</button>)}
           </article>
         ))}
 

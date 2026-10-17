@@ -71,6 +71,30 @@ export type Database = {
         }
         Relationships: []
       }
+      hidden_places: {
+        Row: {
+          created_at: string
+          hidden_by: string | null
+          place_id: string
+          place_name: string
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          hidden_by?: string | null
+          place_id: string
+          place_name: string
+          reason?: string
+        }
+        Update: {
+          created_at?: string
+          hidden_by?: string | null
+          place_id?: string
+          place_name?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       hours_proposals: {
         Row: {
           created_at: string
