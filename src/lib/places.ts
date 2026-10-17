@@ -60,3 +60,10 @@ export function cumpitaStatus(reports: Report[], placeId: string, now = Date.now
   const count = live.filter((r) => r.status === first.status).length;
   return { status: first.status, count, last: first.ts, expiresIn: REPORT_TTL_MS - (now - first.ts) };
 }
+
+/** Abierto 24 horas según el horario publicado. */
+export const is24h = (p: Pick<Place, "openingHours">) => p.openingHours?.trim() === "24/7";
+/** Tienda de servicentro (Copec Pronto/Punto, Shell Upa!, Petrobras Spacio1, Aramco, Oxxo). */
+export const isServicentro = (p: Pick<Place, "name">) => /\b(pronto|punto copec|copec|upa!?|spacio ?1|aramco|petrobras|shell|oxxo)\b/i.test(p.name);
+/** Texto normalizado para búsqueda instantánea (sin tildes, minúsculas). */
+export const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();

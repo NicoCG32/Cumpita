@@ -461,7 +461,7 @@ function Index() {
           <SheetTitle>Tu ubicación</SheetTitle>
           <SheetDescription>{loc.name}</SheetDescription>
           <Button variant="outline" className="mt-4 w-full" disabled={locating} onClick={() => { locate(); setZoneOpen(false); }}><LocateFixed />{gpsOn ? "Actualizar mi ubicación" : "Usar mi ubicación"}</Button>
-          {["Calama", "La Serena"].map((c) => <section key={c} className="mt-5"><h3 className="mb-2 font-semibold">{c}</h3><div className="flex flex-wrap gap-2">
+          {["Calama", "La Serena", "Coquimbo"].map((c) => <section key={c} className="mt-5"><h3 className="mb-2 font-semibold">{c}</h3><div className="flex flex-wrap gap-2">
             {ZONES.filter((z) => z.city === c).map((z) => <Button key={z.name} variant={loc.name === z.name ? "default" : "secondary"} size="sm" onClick={() => { setLoc(z); setZoneOpen(false); }}>{z.name.split(" · ")[1]}</Button>)}
           </div></section>)}
         </SheetContent>

@@ -35,8 +35,8 @@ export function Onboarding({ onDone }: { onDone: (r: { zone: Zone | null; gps: b
             <h1 className="mt-4 text-center font-display text-4xl font-extrabold tracking-tight">cumpita<span className="text-primary">.</span></h1>
             <p className="mt-2 text-center text-muted-foreground">Lo que está abierto de verdad, a esta hora.</p>
             <p className="mt-8 text-sm font-bold uppercase tracking-wide text-muted-foreground">¿Dónde andas?</p>
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              {([["Calama", "⛏️", "Centro, Granaderos, Balmaceda"], ["La Serena", "🌊", "Centro, Mall, 4 Esquinas"]] as const).map(([c, e, d]) => {
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {([["Calama", "⛏️", "Centro, Granaderos, Kamac Mayu"], ["La Serena", "🌊", "Centro, Mall, 4 Esquinas"], ["Coquimbo", "⚓", "Puerto, El Llano, Peñuelas"]] as const).map(([c, e, d]) => {
                 const sel = zone?.city === c && !gps;
                 return (
                   <button key={c} onClick={() => { setGps(false); setZone(ZONES.find((z) => z.city === c)!); }}
