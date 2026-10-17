@@ -205,7 +205,7 @@ function Index() {
     localStorage.setItem(key, String(Date.now()));
     setNow(Date.now());
     if (user) void awardPoint(user);
-    toast.success(user ? "¡Gracias! Tu reporte ya lo ven todos y sumaste un punto." : "¡Gracias! Tu reporte ya lo ven todos.");
+    navigator.vibrate?.([20, 50, 20]); toast.success(user ? "¡Te las mandaste! 🏅 +1 punto. Le ahorraste el pique en vano a otro cumpita." : "¡Te las mandaste! 🦉 Le ahorraste el pique en vano a otro cumpita.");
     if (status === "closed") void sendClosed({ data: { placeId, senderToken: savedPushToken() ?? undefined } }).catch(() => {});
   };
 
