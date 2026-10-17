@@ -4,6 +4,7 @@ import { distanceM, type Place } from "./places";
 import { mergeMinsal, minsalPlaces } from "./turnos";
 import { applyHours, type ApprovedHours } from "./botillerias";
 import { liveTurnos, mergeTurnos } from "./turnos-live";
+import { asCategory, CATEGORIES, osmCategory } from "./categories";
 
 const MIRRORS = [
   "https://overpass.kumi.systems/api/interpreter",
@@ -12,7 +13,8 @@ const MIRRORS = [
 ];
 
 async function fromOsm(lat: number, lng: number): Promise<Place[]> {
-  const q = `[out:json][timeout:25];(nwr["amenity"="pharmacy"](around:4000,${lat},${lng});nwr["shop"="alcohol"](around:4000,${lat},${lng});nwr["shop"="beverages"](around:4000,${lat},${lng}););out center tags;`;
+  const a = `(around:4000,${lat},${lng})`;
+  const q = `[out:json][timeout:25];(nwr["amenity"="pharmacy"]${a};nwr["shop"~"^(alcohol|beverages|stationery|copyshop|books|convenience|supermarket|general|kiosk)$"]${a};nwr["amenity"="fuel"]["shop"]${a};);out center tags;`;
   let json: { elements: any[] } | null = null;
   for (const url of MIRRORS) {
     try {
@@ -30,11 +32,12 @@ async function fromOsm(lat: number, lng: number): Promise<Place[]> {
       const t = e.tags ?? {};
       const plat = e.lat ?? e.center?.lat, plng = e.lon ?? e.center?.lon;
       if (plat == null || plng == null) return null;
-      const category = t.amenity === "pharmacy" ? "farmacia" : "botilleria";
+      const category = osmCategory(t);
+      if (!category) return null;
       const street = [t["addr:street"], t["addr:housenumber"]].filter(Boolean).join(" ");
+      const name = t.amenity === "fuel" ? [t.brand || t.name || "Servicentro", t["shop:name"] || (t.shop === "convenience" ? "tienda" : "")].filter(Boolean).join(" · ") : t.name || t.brand || CATEGORIES[category].label;
       return {
-        id: `${e.type}/${e.id}`,
-        name: t.name || t.brand || (category === "farmacia" ? "Farmacia" : "Botillería"),
+        id: `${e.type}/${e.id}`, name,
         category, street: street || null, city: t["addr:city"] || null,
         lat: plat, lng: plng, openingHours: t.opening_hours || null,
         phone: t.phone || t["contact:phone"] || null,
