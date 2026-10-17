@@ -25,7 +25,9 @@ import { Star } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { lazy, Suspense } from "react";
 import { ClientOnly } from "@tanstack/react-router";
-import { List, Map as MapIcon, SlidersHorizontal, Sun, ChevronDown, MoreHorizontal } from "lucide-react";
+import { List, Map as MapIcon, SlidersHorizontal, Sun, ChevronDown, MoreHorizontal, Search, Settings2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 const MapView = lazy(() => import("@/components/MapView"));
 
 export const Route = createFileRoute("/")({
@@ -87,10 +89,14 @@ function Index() {
   const [nick, setNick] = useState("");
   const [editNick, setEditNick] = useState(false);
   const [view, setView] = useState<"feed" | "map" | "rank">("feed");
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [guestNick, setGuestNick] = useState("Cumpita");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [more, setMore] = useState<string | null>(null);
   const [dark, setDark] = useState<boolean | null>(null);
   const [onboard, setOnboard] = useState(false);
+  useEffect(() => { setGuestNick(localStorage.getItem("cumpita-nick") || "Cumpita"); }, [onboard]);
   useEffect(() => { if (!localStorage.getItem(ONBOARD_KEY)) setOnboard(true); }, []);
   useEffect(() => {
     const saved = localStorage.getItem("cumpita-theme");
@@ -421,95 +427,69 @@ function Index() {
     <div className="mx-auto min-h-screen max-w-md bg-background pb-10">
       <Toaster position="top-center" />
       {onboard && <Onboarding onDone={({ zone, gps }) => { setOnboard(false); if (gps) locate(); else setLoc(zone ?? ZONES[0]!); }} />}
-      <header className="sticky top-0 z-10 bg-background/90 px-4 pb-3 pt-5 backdrop-blur">
-        <div className="flex items-center justify-between">
-          <h1 className="flex items-center gap-1.5 font-display text-2xl font-extrabold tracking-tight"><img src={owl} alt="" width={32} height={32} className="h-8 w-8" />cumpita<span className="-ml-1 text-primary">.</span></h1>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <button onClick={toggleDark} className="flex items-center rounded-full bg-secondary p-2" aria-label="Cambiar tema">{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
-            {user
-              ? <button onClick={() => supabase.auth.signOut()} className="flex items-center rounded-full bg-secondary p-2" aria-label="Salir"><LogOut className="h-4 w-4" /></button>
-              : <button onClick={signIn} className="flex items-center gap-1 rounded-full bg-primary px-3 py-2 text-xs font-bold text-primary-foreground"><LogIn className="h-4 w-4" />Entrar</button>}
-            <button onClick={openBell} className="relative flex items-center rounded-full bg-secondary p-2" aria-label="Avisos">
-              {unread > 0 ? <BellRing className="h-4 w-4 text-primary" /> : <Bell className="h-4 w-4" />}
-              {unread > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">{unread}</span>}
-            </button>
-            <button onClick={locate} className="flex items-center gap-1.5 rounded-full bg-secondary px-3 py-2 text-xs font-semibold">
-              <LocateFixed className={`h-4 w-4 ${gpsOn ? "text-open" : "text-primary"} ${locating ? "animate-pulse" : ""}`} />{locating ? "…" : gpsOn ? "GPS" : "GPS"}
-            </button>
+      <header className="sticky top-0 z-10 border-b bg-background/95 px-4 py-3 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="flex items-center gap-1.5 font-display text-xl font-extrabold"><img src={owl} alt="" width={32} height={32} className="h-8 w-8" />cumpita<span className="text-primary">.</span></h1>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={openBell} aria-label="Avisos" title="Avisos" className="relative">
+              {unread > 0 ? <BellRing className="text-primary" /> : <Bell />}
+              {unread > 0 && <span className="absolute right-0 top-0 h-2 w-2 rounded-full bg-primary" />}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setAccountOpen(true)} aria-label="Mi cumpita" title="Mi cumpita"><Settings2 /></Button>
           </div>
         </div>
-        {bellOpen && (
-          <div className="mt-2 rounded-xl border bg-card p-3 text-sm">
-            <p className="font-semibold">Tus avisos</p>
-            {!user && <p className="mt-1 text-xs text-muted-foreground">Toca «Entrar» arriba para recibir avisos.</p>}
-            {user && alerts.length === 0 && <p className="mt-1 text-xs text-muted-foreground">Sin avisos todavía. Toca «Avisarme» en un local para suscribirte.</p>}
-            {alerts.slice(0, 10).map((a) => (
-              <p key={a.id} className="mt-1.5 text-xs">🔔 <span className="font-semibold">{a.place_name}</span> fue reportado {a.status === "open" ? "abierto" : "cerrado"} hace {ago(now - new Date(a.created_at).getTime())}</p>
-            ))}
-          </div>
-        )}
-        <button onClick={() => setZoneOpen((v) => !v)} className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4" /> Cerca de <span className="truncate font-semibold text-foreground">{loc.name}</span><ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${zoneOpen ? "rotate-180" : ""}`} />
-        </button>
-        {zoneOpen && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {["Calama", "La Serena"].map((c) => (
-              <div key={c} className="w-full">
-                <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">{c}</p>
-                <div className="flex flex-wrap gap-2">
-                  {ZONES.filter((z) => z.city === c).map((z) => <button key={z.name} onClick={() => { setLoc(z); setZoneOpen(false); }} className={chip(loc.name === z.name)}>{z.name.split(" · ")[1]}</button>)}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {([["farmacia", "turno", "💊", "Farmacia de turno", "La más cerca, ya"], ["botilleria", "open", "🍻", "Botillería abierta", "Confirmadas ahora"]] as const).map(([c, f, e, t, d]) => {
-            const on = cat === c && filter === f;
-            return (
-              <button key={c} onClick={() => { navigator.vibrate?.(10); if (on) { setCat("any"); setFilter("all"); } else { setCat(c); setFilter(f); } }}
-                className={`flex items-center gap-2 rounded-2xl border-2 p-3 text-left transition ${on ? "border-primary bg-primary/10" : "border-transparent bg-card shadow-sm"}`}>
-                <span className="text-2xl">{e}</span>
-                <span className="min-w-0"><span className="block truncate font-display text-sm font-bold leading-tight">{t}</span><span className="block truncate text-[11px] text-muted-foreground">{d}</span></span>
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-2 flex gap-1 rounded-xl bg-secondary p-1">
-          {([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, l]) => (
-            <button key={k} onClick={() => setCat(k)} className={`flex-1 rounded-lg py-1.5 text-xs font-semibold ${cat === k ? "bg-card shadow-sm" : "text-muted-foreground"}`}>{l}</button>
-          ))}
-        </div>
-        <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-          <button onClick={() => setFiltersOpen((v) => !v)} className={`${chip(filtersOpen || tagFilter.size > 0 || mode === "walk")} flex items-center gap-1`}><SlidersHorizontal className="h-3.5 w-3.5" />Filtros{tagFilter.size + (mode === "walk" ? 1 : 0) > 0 ? ` · ${tagFilter.size + (mode === "walk" ? 1 : 0)}` : ""}</button>
-          <button className={chip(filter === "all")} onClick={() => setFilter("all")}>Todas</button>
-          <button className={chip(filter === "open")} onClick={() => setFilter("open")}>Abiertas ahora</button>
-          <button className={chip(filter === "confirmed")} onClick={() => setFilter("confirmed")}>Confirmadas por cumpitas</button>
-          <button className={chip(filter === "turno")} onClick={() => setFilter("turno")}>De turno</button>
-          <button className={`${chip(filter === "night")} flex items-center gap-1`} onClick={() => setFilter("night")}><Moon className="h-3.5 w-3.5" />Modo madrugada</button>
-          {(["hielo", "card_ok", "cigarros"] as TagKey[]).map((k) => (
-            <button key={k} className={chip(tagFilter.has(k))} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}>{k === "card_ok" ? "💳 Acepta tarjeta" : TAGS[k]}</button>
-          ))}
-        </div>
-        {filtersOpen && <div className="animate-fade-up -mx-4 mt-2 flex flex-wrap gap-2 px-4 pb-1">
-          <div className="flex shrink-0 rounded-full bg-secondary p-0.5">
-            <button onClick={() => setMode("walk")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "walk" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚶 A pie (&lt;800 m)</button>
-            <button onClick={() => setMode("car")} className={`rounded-full px-3 py-1.5 text-xs font-semibold ${mode === "car" ? "bg-card shadow-sm" : "text-muted-foreground"}`}>🚗 En auto</button>
-          </div>
-          {(["card_ok", "cash_only", "reja", "sin_fila", "hielo", "cigarros", "promo"] as TagKey[]).map((k) => (
-            <button key={k} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${tagFilter.has(k) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{TAGS[k]}</button>
-          ))}
-        </div>}
-        {enRouteName && <p className="mt-2 flex items-center justify-between gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="truncate">🧭 En camino a {enRouteName}: te avisamos si cierra</span><button onClick={cancelRoute} className="shrink-0 underline">Cancelar</button></p>}
-        <form onSubmit={askAi} className="mt-2 flex gap-2">
-          <input aria-label="Buscar con IA" value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="¿Qué necesitas? Ej: paracetamol ahora"
-            className="min-w-0 flex-1 rounded-xl border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
-          <button disabled={aiBusy || isLoading} className="flex items-center gap-1 rounded-xl bg-primary px-3 text-sm font-bold text-primary-foreground disabled:opacity-60">
-            {aiBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}Buscar
-          </button>
-        </form>
+        <Button variant="ghost" size="sm" onClick={() => setZoneOpen(true)} className="mt-1 h-7 max-w-full justify-start px-0 text-muted-foreground" aria-label="Cambiar ubicación">
+          {gpsOn ? <LocateFixed className="text-open" /> : <MapPin />}<span className="truncate">{loc.name}</span><ChevronDown />
+        </Button>
       </header>
+      <Sheet open={accountOpen} onOpenChange={setAccountOpen}>
+        <SheetContent side="bottom" className="mx-auto max-h-[85dvh] max-w-md overflow-y-auto pb-8">
+          <SheetTitle>Mi cumpita</SheetTitle>
+          <SheetDescription>{myPoints?.nickname || guestNick}</SheetDescription>
+          <div className="mt-5 space-y-3">
+            <Button variant="outline" className="w-full justify-start" onClick={toggleDark}>{dark ? <Sun /> : <Moon />}{dark ? "Usar tema claro" : "Usar tema oscuro"}</Button>
+            {user ? <Button variant="ghost" className="w-full justify-start" onClick={() => { void supabase.auth.signOut(); setAccountOpen(false); }}><LogOut />Cerrar sesión</Button>
+              : <Button variant="outline" className="w-full justify-start" onClick={signIn}><LogIn />Vincular con Google</Button>}
+            {isAdmin && <Button variant="outline" className="w-full justify-start" asChild><Link to="/revision"><ShieldCheck />Revisión de locales</Link></Button>}
+          </div>
+        </SheetContent>
+      </Sheet>
+      <Sheet open={zoneOpen} onOpenChange={setZoneOpen}>
+        <SheetContent side="bottom" className="mx-auto max-h-[85dvh] max-w-md overflow-y-auto pb-8">
+          <SheetTitle>Tu ubicación</SheetTitle>
+          <SheetDescription>{loc.name}</SheetDescription>
+          <Button variant="outline" className="mt-4 w-full" disabled={locating} onClick={() => { locate(); setZoneOpen(false); }}><LocateFixed />{gpsOn ? "Actualizar mi ubicación" : "Usar mi ubicación"}</Button>
+          {["Calama", "La Serena"].map((c) => <section key={c} className="mt-5"><h3 className="mb-2 font-semibold">{c}</h3><div className="flex flex-wrap gap-2">
+            {ZONES.filter((z) => z.city === c).map((z) => <Button key={z.name} variant={loc.name === z.name ? "default" : "secondary"} size="sm" onClick={() => { setLoc(z); setZoneOpen(false); }}>{z.name.split(" · ")[1]}</Button>)}
+          </div></section>)}
+        </SheetContent>
+      </Sheet>
+      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <SheetContent side="bottom" className="mx-auto max-h-[85dvh] max-w-md overflow-y-auto pb-8">
+          <SheetTitle>Filtrar locales</SheetTitle>
+          <SheetDescription className="sr-only">Estado, distancia y servicios</SheetDescription>
+          <h3 className="mb-2 mt-5 text-sm font-semibold">Estado</h3>
+          <div className="flex flex-wrap gap-2">{([["all", "Todos"], ["open", "Abiertas ahora"], ["confirmed", "Confirmadas"], ["turno", "De turno"], ["night", "Modo madrugada"]] as const).map(([k, label]) => <Button key={k} size="sm" variant={filter === k ? "default" : "secondary"} onClick={() => setFilter(k)}>{label}</Button>)}</div>
+          <h3 className="mb-2 mt-5 text-sm font-semibold">Distancia</h3>
+          <div className="flex gap-2"><Button variant={mode === "walk" ? "default" : "secondary"} onClick={() => setMode("walk")}>A pie (&lt;800 m)</Button><Button variant={mode === "car" ? "default" : "secondary"} onClick={() => setMode("car")}>En auto</Button></div>
+          <h3 className="mb-2 mt-5 text-sm font-semibold">Lo que necesitas</h3>
+          <div className="flex flex-wrap gap-2">{(["card_ok", "cash_only", "reja", "sin_fila", "hielo", "cigarros", "promo"] as TagKey[]).map((k) => <Button key={k} size="sm" variant={tagFilter.has(k) ? "default" : "secondary"} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}>{TAGS[k]}</Button>)}</div>
+          <div className="mt-6 flex gap-2"><Button variant="ghost" onClick={() => { setFilter("all"); setTagFilter(new Set()); setMode("car"); }}>Limpiar</Button><Button className="flex-1" onClick={() => setFiltersOpen(false)}>Ver locales</Button></div>
+        </SheetContent>
+      </Sheet>
+      <div className="px-4 pt-3">
+        {bellOpen && <section className="mb-3 border-b pb-3 text-sm" aria-label="Tus avisos"><p className="font-semibold">Tus avisos</p>{!user && <Button variant="link" size="sm" onClick={signIn}>Vincular con Google para recibir avisos</Button>}{user && alerts.length === 0 && <p className="mt-1 text-xs text-muted-foreground">Sin avisos todavía.</p>}{alerts.slice(0, 10).map((a) => <p key={a.id} className="mt-1.5 text-xs">{a.place_name}: {a.status === "open" ? "abierto" : "cerrado"} hace {ago(now - new Date(a.created_at).getTime())}</p>)}</section>}
+        {view !== "rank" && <>
+          <div className="flex items-center gap-1">
+            <div className="flex min-w-0 flex-1 gap-1">{([["any", "Todo"], ["farmacia", "Farmacias"], ["botilleria", "Botillerías"]] as const).map(([k, label]) => <Button key={k} variant={cat === k ? "secondary" : "ghost"} size="sm" className="min-w-0 flex-1 px-2" onClick={() => setCat(k)}>{label}</Button>)}</div>
+            <Button variant="ghost" size="icon" onClick={() => setSearchOpen((v) => !v)} aria-label="Buscar locales" aria-expanded={searchOpen} title="Buscar locales"><Search /></Button>
+            <Button variant="ghost" size="icon" className="relative" onClick={() => setFiltersOpen(true)} aria-label="Filtrar locales" title="Filtrar locales"><SlidersHorizontal />{(filter !== "all" || tagFilter.size > 0 || mode === "walk") && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary" />}</Button>
+          </div>
+          {filter !== "all" && filter !== "fav" && <Button variant="ghost" size="sm" className="mt-2 h-7 text-primary" onClick={() => setFilter("all")}>{filter === "open" ? "Abiertas ahora" : filter === "turno" ? "De turno" : filter === "confirmed" ? "Confirmadas" : "Modo madrugada"}<X /></Button>}
+          {searchOpen && <form onSubmit={askAi} className="mt-3 flex gap-2"><input autoFocus aria-label="Buscar con IA" value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="¿Qué necesitas encontrar?" className="min-w-0 flex-1 rounded-lg border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" /><Button type="submit" size="icon" disabled={aiBusy || isLoading} aria-label="Buscar">{aiBusy ? <Loader2 className="animate-spin" /> : <Search />}</Button></form>}
+        </>}
+        {enRouteName && <p className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="truncate">En camino a {enRouteName}</span><Button variant="ghost" size="sm" onClick={cancelRoute}>Cancelar</Button></p>}
+      </div>
       <InstallBanner />
 
       <main className="space-y-3 px-4 pt-2">
