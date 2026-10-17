@@ -423,7 +423,7 @@ function Index() {
       {onboard && <Onboarding onDone={({ zone, gps }) => { setOnboard(false); if (gps) locate(); else setLoc(zone ?? ZONES[0]!); }} />}
       <header className="sticky top-0 z-10 bg-background/90 px-4 pb-3 pt-5 backdrop-blur">
         <div className="flex items-center justify-between">
-          <h1 className="flex items-center gap-1.5 font-display text-2xl font-extrabold tracking-tight"><img src={owl} alt="" width={32} height={32} className="h-8 w-8" />cumpita<span className="-ml-1.5 text-primary">.</span></h1>
+          <h1 className="flex items-center gap-1.5 font-display text-2xl font-extrabold tracking-tight"><img src={owl} alt="" width={32} height={32} className="h-8 w-8" />cumpita<span className="-ml-1 text-primary">.</span></h1>
           <div className="flex shrink-0 items-center gap-1.5">
             <button onClick={toggleDark} className="flex items-center rounded-full bg-secondary p-2" aria-label="Cambiar tema">{dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
             {user

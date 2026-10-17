@@ -23,7 +23,7 @@ export function Onboarding({ onDone }: { onDone: (r: { zone: Zone | null; gps: b
   const next = () => { navigator.vibrate?.(10); setStep((s) => s + 1); };
 
   return (
-    <div className="bg-night fixed inset-0 z-50 flex flex-col overflow-y-auto bg-background px-6 pb-8 pt-10">
+    <div className="bg-night fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-background px-6 pb-8 pt-10">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
         <div className="flex gap-1.5">
           {[0, 1, 2].map((i) => <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? "bg-primary" : "bg-secondary"}`} />)}
