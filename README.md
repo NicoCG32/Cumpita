@@ -33,6 +33,9 @@ Variables de entorno (`.env`, generado por Lovable Cloud): `VITE_SUPABASE_URL`, 
 
 | Documento | Contenido |
 | --- | --- |
+| [docs/instalacion-local.md](docs/instalacion-local.md) | Instalar, configurar `.env` y ejecutar en local |
+| [docs/despliegue.md](docs/despliegue.md) | Producción, secretos, cron y verificación de la PWA |
+| [docs/releases.md](docs/releases.md) | Versionado y GitHub Releases ([CHANGELOG](CHANGELOG.md)) |
 | [docs/arquitectura.md](docs/arquitectura.md) | Stack, estructura de carpetas, rutas y flujo de datos |
 | [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md) | OSM/Overpass, MINSAL, turnos, caché y respaldo |
 | [docs/comunidad.md](docs/comunidad.md) | Reportes, tags, geofencing, puntos y ranking |
