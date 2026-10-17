@@ -55,3 +55,24 @@ export const notifyClosed = createServerFn({ method: "POST" })
     }
     return { sent };
   });
+
+// Suscripción al aviso diario de farmacias de turno (cron 20:00 Chile).
+const citySchema = z.enum(["calama", "la-serena", "coquimbo"]);
+export const subscribeTurnos = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ token: z.string().min(20).max(4096), city: citySchema, secret: secretSchema.optional() }).parse(d))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { data: row } = await db.from("turno_subs").select("secret").eq("token", data.token).maybeSingle();
+    if (row && row.secret !== data.secret) return { ok: false, secret: null };
+    const secret = row?.secret ?? newSecret();
+    const { error } = await db.from("turno_subs").upsert({ token: data.token, city: data.city, secret }, { onConflict: "token" });
+    return { ok: !error, secret: error ? null : secret };
+  });
+
+export const unsubscribeTurnos = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ token: z.string().min(20).max(4096), secret: secretSchema }).parse(d))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    await db.from("turno_subs").delete().eq("token", data.token).eq("secret", data.secret);
+    return { ok: true };
+  });

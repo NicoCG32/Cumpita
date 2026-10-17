@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RevisionRouteImport } from './routes/revision'
 import { Route as LocalSplatRouteImport } from './routes/local.$'
+import { Route as ApiPublicCronTurnosRouteImport } from './routes/api/public/cron/turnos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const LocalSplatRoute = LocalSplatRouteImport.update({
   path: '/local/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronTurnosRoute = ApiPublicCronTurnosRouteImport.update({
+  id: '/api/public/cron/turnos',
+  path: '/api/public/cron/turnos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/revision': typeof RevisionRoute
   '/local/$': typeof LocalSplatRoute
+  '/api/public/cron/turnos': typeof ApiPublicCronTurnosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/revision': typeof RevisionRoute
   '/local/$': typeof LocalSplatRoute
+  '/api/public/cron/turnos': typeof ApiPublicCronTurnosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/revision': typeof RevisionRoute
   '/local/$': typeof LocalSplatRoute
+  '/api/public/cron/turnos': typeof ApiPublicCronTurnosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/revision' | '/local/$'
+  fullPaths: '/' | '/revision' | '/local/$' | '/api/public/cron/turnos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/revision' | '/local/$'
-  id: '__root__' | '/' | '/revision' | '/local/$'
+  to: '/' | '/revision' | '/local/$' | '/api/public/cron/turnos'
+  id: '__root__' | '/' | '/revision' | '/local/$' | '/api/public/cron/turnos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   RevisionRoute: typeof RevisionRoute
   LocalSplatRoute: typeof LocalSplatRoute
+  ApiPublicCronTurnosRoute: typeof ApiPublicCronTurnosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocalSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/turnos': {
+      id: '/api/public/cron/turnos'
+      path: '/api/public/cron/turnos'
+      fullPath: '/api/public/cron/turnos'
+      preLoaderRoute: typeof ApiPublicCronTurnosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   RevisionRoute: RevisionRoute,
   LocalSplatRoute: LocalSplatRoute,
+  ApiPublicCronTurnosRoute: ApiPublicCronTurnosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

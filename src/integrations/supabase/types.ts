@@ -308,6 +308,30 @@ export type Database = {
         }
         Relationships: []
       }
+      turno_subs: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          secret: string
+          token: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          id?: string
+          secret: string
+          token: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          secret?: string
+          token?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

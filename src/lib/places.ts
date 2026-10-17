@@ -19,6 +19,13 @@ export const ZONES = [
   { city: "La Serena", name: "La Serena · Centro Histórico", lat: -29.9027, lng: -71.2520 },
   { city: "La Serena", name: "La Serena · Mall Plaza / Balmaceda", lat: -29.9145, lng: -71.2515 },
   { city: "La Serena", name: "La Serena · Cuatro Esquinas", lat: -29.9320, lng: -71.2480 },
+  { city: "Calama", name: "Calama · Kamac Mayu", lat: -22.4440, lng: -68.9050 },
+  { city: "Calama", name: "Calama · Villa Ayquina", lat: -22.4730, lng: -68.9150 },
+  { city: "Coquimbo", name: "Coquimbo · Centro / Puerto", lat: -29.9533, lng: -71.3436 },
+  { city: "Coquimbo", name: "Coquimbo · El Llano", lat: -29.9660, lng: -71.3330 },
+  { city: "Coquimbo", name: "Coquimbo · Sindempart", lat: -29.9790, lng: -71.3030 },
+  { city: "Coquimbo", name: "Coquimbo · Peñuelas", lat: -29.9440, lng: -71.2830 },
+  { city: "Coquimbo", name: "Coquimbo · La Cantera", lat: -29.9890, lng: -71.3230 },
 ];
 
 export function distanceM(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -53,3 +60,10 @@ export function cumpitaStatus(reports: Report[], placeId: string, now = Date.now
   const count = live.filter((r) => r.status === first.status).length;
   return { status: first.status, count, last: first.ts, expiresIn: REPORT_TTL_MS - (now - first.ts) };
 }
+
+/** Abierto 24 horas según el horario publicado. */
+export const is24h = (p: Pick<Place, "openingHours">) => p.openingHours?.trim() === "24/7";
+/** Tienda de servicentro (Copec Pronto/Punto, Shell Upa!, Petrobras Spacio1, Aramco, Oxxo). */
+export const isServicentro = (p: Pick<Place, "name">) => /\b(pronto|punto copec|copec|upa!?|spacio ?1|aramco|petrobras|shell|oxxo)\b/i.test(p.name);
+/** Texto normalizado para búsqueda instantánea (sin tildes, minúsculas). */
+export const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
