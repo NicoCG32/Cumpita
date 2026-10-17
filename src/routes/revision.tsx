@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { catLabel } from "@/lib/categories";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import type { Tables } from "@/integrations/supabase/types";

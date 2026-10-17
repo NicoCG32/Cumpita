@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { useEffect, useState } from "react";
+import { catLabel } from "@/lib/categories";
 import { ArrowLeft, Check, Clock, MapPin, Navigation, Phone, Share2, Star, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";

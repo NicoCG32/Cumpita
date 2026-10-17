@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Footprints, Car, X, Loader2 } from "lucide-react";
+import { CATEGORIES } from "@/lib/categories";
+import type { Category } from "@/lib/places";
 
 export type MapPlace = {
   id: string; name: string; category: Category; street: string | null;

@@ -2,9 +2,10 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MapPinPlus, MessageSquare, TriangleAlert } from "lucide-react";
-import { distanceM, type Place } from "@/lib/places";
+import { distanceM, type Place, type Category } from "@/lib/places";
+import { CATEGORIES, CATEGORY_KEYS } from "@/lib/categories";
 
-const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\b(farmacia|farmacias|botilleria|botillerias|licoreria|la|el|los|las|de)\b/g, "").replace(/[^a-z0-9]/g, "");
+const norm = (t: string) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\b(farmacia|farmacias|botilleria|botillerias|licoreria|libreria|bazar|almacen|minimarket|la|el|los|las|de)\b/g, "").replace(/[^a-z0-9]/g, "");
 
 /** Locales parecidos ya cargados: mismo nombre a menos de 400 m, o misma categoría a menos de 40 m. */
 export function findDuplicates(places: Place[], name: string, cat: Place["category"], pos: { lat: number; lng: number }) {
