@@ -143,9 +143,20 @@ async function communityPlaces(lat: number, lng: number): Promise<Place[]> {
   } catch { return []; }
 }
 
+async function hiddenIds(): Promise<Set<string>> {
+  const url = process.env['SUPABASE_URL'], key = process.env['SUPABASE_PUBLISHABLE_KEY'];
+  if (!url || !key) return new Set();
+  try {
+    const res = await fetch(`${url}/rest/v1/hidden_places?select=place_id&limit=5000`, { headers: { apikey: key } });
+    const rows: { place_id: string }[] = res.ok ? await res.json() : [];
+    return new Set(rows.map((r) => r.place_id));
+  } catch { return new Set(); }
+}
+
 async function allPlaces(lat: number, lng: number) {
-  const [places, community, turnos, approved] = await Promise.all([base(lat, lng), communityPlaces(lat, lng), liveTurnos(lat, lng), approvedHours()]);
-  const extra = community.filter((c) => !places.some((p) => distanceM(p, c) < 40));
+  const [raw, community, turnos, approved, hidden] = await Promise.all([base(lat, lng), communityPlaces(lat, lng), liveTurnos(lat, lng), approvedHours(), hiddenIds()]);
+  const places = raw.filter((p) => !hidden.has(p.id));
+  const extra = community.filter((c) => !hidden.has(c.id) && !places.some((p) => distanceM(p, c) < 40));
   const fixed = applyHours([...places, ...extra], approved);
   return turnos ? { places: mergeTurnos(fixed, turnos), live: true } : { places: fixed, live: false };
 }
