@@ -5,7 +5,7 @@ import { lovable } from "@/integrations/lovable";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNearbyPlaces } from "@/lib/places.functions";
-import { ZONES, distanceM, isOfficiallyOpen, hoursLabel, cumpitaStatus, REPORT_TTL_MS, type Report, type Category, type Place } from "@/lib/places";
+import { ZONES, distanceM, isOfficiallyOpen, hoursLabel, cumpitaStatus, REPORT_TTL_MS, is24h, isServicentro, norm, type Report, type Category, type Place } from "@/lib/places";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -13,7 +13,7 @@ import { isTurno, calamaTurnoHoy } from "@/lib/turnos";
 import { Siren, Sparkles, ShieldCheck, Scale, PencilLine } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { aiSearch } from "@/lib/ai-search.functions";
-import { startEnRoute, stopEnRoute, notifyClosed } from "@/lib/push.functions";
+import { startEnRoute, stopEnRoute, notifyClosed, subscribeTurnos, unsubscribeTurnos } from "@/lib/push.functions";
 import { enablePush, savedPushToken, pushMessage } from "@/lib/push-client";
 import { ProposeHours } from "@/components/ProposeHours";
 import { SuggestPlace } from "@/components/SuggestPlace";
@@ -235,6 +235,29 @@ function Index() {
     }).catch(() => {});
   };
 
+  const subTurnos = useServerFn(subscribeTurnos), unsubTurnos = useServerFn(unsubscribeTurnos);
+  const [turnoSub, setTurnoSub] = useState<string | null>(null);
+  useEffect(() => { setTurnoSub(localStorage.getItem("cumpita-turno-city")); }, []);
+  const citySlug = () => {
+    const z = [...ZONES].sort((a, b) => distanceM(a, loc) - distanceM(b, loc))[0]!;
+    return z.city === "Calama" ? "calama" : z.city === "Coquimbo" ? "coquimbo" : "la-serena";
+  };
+  const toggleTurnoSub = async () => {
+    const t = savedPushToken(), sc = localStorage.getItem("cumpita-turno-secret");
+    if (turnoSub) {
+      if (t && sc) await unsubTurnos({ data: { token: t, secret: sc } }).catch(() => {});
+      localStorage.removeItem("cumpita-turno-city"); setTurnoSub(null); toast("Listo, ya no te avisaremos los turnos."); return;
+    }
+    const r = await enablePush().catch(() => null);
+    if (!r) return;
+    if (r.status !== "registered") { toast(pushMessage[r.status]); return; }
+    const city = citySlug() as "calama" | "la-serena" | "coquimbo";
+    const res = await subTurnos({ data: { token: r.token, city, secret: sc ?? undefined } }).catch(() => null);
+    if (!res?.secret) { toast.error("No pudimos activar el aviso. Intenta de nuevo."); return; }
+    localStorage.setItem("cumpita-turno-secret", res.secret); localStorage.setItem("cumpita-turno-city", city); setTurnoSub(city);
+    toast.success("Cada día a las 20:00 te avisamos qué farmacias están de turno. 💊");
+  };
+
   const toggleSub = async (placeId: string, placeName: string) => {
     if (!user) {
       toast("Para recibir avisos necesitas una cuenta.", { action: { label: "Entrar", onClick: () => { void signIn(); } } });
@@ -359,12 +382,14 @@ function Index() {
     && (mode === "car" || p.dist <= WALK_RADIUS_M)
     && [...tagFilter].every((k) => tagsFor(p.id).some(([t]) => t === k))
     && (filter !== "open" || p.effectiveOpen) && (filter !== "confirmed" || p.cumpa) && (filter !== "turno" || p.turno) && (filter !== "fav" || favs.has(p.id))
-    && (filter !== "night" || (p.category === "farmacia" ? p.turno || (p.liveTurno?.from === "00:00" && p.liveTurno?.to === "23:59") : p.cumpa?.status === "open")))
+    && (filter !== "night" || (p.category === "farmacia" ? p.turno || (p.liveTurno?.from === "00:00" && p.liveTurno?.to === "23:59") : p.cumpa ? p.cumpa.status === "open" : is24h(p))))
     // eslint-disable-next-line react-hooks/exhaustive-deps
     .sort((a, b) => a.dist - b.dist).slice(0, 40), [places, live, loc, reports, now, filter, cat, mode, tagFilter, tags, favs]);
   const enRouteName = enRoute ? places.find((p) => p.id === enRoute)?.name ?? null : null;
   const reasons = new Map(ai?.results.map((r) => [r.id, r.reason]) ?? []);
-  const shown = ai ? ai.results.map((r) => list.find((p) => p.id === r.id)).filter((p): p is (typeof list)[number] => !!p) : list;
+  const needle = searchOpen ? norm(q.trim()) : "";
+  const shown = ai ? ai.results.map((r) => list.find((p) => p.id === r.id)).filter((p): p is (typeof list)[number] => !!p)
+    : needle ? list.filter((p) => norm(`${p.name} ${p.street ?? ""} ${p.city ?? ""} ${CATEGORIES[p.category].label}`).includes(needle)) : list;
   const askAi = async (e: React.FormEvent) => {
     e.preventDefault();
     if (q.trim().length < 2 || aiBusy) return;
@@ -450,6 +475,7 @@ function Index() {
           <SheetDescription>{myPoints?.nickname || guestNick}</SheetDescription>
           <div className="mt-5 space-y-3">
             <Button variant="outline" className="w-full justify-start" onClick={toggleDark}>{dark ? <Sun /> : <Moon />}{dark ? "Usar tema claro" : "Usar tema oscuro"}</Button>
+            <Button variant={turnoSub ? "secondary" : "outline"} className="w-full justify-start" onClick={() => void toggleTurnoSub()}>{turnoSub ? <BellRing /> : <Bell />}{turnoSub ? "Aviso diario de turnos activo (20:00)" : "Avisarme el turno de farmacias cada día"}</Button>
             {user ? <Button variant="ghost" className="w-full justify-start" onClick={() => { void supabase.auth.signOut(); setAccountOpen(false); }}><LogOut />Cerrar sesión</Button>
               : <Button variant="outline" className="w-full justify-start" onClick={signIn}><LogIn />Vincular con Google</Button>}
             {isAdmin && <Button variant="outline" className="w-full justify-start" asChild><Link to="/revision"><ShieldCheck />Revisión de locales</Link></Button>}
@@ -488,7 +514,7 @@ function Index() {
             <Button variant="ghost" size="icon" className="relative" onClick={() => setFiltersOpen(true)} aria-label="Filtrar locales" title="Filtrar locales"><SlidersHorizontal />{(filter !== "all" || tagFilter.size > 0 || mode === "walk") && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary" />}</Button>
           </div>
           {filter !== "all" && filter !== "fav" && <Button variant="ghost" size="sm" className="mt-2 h-7 text-primary" onClick={() => setFilter("all")}>{filter === "open" ? "Abiertas ahora" : filter === "turno" ? "De turno" : filter === "confirmed" ? "Confirmadas" : "Modo madrugada"}<X /></Button>}
-          {searchOpen && <form onSubmit={askAi} className="mt-3 flex gap-2"><input autoFocus aria-label="Buscar con IA" value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="¿Qué necesitas encontrar?" className="min-w-0 flex-1 rounded-lg border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" /><Button type="submit" size="icon" disabled={aiBusy || isLoading} aria-label="Buscar">{aiBusy ? <Loader2 className="animate-spin" /> : <Search />}</Button></form>}
+          {searchOpen && <form onSubmit={askAi} className="mt-3 flex gap-2"><input autoFocus aria-label="Buscar con IA" value={q} onChange={(e) => setQ(e.target.value)} maxLength={300} placeholder="Nombre o calle… (Enter: pregúntale a la IA)" className="min-w-0 flex-1 rounded-lg border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" /><Button type="submit" size="icon" disabled={aiBusy || isLoading} aria-label="Buscar">{aiBusy ? <Loader2 className="animate-spin" /> : <Search />}</Button></form>}
         </>}
         {enRouteName && <p className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-primary/10 px-3 py-2 text-xs font-semibold text-primary"><span className="truncate">En camino a {enRouteName}</span><Button variant="ghost" size="sm" onClick={cancelRoute}>Cancelar</Button></p>}
       </div>
@@ -549,6 +575,7 @@ function Index() {
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">{CATEGORIES[p.category].label}{i === 0 && !ai && " · la más cerca"}</p>
                 {reasons.get(p.id) && <p className="mt-1 flex items-start gap-1 text-xs text-primary"><Sparkles className="mt-0.5 h-3 w-3 shrink-0" />{reasons.get(p.id)}</p>}
                 {p.turno && <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-closed px-2 py-0.5 text-xs font-bold text-closed-foreground"><Siren className="h-3 w-3" />De turno hoy</span>}
+                {(is24h(p) || isServicentro(p)) && <span className="ml-1 mt-1 inline-flex items-center gap-1 rounded-full bg-open/15 px-2 py-0.5 text-xs font-bold text-open">{isServicentro(p) ? "⛽ Servicentro" : "🌙"}{is24h(p) ? " · 24H" : ""}</span>}
                 <p className="mt-1 truncate text-sm">{p.street ?? "Dirección no informada"}{p.city ? `, ${p.city}` : ""}</p>
                 <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex min-w-0 items-center gap-1 truncate"><Clock className="h-3.5 w-3.5" />{hoursLabel(p)}</span>
