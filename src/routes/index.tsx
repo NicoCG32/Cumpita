@@ -27,6 +27,8 @@ import { lazy, Suspense } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import { List, Map as MapIcon, SlidersHorizontal, Sun, ChevronDown, MoreHorizontal, Search, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PLACE_TAGS } from "@/lib/tags";
+import { CATEGORIES, CATEGORY_KEYS } from "@/lib/categories";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 const MapView = lazy(() => import("@/components/MapView"));
 
@@ -52,7 +54,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Filter = "all" | "open" | "confirmed" | "turno" | "night" | "fav";
-const TAGS = { card_ok: "💳 Pasa Redcompra/transferencia", cash_only: "💵 Solo efectivo", reja: "🔒 Atienden por reja", fila: "⏳ Hay fila", sin_fila: "⚡ Sin fila", hielo: "🧊 Hay hielo", cigarros: "🚬 Hay cigarros", promo: "🏷️ Buena promo" } as const;
+const TAGS = PLACE_TAGS;
 type TagKey = keyof typeof TAGS;
 type TagRow = { place_id: string; tag: string; created_at: string };
 const TAG_TTL_MS = 3 * 60 * 60 * 1000;
@@ -473,7 +475,7 @@ function Index() {
           <h3 className="mb-2 mt-5 text-sm font-semibold">Distancia</h3>
           <div className="flex gap-2"><Button variant={mode === "walk" ? "default" : "secondary"} onClick={() => setMode("walk")}>A pie (&lt;800 m)</Button><Button variant={mode === "car" ? "default" : "secondary"} onClick={() => setMode("car")}>En auto</Button></div>
           <h3 className="mb-2 mt-5 text-sm font-semibold">Lo que necesitas</h3>
-          <div className="flex flex-wrap gap-2">{(["card_ok", "cash_only", "reja", "sin_fila", "hielo", "cigarros", "promo"] as TagKey[]).map((k) => <Button key={k} size="sm" variant={tagFilter.has(k) ? "default" : "secondary"} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}>{TAGS[k]}</Button>)}</div>
+          <div className="flex flex-wrap gap-2">{(["card_ok", "cash_only", "reja", "sin_fila", "hielo", "cigarros", "promo", "cartulinas", "fotocopias", "pan", "carbon"] as TagKey[]).map((k) => <Button key={k} size="sm" variant={tagFilter.has(k) ? "default" : "secondary"} onClick={() => setTagFilter((s) => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n; })}>{TAGS[k]}</Button>)}</div>
           <div className="mt-6 flex gap-2"><Button variant="ghost" onClick={() => { setFilter("all"); setTagFilter(new Set()); setMode("car"); }}>Limpiar</Button><Button className="flex-1" onClick={() => setFiltersOpen(false)}>Ver locales</Button></div>
         </SheetContent>
       </Sheet>

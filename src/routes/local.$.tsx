@@ -27,7 +27,7 @@ export const Route = createFileRoute("/local/$")({
     const st = c ? (c.status === "open" ? "🟢 Abierto confirmado por cumpitas" : "🔴 Cerrado según cumpitas")
       : p?.liveTurno ? "🚨 De turno hoy" : "Revisa si está abierto ahora";
     const title = p ? `${p.name} · ${st} — cumpita.` : "Local — cumpita.";
-    const desc = p ? `${p.category === "farmacia" ? "Farmacia" : "Botillería"}${p.street ? ` en ${p.street}` : ""}${p.city ? `, ${p.city}` : ""}. ${st}.` : "Farmacias y botillerías abiertas en Calama y La Serena.";
+    const desc = p ? `${catLabel(p.category)}${p.street ? ` en ${p.street}` : ""}${p.city ? `, ${p.city}` : ""}. ${st}.` : "Farmacias y botillerías abiertas en Calama y La Serena.";
     return {
       meta: [
         { title }, { name: "description", content: desc },
@@ -105,7 +105,7 @@ function LocalPage() {
       <div className="mt-4 rounded-2xl border bg-card p-5">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-xs font-bold uppercase text-muted-foreground">{p.category === "farmacia" ? "Farmacia" : "Botillería"}</p>
+            <p className="text-xs font-bold uppercase text-muted-foreground">{catLabel(p.category)}</p>
             <h1 className="font-display text-2xl font-bold">{p.name}</h1>
           </div>
           <button aria-label="Favorito" onClick={() => toggle(p.id)} className={fav ? "text-star" : "text-muted-foreground"}><Star className="h-6 w-6" fill={fav ? "currentColor" : "none"} /></button>

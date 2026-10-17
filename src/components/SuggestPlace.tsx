@@ -18,7 +18,7 @@ export function findDuplicates(places: Place[], name: string, cat: Place["catego
 
 export function SuggestPlace({ city, pos, places }: { city: string; pos: { lat: number; lng: number }; places: Place[] }) {
   const [open, setOpen] = useState<null | "missing" | "feedback">(null);
-  const [name, setName] = useState(""); const [cat, setCat] = useState<"farmacia" | "botilleria">("botilleria");
+  const [name, setName] = useState(""); const [cat, setCat] = useState<Category>("botilleria");
   const [address, setAddress] = useState(""); const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [dups, setDups] = useState<{ p: Place; d: number }[] | null>(null);
@@ -54,7 +54,7 @@ export function SuggestPlace({ city, pos, places }: { city: string; pos: { lat: 
           {open === "missing" && <>
             <input className={input} placeholder="Nombre del local" value={name} maxLength={120} onChange={(e) => { setName(e.target.value); setDups(null); }} />
             <div className="grid grid-cols-2 gap-2">
-              {(["botilleria", "farmacia"] as const).map((c) => <button key={c} onClick={() => { setCat(c); setDups(null); }} className={`rounded-lg border py-2 text-sm font-semibold ${cat === c ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{c === "farmacia" ? "Farmacia" : "Botillería"}</button>)}
+              {CATEGORY_KEYS.map((c) => <button key={c} onClick={() => { setCat(c); setDups(null); }} className={`rounded-lg border py-2 text-sm font-semibold ${cat === c ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}>{CATEGORIES[c].emoji} {CATEGORIES[c].label}</button>)}
             </div>
             <input className={input} placeholder="Esquina o dirección" value={address} maxLength={200} onChange={(e) => setAddress(e.target.value)} />
           </>}
