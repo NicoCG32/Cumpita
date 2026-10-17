@@ -53,7 +53,7 @@ export async function liveTurnos(lat: number, lng: number): Promise<Place[] | nu
   return all.flatMap((x) => x ?? []);
 }
 
-async function cityTurnos(slug: string): Promise<Place[] | null> {
+export async function cityTurnos(slug: string): Promise<Place[] | null> {
   const hit = cache.get(slug);
   if (hit && Date.now() - hit.at < TTL) return hit.data;
   try {
