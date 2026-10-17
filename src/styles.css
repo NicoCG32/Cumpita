@@ -114,26 +114,26 @@
 }
 
 .dark {
-  --open: oklch(0.74 0.17 155);
+  --open: oklch(0.86 0.2 128);
   --open-foreground: oklch(0.16 0.02 155);
   --closed: oklch(0.7 0.19 28);
   --closed-foreground: oklch(0.16 0.02 28);
   --pharmacy: oklch(0.75 0.13 200);
   --liquor: oklch(0.72 0.16 340);
   --star: oklch(0.83 0.16 80);
-  --background: oklch(0.16 0.008 60);
+  --background: oklch(0.15 0.03 275);
   --foreground: oklch(0.95 0.01 80);
-  --card: oklch(0.21 0.01 60);
+  --card: oklch(0.2 0.035 275);
   --card-foreground: oklch(0.95 0.01 80);
-  --popover: oklch(0.21 0.01 60);
+  --popover: oklch(0.2 0.035 275);
   --popover-foreground: oklch(0.95 0.01 80);
-  --primary: oklch(0.7 0.18 45);
-  --primary-foreground: oklch(0.16 0.02 45);
-  --secondary: oklch(0.27 0.012 60);
+  --primary: oklch(0.78 0.16 70);
+  --primary-foreground: oklch(0.18 0.04 60);
+  --secondary: oklch(0.26 0.04 275);
   --secondary-foreground: oklch(0.93 0.01 80);
-  --muted: oklch(0.25 0.01 60);
+  --muted: oklch(0.24 0.035 275);
   --muted-foreground: oklch(0.7 0.015 70);
-  --accent: oklch(0.28 0.014 60);
+  --accent: oklch(0.28 0.045 275);
   --accent-foreground: oklch(0.95 0.01 80);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.984 0.003 247.858);
@@ -193,4 +193,13 @@
 
 @utility animate-fade-up {
   animation: fade-up 0.3s ease-out both;
+}
+
+@utility bg-night {
+  background: radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, var(--color-primary) 22%, var(--color-background)), var(--color-background) 60%);
+}
+@keyframes glow-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-open) 0%, transparent); } }
+@utility glow-open {
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-open) 55%, transparent);
+  animation: glow-pulse 1.8s ease-out infinite;
 }
