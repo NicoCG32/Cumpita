@@ -390,14 +390,11 @@ function Index() {
   const needle = searchOpen ? norm(q.trim()) : "";
   const shown = ai ? ai.results.map((r) => list.find((p) => p.id === r.id)).filter((p): p is (typeof list)[number] => !!p)
     : needle ? list.filter((p) => norm(`${p.name} ${p.street ?? ""} ${p.city ?? ""} ${CATEGORIES[p.category].label}`).includes(needle)) : list;
-  const askAi = async (e: React.FormEvent) => {
+  // Búsqueda solo directa (sin IA, sin consumo de créditos): Enter solo cierra el teclado.
+  void runAi; void setAiBusy;
+  const askAi = (e: React.FormEvent) => {
     e.preventDefault();
-    if (q.trim().length < 2 || aiBusy) return;
-    setAiBusy(true);
-    try {
-      const res = await runAi({ data: { query: q.trim(), candidates: list.map((p) => ({ id: p.id, name: p.name, category: p.category, dist: p.dist, street: p.street, hours: hoursLabel(p), open: p.cumpa ? p.cumpa.status === "open" : p.official, turno: p.turno })) } });
-      if (!res.ok) toast.error(res.error); else setAi({ results: res.results, summary: res.summary });
-    } catch { toast.error("No pudimos completar la búsqueda."); } finally { setAiBusy(false); }
+    (document.activeElement as HTMLElement | null)?.blur();
   };
   // Detección por permanencia: 5+ min a menos de 40 m de un local con estado desconocido = abierto.
   const listRef = useRef(list); listRef.current = list;
