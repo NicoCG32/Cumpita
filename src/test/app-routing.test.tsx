@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter, rootRouteId } from "@tanstack/react-router";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/pwa-register", () => ({ registerPWA: vi.fn() }));
+vi.mock("@/lib/pwa-register", () => ({ registerAppSw: vi.fn() }));
 
 import { routeTree } from "@/routeTree.gen";
 
