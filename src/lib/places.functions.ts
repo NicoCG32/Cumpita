@@ -154,7 +154,7 @@ async function hiddenIds(): Promise<Set<string>> {
   const url = process.env['SUPABASE_URL'], key = process.env['SUPABASE_PUBLISHABLE_KEY'];
   if (!url || !key) return new Set();
   try {
-    const res = await fetch(`${url}/rest/v1/hidden_places?select=place_id&limit=5000`, { headers: { apikey: key } });
+    const res = await fetch(`${url}/rest/v1/rpc/get_hidden_place_ids`, { method: "POST", headers: { apikey: key, "Content-Type": "application/json" }, body: "{}" });
     const rows: { place_id: string }[] = res.ok ? await res.json() : [];
     return new Set(rows.map((r) => r.place_id));
   } catch { return new Set(); }
