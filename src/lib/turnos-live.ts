@@ -4,6 +4,7 @@ import { distanceM, type Place } from "./places";
 const CITIES = [
   { slug: "calama", lat: -22.46, lng: -68.93 },
   { slug: "la-serena", lat: -29.905, lng: -71.25 },
+  { slug: "coquimbo", lat: -29.953, lng: -71.338 },
 ];
 const TTL = 2 * 60 * 60 * 1000;
 const cache = new Map<string, { at: number; data: Place[] }>();
@@ -44,13 +45,20 @@ async function scrape(slug: string): Promise<Place[]> {
 
 /** Turnos de hoy de la ciudad más cercana (≤ 40 km). null si no se pudo obtener. */
 export async function liveTurnos(lat: number, lng: number): Promise<Place[] | null> {
-  const city = CITIES.find((c) => distanceM(c, { lat, lng }) < 40000);
-  if (!city) return [];
-  const hit = cache.get(city.slug);
+  // Conurbación: La Serena y Coquimbo están a ~10 km, se consultan ambas.
+  const cities = CITIES.filter((c) => distanceM(c, { lat, lng }) < 25000);
+  if (!cities.length) return [];
+  const all = await Promise.all(cities.map((c) => cityTurnos(c.slug)));
+  if (all.every((x) => x === null)) return null;
+  return all.flatMap((x) => x ?? []);
+}
+
+async function cityTurnos(slug: string): Promise<Place[] | null> {
+  const hit = cache.get(slug);
   if (hit && Date.now() - hit.at < TTL) return hit.data;
   try {
-    const data = await scrape(city.slug);
-    cache.set(city.slug, { at: Date.now(), data });
+    const data = await scrape(slug);
+    cache.set(slug, { at: Date.now(), data });
     return data;
   } catch {
     return hit?.data ?? null;

@@ -58,7 +58,7 @@ async function fromGoogle(lat: number, lng: number, key: string): Promise<Place[
     if (!res.ok) throw new Error("google " + res.status);
     return ((await res.json()).places ?? []) as any[];
   };
-  const [ph, lq] = await Promise.all([search("pharmacy"), search("liquor_store")]);
+  const [ph, lq, bk, cv] = await Promise.all([search("pharmacy"), search("liquor_store"), search("book_store").catch(() => []), search("convenience_store").catch(() => [])]);
   const map = (g: any, category: Place["category"]): Place => {
     const wd: string[] = g.currentOpeningHours?.weekdayDescriptions ?? [];
     const today = wd[(new Date().getDay() + 6) % 7];
@@ -72,7 +72,7 @@ async function fromGoogle(lat: number, lng: number, key: string): Promise<Place[
       source: "google",
     };
   };
-  return [...ph.map((g) => map(g, "farmacia")), ...lq.map((g) => map(g, "botilleria"))];
+  return [...ph.map((g) => map(g, "farmacia")), ...lq.map((g) => map(g, "botilleria")), ...bk.map((g) => map(g, "libreria")), ...cv.map((g) => map(g, "minimarket"))];
 }
 
 const FRESH_MS = 6 * 60 * 60 * 1000;
@@ -139,7 +139,7 @@ async function communityPlaces(lat: number, lng: number): Promise<Place[]> {
     const res = await fetch(`${url}/rest/v1/place_suggestions?status=eq.approved&kind=eq.missing&select=id,name,category,city,address,lat,lng,reviewed_at&limit=2000`, { headers: { apikey: key } });
     const rows: { id: string; name: string | null; category: string | null; city: string | null; address: string | null; lat: number; lng: number }[] = res.ok ? await res.json() : [];
     return rows.filter((r) => r.name && distanceM({ lat, lng }, r) <= 4000).map((r) => ({
-      id: `c/${r.id}`, name: r.name!, category: r.category === "farmacia" ? "farmacia" : "botilleria",
+      id: `c/${r.id}`, name: r.name!, category: asCategory(r.category),
       street: r.address, city: r.city, lat: r.lat, lng: r.lng, openingHours: null, phone: null,
       osmUrl: `https://www.google.com/maps/search/?api=1&query=${r.lat},${r.lng}`, source: "community" as const,
     }));
