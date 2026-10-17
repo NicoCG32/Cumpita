@@ -10,6 +10,8 @@ const MIRRORS = [
   "https://overpass.kumi.systems/api/interpreter",
   "https://lz4.overpass-api.de/api/interpreter",
   "https://overpass-api.de/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+  "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
 ];
 
 async function fromOsm(lat: number, lng: number): Promise<Place[]> {
@@ -117,6 +119,8 @@ async function base(lat: number, lng: number): Promise<Place[]> {
     return fresh;
   } catch (e) {
     if (cached) return cached.places;
+    const legacy = await cacheGet(ck.slice(3));
+    if (legacy) return legacy.places;
     const official = mergeMinsal([]);
     if (official.length) return official;
     throw e;
