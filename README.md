@@ -1,37 +1,47 @@
-# Cumpita
+# cumpita. 🦉
 
-Quiero desarrollar una aplicación web móvil (diseño enfocado en PWA móvil) para orientar al usuario sobre sus localizaciones más cercanas con una interfaz tipo feed/tarjetas más cómoda y directa que un mapa tradicional.
+PWA móvil comunitaria para encontrar **farmacias, botillerías, librerías y almacenes/minimarkets abiertos ahora** en **Calama** y **La Serena–Coquimbo** (Chile), ordenados por distancia y validados por la comunidad ("cumpitas").
 
-Categorías iniciales:
-1. Farmacias
-2. Botillerías / Licorerías
+- Publicada: https://cumpita.lovable.app
+- Construida con [Lovable](https://lovable.dev) (TanStack Start + React 19 + Tailwind v4 + Lovable Cloud).
 
-Funcionalidades clave:
-- Detección de ubicación del usuario (con opción de simulación/búsqueda manual de zona).
-- Listado ordenado por distancia mostrando: nombre, categoría, distancia calculada, calle/dirección, horario oficial, calificación.
-- Diferencial 'Último Cumpita': sistema comunitario donde los usuarios que se acerquen al local puedan presionar un botón simple para reportar/confirmar si el local está realmente abierto o cerrado fuera de su horario oficial, mostrando hace cuánto tiempo se confirmó (ej. 'Confirmado abierto hace 15 min por 2 cumpitas') y caducidad del estado.
-- Filtros rápidos en la parte superior: 'Todas', 'Abiertas ahora', 'Confirmadas por cumpitas', y selector de categoría (Botillerías / Farmacias).
-- Diseño limpio, intuitivo y optimizado para uso rápido desde el celular.
+## Funcionalidades principales
 
-This project was built with [Lovable](https://lovable.dev).
+- Feed de locales cercanos por distancia, con horario oficial y estado en vivo.
+- **"Último Cumpita"**: reportes Abierto/Cerrado con caducidad de 1 h, solo a ≤300 m del local (anti-trolling).
+- Detección pasiva: 5 min a ≤40 m de un local sin estado ⇒ se reporta abierto.
+- Farmacias de turno oficiales (MINSAL + scraping de mifarmaciadeturno.cl, incluida Coquimbo).
+- Micro-tags comunitarios (hielo, tarjeta, cartulinas, pan, carbón…), TTL 3 h.
+- Mapa (Leaflet/OSM) con rutas y enlaces a Waze/Google/Apple Maps.
+- Push: aviso si un local cierra mientras vas en camino y turno diario a las 20:00.
+- Favoritos, ranking de puntos, fichas compartibles `/local/:id`, sugerir locales, panel admin `/revision`.
+- Instalable como PWA, con modo oscuro nocturno y wizard de bienvenida.
 
-**Live app**: https://cumpita.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/35900500-b605-40f4-80c7-d9c7b8e6dee3).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## Desarrollo local
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+git clone <url-del-repositorio>
+cd <repositorio>
+bun install   # o npm i
+bun run dev   # http://localhost:8080
+bun run test  # vitest
 ```
+
+Variables de entorno (`.env`, generado por Lovable Cloud): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`. Los secretos del servidor se gestionan en Lovable Cloud.
+
+## Documentación
+
+| Documento | Contenido |
+| --- | --- |
+| [docs/arquitectura.md](docs/arquitectura.md) | Stack, estructura de carpetas, rutas y flujo de datos |
+| [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md) | OSM/Overpass, MINSAL, turnos, caché y respaldo |
+| [docs/comunidad.md](docs/comunidad.md) | Reportes, tags, geofencing, puntos y ranking |
+| [docs/base-de-datos.md](docs/base-de-datos.md) | Tablas, RLS, roles y migraciones |
+| [docs/notificaciones.md](docs/notificaciones.md) | Push en camino, turno diario y cron |
+| [docs/ux-ui.md](docs/ux-ui.md) | Identidad visual, pantalla principal, onboarding y PWA |
+| [docs/admin.md](docs/admin.md) | Panel de revisión, sugerencias y locales ocultos |
+| [docs/contribuir.md](docs/contribuir.md) | Convenciones, tests y cómo agregar categorías |
+
+## Licencia
+
+Privado. © cumpita.
