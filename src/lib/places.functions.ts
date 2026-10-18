@@ -134,7 +134,6 @@ async function base(lat: number, lng: number): Promise<Place[]> {
     if (fresh.length) await cacheSet(ck, fresh);
     return fresh;
   } catch (e) {
-    if (cached) return cached.places;
     const legacy = await cacheGet(ck.slice(3));
     if (legacy) return legacy.places;
     const official = mergeMinsal([]);
