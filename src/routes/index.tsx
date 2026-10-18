@@ -346,6 +346,12 @@ function Index() {
     queryFn: () => fetchPlaces({ data: { lat: loc.lat, lng: loc.lng } }),
     staleTime: 10 * 60 * 1000,
   });
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (!isLoading) { setSlow(false); return; }
+    const t = setTimeout(() => setSlow(true), 8000);
+    return () => clearTimeout(t);
+  }, [isLoading, loc.lat, loc.lng]);
 
   // Caché offline: guarda la última lista cargada y la usa si no hay conexión
   useEffect(() => {
