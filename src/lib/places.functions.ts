@@ -17,17 +17,21 @@ const MIRRORS = [
 async function fromOsm(lat: number, lng: number): Promise<Place[]> {
   const a = `(around:4000,${lat},${lng})`;
   const q = `[out:json][timeout:25];(nwr["amenity"="pharmacy"]${a};nwr["shop"~"^(alcohol|beverages|stationery|copyshop|books|convenience|supermarket|general|kiosk)$"]${a};nwr["amenity"="fuel"]["shop"]${a};);out center tags;`;
+  // Consulta todas las réplicas en paralelo (12 s máx.) y usa la primera que responda.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
   let json: { elements: any[] } | null = null;
-  for (const url of MIRRORS) {
-    try {
+  try {
+    json = await Promise.any(MIRRORS.map(async (url) => {
       const res = await fetch(url, {
-        method: "POST",
+        method: "POST", signal: ctrl.signal,
         headers: { "User-Agent": "CumpitaApp/1.0", Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
         body: "data=" + encodeURIComponent(q),
       });
-      if (res.ok) { json = await res.json(); break; }
-    } catch { /* try next mirror */ }
-  }
+      if (!res.ok) throw new Error(String(res.status));
+      return (await res.json()) as { elements: any[] };
+    }));
+  } catch { json = null; } finally { clearTimeout(timer); ctrl.abort(); }
   if (!json) throw new Error("No pudimos cargar los locales. Intenta de nuevo en un momento.");
   return json.elements
     .map((e): Place | null => {
@@ -109,10 +113,22 @@ async function fetchFresh(lat: number, lng: number): Promise<Place[]> {
   return mergeMinsal(await fromOsm(lat, lng));
 }
 
+const refreshing = new Set<string>();
+const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
+  Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
+
 async function base(lat: number, lng: number): Promise<Place[]> {
   const ck = `v2:${lat.toFixed(2)},${lng.toFixed(2)}`;
   const cached = await cacheGet(ck);
   if (cached && Date.now() - cached.at < FRESH_MS) return cached.places;
+  if (cached) {
+    // Datos guardados al instante; se refrescan en segundo plano.
+    if (!refreshing.has(ck)) {
+      refreshing.add(ck);
+      void fetchFresh(lat, lng).then((f) => f.length ? cacheSet(ck, f) : undefined).catch(() => {}).finally(() => refreshing.delete(ck));
+    }
+    return cached.places;
+  }
   try {
     const fresh = await fetchFresh(lat, lng);
     if (fresh.length) await cacheSet(ck, fresh);
@@ -161,7 +177,13 @@ async function hiddenIds(): Promise<Set<string>> {
 }
 
 async function allPlaces(lat: number, lng: number) {
-  const [raw, community, turnos, approved, hidden] = await Promise.all([base(lat, lng), communityPlaces(lat, lng), liveTurnos(lat, lng), approvedHours(), hiddenIds()]);
+  const [raw, community, turnos, approved, hidden] = await Promise.all([
+    base(lat, lng),
+    withTimeout(communityPlaces(lat, lng), 5000, []),
+    withTimeout(liveTurnos(lat, lng), 8000, null as Awaited<ReturnType<typeof liveTurnos>> | null),
+    withTimeout(approvedHours(), 5000, []),
+    withTimeout(hiddenIds(), 5000, new Set<string>()),
+  ]);
   const places = raw.filter((p) => !hidden.has(p.id));
   const extra = community.filter((c) => !hidden.has(c.id) && !places.some((p) => distanceM(p, c) < 40));
   const fixed = applyHours([...places, ...extra], approved);
