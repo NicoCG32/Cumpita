@@ -1,5 +1,6 @@
 {
   "name": "tanstack_start_ts",
+  "version": "1.0.0",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -11,7 +12,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:release": "node --test scripts/release-notes.test.mjs",
+    "release:notes": "node scripts/release-notes.mjs"
   },
   "overrides": {
     "rolldown": "1.2.1"
