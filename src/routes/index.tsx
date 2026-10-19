@@ -567,7 +567,6 @@ function Index() {
           {" · "}{data.meta.placesAt ? `Locales: datos de hace ${ago(now - data.meta.placesAt)}` : "Locales: solo fuente oficial"}
           {data.meta.stale ? " (actualizando)" : ""}
         </p>}
-        {offline && <p role="status" className="rounded-2xl bg-muted p-3 text-center text-sm text-muted-foreground">Sin conexión: mostramos la última lista guardada. <button onClick={retry} className="font-semibold text-primary">Reintentar</button></p>}
         {isLoading && [0, 1, 2].map((i) => (
           <div key={i} className="rounded-2xl border bg-card p-4" aria-hidden>
             <div className="flex gap-3"><div className="shimmer h-11 w-11 rounded-xl" /><div className="flex-1 space-y-2"><div className="shimmer h-4 w-2/3 rounded" /><div className="shimmer h-3 w-1/3 rounded" /><div className="shimmer h-3 w-1/2 rounded" /></div></div>
