@@ -4,7 +4,7 @@ import { MapPin, Clock, Navigation, Phone, Loader2, Pill, Wine, Check, X, Users,
 import { lovable } from "@/integrations/lovable";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getNearbyPlaces } from "@/lib/places.functions";
+import { getNearbyPlaces, logClientEvent } from "@/lib/places.functions";
 import { ZONES, distanceM, isOfficiallyOpen, hoursLabel, cumpitaStatus, REPORT_TTL_MS, is24h, isServicentro, norm, type Report, type Category, type Place } from "@/lib/places";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -186,14 +186,19 @@ function Index() {
   }, [user]);
 
   const locate = () => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) { toast.error("Tu navegador no permite usar la ubicación. Elige tu zona manualmente."); return; }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (p) => {
         const me = { lat: p.coords.latitude, lng: p.coords.longitude };
         setLoc({ name: "Tu ubicación", ...me }); setUserPos(me); setLocating(false); setGpsOn(true);
       },
-      () => setLocating(false), { timeout: 8000 });
+      (err) => {
+        setLocating(false);
+        toast.error(err.code === 1
+          ? "Sin permiso de ubicación. Actívalo en los ajustes del navegador o elige tu zona manualmente."
+          : "No pudimos ubicarte ahora. Prueba de nuevo o elige tu zona manualmente.");
+      }, { timeout: 8000, maximumAge: 60000 });
   };
 
   const awardPoint = async (u: User) => {
@@ -553,13 +558,23 @@ function Index() {
           {shown.length === 0 && <p className="mt-1 text-muted-foreground">Ningún local cercano calza con lo que buscas.</p>}
           <button onClick={() => { setAi(null); setQ(""); }} className="mt-1 text-xs font-semibold text-primary underline">Ver todos los locales</button>
         </div>}
+        {isLoading && slow && <div role="status" className="rounded-2xl border bg-card p-4 text-sm">
+          <p className="font-semibold">La conexión está tardando más de lo habitual.</p>
+          <Button variant="outline" size="sm" className="mt-2" onClick={retry}>Actualizar</Button>
+        </div>}
+        {view === "feed" && !isLoading && data?.meta && <p className="text-center text-[11px] text-muted-foreground" aria-live="polite">
+          {data.meta.turnosAt ? `Turnos oficiales: actualizados hace ${ago(now - data.meta.turnosAt)}` : live ? "Turnos oficiales al día" : "Turnos oficiales no disponibles ahora"}
+          {" · "}{data.meta.placesAt ? `Locales: datos de hace ${ago(now - data.meta.placesAt)}` : "Locales: solo fuente oficial"}
+          {data.meta.stale ? " (actualizando)" : ""}
+        </p>}
+        {offline && <p role="status" className="rounded-2xl bg-muted p-3 text-center text-sm text-muted-foreground">Sin conexión: mostramos la última lista guardada. <button onClick={retry} className="font-semibold text-primary">Reintentar</button></p>}
         {isLoading && [0, 1, 2].map((i) => (
           <div key={i} className="rounded-2xl border bg-card p-4" aria-hidden>
             <div className="flex gap-3"><div className="shimmer h-11 w-11 rounded-xl" /><div className="flex-1 space-y-2"><div className="shimmer h-4 w-2/3 rounded" /><div className="shimmer h-3 w-1/3 rounded" /><div className="shimmer h-3 w-1/2 rounded" /></div></div>
             <div className="shimmer mt-3 h-16 rounded-xl" />
           </div>))}
-        {isError && !offline && <div className="py-16 text-center text-muted-foreground"><p>No pudimos cargar los locales.</p><button onClick={() => refetch()} className="mt-3 font-semibold text-primary">Reintentar</button></div>}
-        {!isLoading && !isError && !ai && list.length === 0 && <p className="py-16 text-center text-muted-foreground">Nada por aquí con esos filtros.</p>}
+        {isError && !offline && <div className="py-16 text-center text-muted-foreground"><p>No pudimos cargar los locales.</p><button onClick={retry} className="mt-3 font-semibold text-primary">Reintentar</button></div>}
+        {!isLoading && !isError && !ai && list.length === 0 && <div className="py-16 text-center text-muted-foreground"><p>Nada por aquí con esos filtros.</p><p className="mt-1 text-xs">Prueba con “Todas” o cambia de zona.</p></div>}
         {view === "map" && !isLoading && (<div className="animate-fade-up">
           <ClientOnly fallback={<div className="h-[65vh] rounded-2xl bg-muted" />}>
             <Suspense fallback={<div className="flex h-[65vh] items-center justify-center rounded-2xl bg-muted"><Loader2 className="h-5 w-5 animate-spin" /></div>}>
