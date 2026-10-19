@@ -92,13 +92,6 @@
       "when": 1792245022188,
       "tag": "0012_turno_subs",
       "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "7",
-      "when": 1792330000000,
-      "tag": "0013_ops_events",
-      "breakpoints": true
     }
   ]
 }
