@@ -3,7 +3,8 @@ import { z } from "zod";
 import { distanceM, type Place } from "./places";
 import { mergeMinsal, minsalPlaces } from "./turnos";
 import { applyHours, type ApprovedHours } from "./botillerias";
-import { liveTurnos, mergeTurnos } from "./turnos-live";
+import { liveTurnos, mergeTurnos, turnosAt, citySlugsNear } from "./turnos-live";
+import { ZONES } from "./places";
 import { asCategory, osmCategory } from "./categories";
 
 const MIRRORS = [
@@ -18,6 +19,7 @@ async function fromOsm(lat: number, lng: number): Promise<Place[]> {
   const a = `(around:4000,${lat},${lng})`;
   const q = `[out:json][timeout:25];(nwr["amenity"="pharmacy"]${a};nwr["shop"~"^(alcohol|beverages|stationery|copyshop|books|convenience|supermarket|general|kiosk)$"]${a};nwr["amenity"="fuel"]["shop"]${a};);out center tags;`;
   // Consulta todas las réplicas en paralelo (12 s máx.) y usa la primera que responda.
+  const t0 = Date.now();
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 12000);
   let json: { elements: any[] } | null = null;
@@ -32,6 +34,8 @@ async function fromOsm(lat: number, lng: number): Promise<Place[]> {
       return (await res.json()) as { elements: any[] };
     }));
   } catch { json = null; } finally { clearTimeout(timer); ctrl.abort(); }
+  const { logOps } = await import("./ops.server");
+  void logOps("source", "osm", !!json, Date.now() - t0, json ? undefined : "todas las réplicas fallaron");
   if (!json) throw new Error("No pudimos cargar los locales. Intenta de nuevo en un momento.");
   return json.elements
     .map((e): Place | null => {
@@ -117,29 +121,48 @@ const refreshing = new Set<string>();
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
   Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
 
-async function base(lat: number, lng: number): Promise<Place[]> {
-  const ck = `v2:${lat.toFixed(2)},${lng.toFixed(2)}`;
+type Base = { places: Place[]; at: number | null; stale: boolean };
+const zoneKey = (lat: number, lng: number) => `v2:${lat.toFixed(2)},${lng.toFixed(2)}`;
+
+async function base(lat: number, lng: number): Promise<Base> {
+  const ck = zoneKey(lat, lng);
   const cached = await cacheGet(ck);
-  if (cached && Date.now() - cached.at < FRESH_MS) return cached.places;
+  if (cached && Date.now() - cached.at < FRESH_MS) return { places: cached.places, at: cached.at, stale: false };
   if (cached) {
     // Datos guardados al instante; se refrescan en segundo plano.
     if (!refreshing.has(ck)) {
       refreshing.add(ck);
       void fetchFresh(lat, lng).then((f) => f.length ? cacheSet(ck, f) : undefined).catch(() => {}).finally(() => refreshing.delete(ck));
     }
-    return cached.places;
+    return { places: cached.places, at: cached.at, stale: true };
   }
   try {
     const fresh = await fetchFresh(lat, lng);
     if (fresh.length) await cacheSet(ck, fresh);
-    return fresh;
+    return { places: fresh, at: Date.now(), stale: false };
   } catch (e) {
+    const { logOps } = await import("./ops.server");
     const legacy = await cacheGet(ck.slice(3));
-    if (legacy) return legacy.places;
+    if (legacy) { void logOps("cache", "places-legacy", true); return { places: legacy.places, at: legacy.at, stale: true }; }
     const official = mergeMinsal([]);
-    if (official.length) return official;
+    if (official.length) { void logOps("cache", "minsal-only", true); return { places: official, at: null, stale: true }; }
     throw e;
   }
+}
+
+/** Refresca la zona guardada hace más tiempo (lo usa la tarea programada). */
+export async function refreshStalestZones(n: number): Promise<string[]> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const keys = ZONES.map((z) => zoneKey(z.lat, z.lng));
+  const { data } = await supabaseAdmin.from("places_cache").select("key, updated_at").in("key", keys);
+  const ages = new Map((data ?? []).map((r) => [r.key, new Date(r.updated_at).getTime()]));
+  const order = [...new Set(keys)].sort((a, b) => (ages.get(a) ?? 0) - (ages.get(b) ?? 0)).slice(0, n);
+  const done: string[] = [];
+  for (const k of order) {
+    const z = ZONES.find((x) => zoneKey(x.lat, x.lng) === k)!;
+    try { const f = await fetchFresh(z.lat, z.lng); if (f.length) { await cacheSet(k, f); done.push(z.name); } } catch { /* registrado en fromOsm */ }
+  }
+  return done;
 }
 
 async function approvedHours(): Promise<ApprovedHours[]> {
@@ -175,6 +198,8 @@ async function hiddenIds(): Promise<Set<string>> {
   } catch { return new Set(); }
 }
 
+export type PlacesMeta = { placesAt: number | null; turnosAt: number | null; stale: boolean };
+
 async function allPlaces(lat: number, lng: number) {
   const [raw, community, turnos, approved, hidden] = await Promise.all([
     base(lat, lng),
@@ -183,10 +208,12 @@ async function allPlaces(lat: number, lng: number) {
     withTimeout(approvedHours(), 5000, []),
     withTimeout(hiddenIds(), 5000, new Set<string>()),
   ]);
-  const places = raw.filter((p) => !hidden.has(p.id));
+  const places = raw.places.filter((p) => !hidden.has(p.id));
   const extra = community.filter((c) => !hidden.has(c.id) && !places.some((p) => distanceM(p, c) < 40));
   const fixed = applyHours([...places, ...extra], approved);
-  return turnos ? { places: mergeTurnos(fixed, turnos), live: true } : { places: fixed, live: false };
+  const ts = citySlugsNear(lat, lng).map(turnosAt).filter((x): x is number => x != null);
+  const meta: PlacesMeta = { placesAt: raw.at, stale: raw.stale, turnosAt: ts.length ? Math.min(...ts) : null };
+  return turnos ? { places: mergeTurnos(fixed, turnos), live: true, meta } : { places: fixed, live: false, meta };
 }
 
 /** Encuentra coordenadas de un local solo con su id (enlaces compartidos sin lat/lng). */
@@ -210,7 +237,7 @@ async function locateId(id: string): Promise<{ lat: number; lng: number } | null
 
 export const getNearbyPlaces = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ lat: z.number(), lng: z.number() }).parse(d))
-  .handler(async ({ data }): Promise<{ places: Place[]; live: boolean }> => {
+  .handler(async ({ data }): Promise<{ places: Place[]; live: boolean; meta: PlacesMeta }> => {
     return allPlaces(data.lat, data.lng);
   });
 
@@ -235,4 +262,13 @@ export const getPlaceById = createServerFn({ method: "GET" })
       } catch { /* sin estado */ }
     }
     return { place, cumpa };
+  });
+
+/** Señales de la app (carga lenta, reintento, error). Sin ubicación ni identidad. */
+export const logClientEvent = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ kind: z.enum(["slow", "retry", "load_error"]), ms: z.number().int().min(0).max(600000).optional() }).parse(d))
+  .handler(async ({ data }) => {
+    const { logOps } = await import("./ops.server");
+    await logOps(data.kind, "app", data.kind !== "load_error", data.ms);
+    return { ok: true };
   });
