@@ -143,6 +143,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ops_events: {
+        Row: {
+          created_at: string
+          detail: string | null
+          id: string
+          kind: string
+          ms: number | null
+          ok: boolean
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          kind: string
+          ms?: number | null
+          ok?: boolean
+          source: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          id?: string
+          kind?: string
+          ms?: number | null
+          ok?: boolean
+          source?: string
+        }
+        Relationships: []
+      }
       place_alerts: {
         Row: {
           created_at: string

@@ -53,14 +53,40 @@ export async function liveTurnos(lat: number, lng: number): Promise<Place[] | nu
   return all.flatMap((x) => x ?? []);
 }
 
-export async function cityTurnos(slug: string): Promise<Place[] | null> {
-  const hit = cache.get(slug);
-  if (hit && Date.now() - hit.at < TTL) return hit.data;
+async function dbGet(slug: string): Promise<{ at: number; data: Place[] } | null> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.from("places_cache").select("places, updated_at").eq("key", `turnos:${slug}`).maybeSingle();
+    return data ? { at: new Date(data.updated_at).getTime(), data: data.places as unknown as Place[] } : null;
+  } catch { return null; }
+}
+
+/** Momento en que se obtuvieron los turnos de la ciudad (ms) o null. */
+export function turnosAt(slug: string): number | null { return cache.get(slug)?.at ?? null; }
+export function citySlugsNear(lat: number, lng: number) { return CITIES.filter((c) => distanceM(c, { lat, lng }) < 25000).map((c) => c.slug); }
+export const TURNO_SLUGS = CITIES.map((c) => c.slug);
+
+/** force = ignora la caché (lo usa la tarea programada). Guarda el último resultado válido en la base. */
+export async function cityTurnos(slug: string, force = false): Promise<Place[] | null> {
+  let hit = cache.get(slug);
+  if (!hit && !force) { const d = await dbGet(slug); if (d) { hit = d; cache.set(slug, d); } }
+  if (!force && hit && Date.now() - hit.at < TTL) return hit.data;
+  const t0 = Date.now();
+  const { logOps } = await import("./ops.server");
   try {
     const data = await scrape(slug);
-    cache.set(slug, { at: Date.now(), data });
+    if (!data.length) throw new Error("sin turnos en la página");
+    const at = Date.now();
+    cache.set(slug, { at, data });
+    void logOps("source", `turnos:${slug}`, true, at - t0);
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin.from("places_cache").upsert({ key: `turnos:${slug}`, places: data as any, updated_at: new Date(at).toISOString() });
+    } catch { /* ignore */ }
     return data;
-  } catch {
+  } catch (e) {
+    void logOps("source", `turnos:${slug}`, false, Date.now() - t0, String((e as Error)?.message ?? e));
+    if (!hit) { const d = await dbGet(slug); if (d) { cache.set(slug, d); return d.data; } }
     return hit?.data ?? null;
   }
 }

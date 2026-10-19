@@ -49,6 +49,18 @@ function Revision() {
     supabase.from("hidden_places").select("*").order("created_at", { ascending: false }).then(({ data }) => setHidden(data ?? []));
   }, [isAdmin]);
   const [hidden, setHidden] = useState<Tables<"hidden_places">[]>([]);
+  const [ops, setOps] = useState<Tables<"ops_events">[]>([]);
+  useEffect(() => {
+    if (!isAdmin) return;
+    const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    supabase.from("ops_events").select("*").gte("created_at", since).order("created_at", { ascending: false }).limit(1000).then(({ data }) => setOps(data ?? []));
+  }, [isAdmin]);
+  const health = Object.values(ops.reduce<Record<string, { key: string; total: number; fails: number; ms: number[]; last: string; lastOk: string | null }>>((acc, e) => {
+    const key = e.kind === "source" ? e.source : e.kind === "refresh" ? "tarea automática" : e.kind === "slow" ? "cargas lentas (app)" : e.kind === "retry" ? "reintentos (app)" : e.kind === "load_error" ? "errores de carga (app)" : `caché: ${e.source}`;
+    const a = (acc[key] ??= { key, total: 0, fails: 0, ms: [], last: e.created_at, lastOk: null });
+    a.total++; if (!e.ok) a.fails++; if (e.ms != null) a.ms.push(e.ms); if (e.ok && !a.lastOk) a.lastOk = e.created_at;
+    return acc;
+  }, {}));
   const restore = async (id: string) => {
     const { error } = await supabase.from("hidden_places").delete().eq("place_id", id);
     if (error) { toast.error("No se pudo reactivar."); return; }
@@ -121,6 +133,15 @@ function Revision() {
                 <button onClick={() => reviewSug(g.id, "approved")} className="rounded-lg bg-open py-2 font-bold text-open-foreground">{g.kind === "missing" ? "Aprobar y publicar" : "Revisado"}</button>
                 <button onClick={() => reviewSug(g.id, "rejected")} className="rounded-lg bg-closed py-2 font-bold text-closed-foreground">Descartar</button>
               </div>
+            </article>
+          ))}
+          <h2 className="pt-4 font-display text-xl font-extrabold">Salud de datos · últimas 24 h</h2>
+          {health.length === 0 && <p className="text-sm text-muted-foreground">Aún no hay registros.</p>}
+          {health.map((h) => (
+            <article key={h.key} className="flex items-center justify-between gap-2 rounded-2xl border bg-card p-3 text-sm">
+              <div className="min-w-0"><p className="truncate font-bold">{h.key}</p>
+                <p className="text-xs text-muted-foreground">{h.total} eventos{h.ms.length ? ` · prom. ${Math.round(h.ms.reduce((x, y) => x + y, 0) / h.ms.length / 100) / 10} s` : ""}{h.lastOk ? ` · último OK ${new Date(h.lastOk).toLocaleTimeString("es-CL")}` : ""}</p></div>
+              <span className={`rounded-lg px-2 py-1 text-xs font-bold ${h.fails ? "bg-closed text-closed-foreground" : "bg-open text-open-foreground"}`}>{h.fails ? `${h.fails} fallos` : "OK"}</span>
             </article>
           ))}
           <h2 className="pt-4 font-display text-xl font-extrabold">Locales dados de baja ({hidden.length})</h2>
