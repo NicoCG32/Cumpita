@@ -341,6 +341,7 @@ function Index() {
   const [ai, setAi] = useState<{ results: { id: string; reason: string }[]; summary: string } | null>(null);
   const [proposing, setProposing] = useState<string | null>(null);
   const fetchPlaces = useServerFn(getNearbyPlaces);
+  const logEvent = useServerFn(logClientEvent);
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["places", loc.lat.toFixed(3), loc.lng.toFixed(3)],
     queryFn: () => fetchPlaces({ data: { lat: loc.lat, lng: loc.lng } }),
@@ -349,9 +350,11 @@ function Index() {
   const [slow, setSlow] = useState(false);
   useEffect(() => {
     if (!isLoading) { setSlow(false); return; }
-    const t = setTimeout(() => setSlow(true), 8000);
+    const t = setTimeout(() => { setSlow(true); void logEvent({ data: { kind: "slow", ms: 8000 } }).catch(() => {}); }, 8000);
     return () => clearTimeout(t);
   }, [isLoading, loc.lat, loc.lng]);
+  useEffect(() => { if (isError) void logEvent({ data: { kind: "load_error" } }).catch(() => {}); }, [isError]);
+  const retry = () => { void logEvent({ data: { kind: "retry" } }).catch(() => {}); void refetch(); };
 
   // Caché offline: guarda la última lista cargada y la usa si no hay conexión
   useEffect(() => {
