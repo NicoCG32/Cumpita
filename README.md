@@ -1,50 +1,57 @@
-# cumpita. 🦉
+# cumpita.
 
-PWA móvil comunitaria para encontrar **farmacias, botillerías, librerías y almacenes/minimarkets abiertos ahora** en **Calama** y **La Serena–Coquimbo** (Chile), ordenados por distancia y validados por la comunidad ("cumpitas").
+![Estado](https://img.shields.io/badge/estado-piloto-amber) ![PWA](https://img.shields.io/badge/PWA-instalable-green) ![Zonas](https://img.shields.io/badge/zonas-Calama%20%C2%B7%20La%20Serena%20%C2%B7%20Coquimbo-blue)
 
-- Publicada: https://cumpita.lovable.app
-- Construida con [Lovable](https://lovable.dev) (TanStack Start + React 19 + Tailwind v4 + Lovable Cloud).
+> **Saber qué está abierto cerca, de verdad, a cualquier hora de la noche.**
 
-## Funcionalidades principales
+Publicada en https://cumpita.lovable.app
 
-- Feed de locales cercanos por distancia, con horario oficial y estado en vivo.
-- **"Último Cumpita"**: reportes Abierto/Cerrado con caducidad de 1 h, solo a ≤300 m del local (anti-trolling).
-- Detección pasiva: 5 min a ≤40 m de un local sin estado ⇒ se reporta abierto.
-- Farmacias de turno oficiales (MINSAL + scraping de mifarmaciadeturno.cl, incluida Coquimbo).
-- Micro-tags comunitarios (hielo, tarjeta, cartulinas, pan, carbón…), TTL 3 h.
-- Mapa (Leaflet/OSM) con rutas y enlaces a Waze/Google/Apple Maps.
-- Push: aviso si un local cierra mientras vas en camino y turno diario a las 20:00.
-- Favoritos, ranking de puntos, fichas compartibles `/local/:id`, sugerir locales, panel admin `/revision`.
-- Instalable como PWA, con modo oscuro nocturno y wizard de bienvenida.
+## Resumen ejecutivo
+De noche, en ciudades intermedias de Chile, los horarios publicados no reflejan la realidad y la farmacia de turno cambia cada día. Las personas se desplazan a locales cerrados, con pérdida de tiempo y riesgo de seguridad. **cumpita.** es una PWA comunitaria que combina datos oficiales con confirmaciones recientes de vecinos ("cumpitas") para mostrar farmacias, botillerías, librerías/bazares y almacenes/minimarkets realmente abiertos, ordenados por distancia.
 
-## Desarrollo local
+Dirigida a vecinos, trabajadores de turno, cuidadores en urgencias leves y comercios locales; con potencial para municipios y servicios de salud.
 
-```sh
-git clone <url-del-repositorio>
-cd <repositorio>
-bun install   # o npm i
-bun run dev   # http://localhost:8080
-bun run test  # vitest
+## Diferenciadores
+
+| | Mapas generalistas | **cumpita.** |
+| --- | --- | --- |
+| Horarios | Estimados o desactualizados | Oficiales o "no informado": nunca inventados |
+| Farmacia de turno | No siempre | Turno diario MINSAL / SEREMI en vivo |
+| Verificación | Reseñas antiguas | Confirmación a ≤300 m con caducidad de 1 h |
+| Uso nocturno | Genérico | Diseño, filtros y avisos pensados para la noche |
+| Fallas de fuente | Sin respaldo | Caché persistente y refresco automático |
+
+## Arquitectura en resumen
+TanStack Start v1 (React 19, SSR) en edge · Tailwind CSS v4 · Lovable Cloud (PostgreSQL con RLS, Auth, Realtime) · OpenStreetMap/Overpass · Firebase Cloud Messaging.
+
+```text
+PWA ─► Server functions (edge) ─► Caché (memoria / BD) ─► OSM · Turnos · MINSAL
+  ▲                                        │
+  └──────── Realtime: reportes y tags ◄────┘     Cron horario: precarga y respaldo
 ```
 
-Variables de entorno (`.env`, generado por Lovable Cloud): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`. Los secretos del servidor se gestionan en Lovable Cloud.
+## Flujo de la plataforma
+1. Elegir ciudad o activar GPS (una sola vez).
+2. Ver el feed de locales cercanos con su estado.
+3. Filtrar o buscar por nombre, calle o producto.
+4. Ir, compartir por WhatsApp o activar "voy en camino".
+5. En el local, confirmar abierto/cerrado y sumar etiquetas.
+
+## Qué obtiene el usuario
+Un local abierto confirmado, la ruta para llegar, avisos si cierra mientras va y el turno de farmacias del día cada noche.
+
+## Puesta en marcha rápida
+```sh
+bun install
+bun run dev    # http://localhost:8080
+bun run test
+```
 
 ## Documentación
+**→ [Índice y rutas de lectura en `docs/`](docs/README.md)**: perfiles para inversión, desarrollo y operación.
 
-| Documento | Contenido |
-| --- | --- |
-| [docs/instalacion-local.md](docs/instalacion-local.md) | Instalar, configurar `.env` y ejecutar en local |
-| [docs/despliegue.md](docs/despliegue.md) | Producción, secretos, cron y verificación de la PWA |
-| [docs/releases.md](docs/releases.md) | Versionado y GitHub Releases ([CHANGELOG](CHANGELOG.md)) |
-| [docs/arquitectura.md](docs/arquitectura.md) | Stack, estructura de carpetas, rutas y flujo de datos |
-| [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md) | OSM/Overpass, MINSAL, turnos, caché y respaldo |
-| [docs/comunidad.md](docs/comunidad.md) | Reportes, tags, geofencing, puntos y ranking |
-| [docs/base-de-datos.md](docs/base-de-datos.md) | Tablas, RLS, roles y migraciones |
-| [docs/notificaciones.md](docs/notificaciones.md) | Push en camino, turno diario y cron |
-| [docs/ux-ui.md](docs/ux-ui.md) | Identidad visual, pantalla principal, onboarding y PWA |
-| [docs/admin.md](docs/admin.md) | Panel de revisión, sugerencias y locales ocultos |
-| [docs/contribuir.md](docs/contribuir.md) | Convenciones, tests y cómo agregar categorías |
+## Visión estratégica
+El modelo "dato oficial incierto ↔ verificación humana reciente" se replica a nuevas ciudades del norte de Chile y a rubros como veterinarias de urgencia, vulcanizaciones y cerrajerías 24H. Ver [Escalabilidad y nuevos mercados](docs/15-escalabilidad-y-nuevos-mercados.md).
 
 ## Licencia
-
 Privado. © cumpita.
