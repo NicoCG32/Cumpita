@@ -39,4 +39,4 @@ Usa el `GITHUB_TOKEN` automático, con permiso de lectura durante las validacion
 - Si hay que corregir código, registra una nueva versión y sube un tag nuevo. No muevas un tag publicado.
 - Si el release ya existe, la creación falla para evitar reemplazar sus notas.
 
-No hagas force push ni reescribas historial en la rama sincronizada: rompe la sincronización con Lovable. Para publicar la web, sigue [Despliegue en producción](despliegue.md).
+No hagas force push ni reescribas historial en la rama sincronizada: rompe la sincronización con Lovable. Para publicar la web, sigue [Despliegue en producción](09-instalacion-y-despliegue.md).
