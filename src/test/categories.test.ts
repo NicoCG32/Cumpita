@@ -14,4 +14,8 @@ describe("osmCategory", () => {
   it("servicentro sin tienda no aparece", () => {
     expect(osmCategory({ amenity: "fuel" })).toBeNull();
   });
+  it("ferreterías y tiendas de bricolaje son ferreterías", () => {
+    expect(osmCategory({ shop: "hardware" })).toBe("ferreteria");
+    expect(osmCategory({ shop: "doityourself" })).toBe("ferreteria");
+  });
 });

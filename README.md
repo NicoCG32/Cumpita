@@ -7,7 +7,7 @@
 Publicada en https://cumpita.lovable.app
 
 ## Resumen ejecutivo
-De noche, en ciudades intermedias de Chile, los horarios publicados no reflejan la realidad y la farmacia de turno cambia cada día. Las personas se desplazan a locales cerrados, con pérdida de tiempo y riesgo de seguridad. **cumpita.** es una PWA comunitaria que combina datos oficiales con confirmaciones recientes de vecinos ("cumpitas") para mostrar farmacias, botillerías, librerías/bazares y almacenes/minimarkets realmente abiertos, ordenados por distancia.
+De noche, en ciudades intermedias de Chile, los horarios publicados no reflejan la realidad y la farmacia de turno cambia cada día. Las personas se desplazan a locales cerrados, con pérdida de tiempo y riesgo de seguridad. **cumpita.** es una PWA comunitaria que combina datos oficiales con confirmaciones recientes de vecinos ("cumpitas") para mostrar farmacias, botillerías, librerías/bazares, almacenes/minimarkets y ferreterías realmente abiertos, ordenados por distancia.
 
 Dirigida a vecinos, trabajadores de turno, cuidadores en urgencias leves y comercios locales; con potencial para municipios y servicios de salud.
 
