@@ -1,7 +1,7 @@
 # 02 · Catálogo funcional
 
 ## Categorías
-Definidas en una sola fuente, `src/lib/categories.ts` (`CATEGORIES`, `osmCategory`): **Farmacias**, **Botillerías/Licorerías**, **Librerías & Bazares**, **Almacenes & Minimarkets**. Feed, mapa, sugerencias y ficha las leen desde ahí.
+Definidas en una sola fuente, `src/lib/categories.ts` (`CATEGORIES`, `osmCategory`): **Farmacias**, **Botillerías/Licorerías**, **Librerías & Bazares**, **Almacenes & Minimarkets**, **Ferreterías** (OSM `shop=hardware` / `shop=doityourself`; Google `hardware_store`). Las ferreterías cubren urgencias domésticas de fin de semana y feriados más que la madrugada. Feed, mapa, sugerencias y ficha las leen desde ahí.
 
 ## Módulos
 

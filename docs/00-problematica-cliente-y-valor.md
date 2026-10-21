@@ -6,6 +6,7 @@ De noche, en ciudades intermedias de Chile como **Calama**, **La Serena** y **Co
 - Los horarios publicados en mapas genéricos suelen estar desactualizados o no existen.
 - La farmacia de turno cambia cada día y se publica en fuentes dispersas (SEREMI, MINSAL, sitios de terceros).
 - Botillerías y minimarkets cierran antes o abren más tarde de lo declarado, sin aviso.
+- Las ferreterías de barrio, clave para reparaciones urgentes en domingos y feriados, casi no publican horarios en línea.
 
 El resultado son **desplazamientos infructuosos de noche**, con costo de tiempo, transporte y, sobre todo, **riesgo de seguridad personal** en la calle.
 

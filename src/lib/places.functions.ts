@@ -17,7 +17,7 @@ const MIRRORS = [
 
 async function fromOsm(lat: number, lng: number): Promise<Place[]> {
   const a = `(around:4000,${lat},${lng})`;
-  const q = `[out:json][timeout:25];(nwr["amenity"="pharmacy"]${a};nwr["shop"~"^(alcohol|beverages|stationery|copyshop|books|convenience|supermarket|general|kiosk)$"]${a};nwr["amenity"="fuel"]["shop"]${a};);out center tags;`;
+  const q = `[out:json][timeout:25];(nwr["amenity"="pharmacy"]${a};nwr["shop"~"^(alcohol|beverages|stationery|copyshop|books|convenience|supermarket|general|kiosk|hardware|doityourself)$"]${a};nwr["amenity"="fuel"]["shop"]${a};);out center tags;`;
   // Consulta todas las réplicas en paralelo (12 s máx.) y usa la primera que responda.
   const t0 = Date.now();
   const ctrl = new AbortController();
@@ -45,7 +45,7 @@ async function fromOsm(lat: number, lng: number): Promise<Place[]> {
       const category = osmCategory(t);
       if (!category) return null;
       const street = [t["addr:street"], t["addr:housenumber"]].filter(Boolean).join(" ");
-      const name = t.amenity === "fuel" ? [t.brand || t.name || "Servicentro", t["shop:name"] || (t.shop === "convenience" ? "tienda" : "")].filter(Boolean).join(" · ") : t.name || t.brand || ({ farmacia: "Farmacia", botilleria: "Botillería", libreria: "Librería", minimarket: "Almacén" } as const)[category];
+      const name = t.amenity === "fuel" ? [t.brand || t.name || "Servicentro", t["shop:name"] || (t.shop === "convenience" ? "tienda" : "")].filter(Boolean).join(" · ") : t.name || t.brand || ({ farmacia: "Farmacia", botilleria: "Botillería", libreria: "Librería", minimarket: "Almacén", ferreteria: "Ferretería" } as const)[category];
       return {
         id: `${e.type}/${e.id}`, name,
         category, street: street || null, city: t["addr:city"] || null,
@@ -68,7 +68,7 @@ async function fromGoogle(lat: number, lng: number, key: string): Promise<Place[
     if (!res.ok) throw new Error("google " + res.status);
     return ((await res.json()).places ?? []) as any[];
   };
-  const [ph, lq, bk, cv] = await Promise.all([search("pharmacy"), search("liquor_store"), search("book_store").catch(() => []), search("convenience_store").catch(() => [])]);
+  const [ph, lq, bk, cv, hw] = await Promise.all([search("pharmacy"), search("liquor_store"), search("book_store").catch(() => []), search("convenience_store").catch(() => []), search("hardware_store").catch(() => [])]);
   const map = (g: any, category: Place["category"]): Place => {
     const wd: string[] = g.currentOpeningHours?.weekdayDescriptions ?? [];
     const today = wd[(new Date().getDay() + 6) % 7];
@@ -82,7 +82,7 @@ async function fromGoogle(lat: number, lng: number, key: string): Promise<Place[
       source: "google",
     };
   };
-  return [...ph.map((g) => map(g, "farmacia")), ...lq.map((g) => map(g, "botilleria")), ...bk.map((g) => map(g, "libreria")), ...cv.map((g) => map(g, "minimarket"))];
+  return [...ph.map((g) => map(g, "farmacia")), ...lq.map((g) => map(g, "botilleria")), ...bk.map((g) => map(g, "libreria")), ...cv.map((g) => map(g, "minimarket")), ...hw.map((g) => map(g, "ferreteria"))];
 }
 
 const FRESH_MS = 6 * 60 * 60 * 1000;
