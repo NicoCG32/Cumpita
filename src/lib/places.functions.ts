@@ -122,7 +122,7 @@ const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
   Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
 
 type Base = { places: Place[]; at: number | null; stale: boolean };
-const zoneKey = (lat: number, lng: number) => `v2:${lat.toFixed(2)},${lng.toFixed(2)}`;
+const zoneKey = (lat: number, lng: number) => `v3:${lat.toFixed(2)},${lng.toFixed(2)}`;
 
 async function base(lat: number, lng: number): Promise<Base> {
   const ck = zoneKey(lat, lng);
