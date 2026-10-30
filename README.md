@@ -1,8 +1,36 @@
+<div align="center">
+
+<img src="public/icons/icon-512.png" alt="Identidad visual de cumpita." width="104" />
+
 # cumpita.
+
+**Saber qué está abierto cerca, con información reciente.**
+
+[![Estado: Piloto](https://img.shields.io/badge/Estado-Piloto-C55B18?style=flat-square&labelColor=263244)](#sobre-el-proyecto) [![Plataforma: Web / PWA](https://img.shields.io/badge/Plataforma-Web%20%2F%20PWA-386B8F?style=flat-square&labelColor=263244)](#usar-o-descargar) [![Licencia: PolyForm NC](https://img.shields.io/badge/Licencia-PolyForm%20NC-596273?style=flat-square&labelColor=263244)](LICENSING.md)
+
+[![React 19](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#tecnologías) [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=FFFFFF)](#tecnologías) [![TanStack Start](https://img.shields.io/badge/TanStack%20Start-155E75?style=for-the-badge&logo=tanstack&logoColor=FFFFFF)](#tecnologías) [![Supabase](https://img.shields.io/badge/Supabase-166534?style=for-the-badge&logo=supabase&logoColor=FFFFFF)](#tecnologías)
+
+[Abrir aplicación](https://cumpita.lovable.app) · [Releases y descargas](https://github.com/NicoCG32/cumpita/releases/tag/v1.0.0) · [Documentación](docs/README.md) · [Arquitectura](docs/01-arquitectura-general.md) · [Inicio rápido](#ejecutar-desde-el-código)
+
+</div>
+
+---
+
+## Sobre el proyecto
 
 Aplicación comunitaria para consultar locales cercanos y su estado de apertura en Calama, La Serena y Coquimbo. Combina fuentes públicas con confirmaciones recientes de vecinos para ayudar a decidir dónde ir.
 
 **Estado:** Piloto web/PWA. La distribución Android está planificada; la release de fuentes y notas todavía no incluye una APK.
+
+## Tecnologías
+
+| Área                    | Tecnologías y responsabilidad                                                     |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| **Interfaz y servidor** | React 19, TypeScript, TanStack Start y Tailwind CSS.                              |
+| **Datos y cuentas**     | Supabase/PostgreSQL, autenticación y Realtime.                                    |
+| **Servicios**           | Leaflet y OpenStreetMap/Overpass; turnos de farmacias y Firebase Cloud Messaging. |
+
+> **Enfoque técnico:** Fuentes externas y reportes recientes; las funciones de servidor requieren backend.
 
 ## Usar o descargar
 
