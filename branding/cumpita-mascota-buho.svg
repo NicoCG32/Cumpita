@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><title>cumpita. — identidad visual</title><defs>
+ <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FC934D"/><stop offset=".47" stop-color="#F37933"/><stop offset="1" stop-color="#DD5C29"/></linearGradient>
+ <linearGradient id="orangeSoft" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFB56D"/><stop offset="1" stop-color="#E56B35"/></linearGradient>
+ <linearGradient id="night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2F2937"/><stop offset=".7" stop-color="#211D2C"/><stop offset="1" stop-color="#1D1B26"/></linearGradient>
+ <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFDF7"/><stop offset=".6" stop-color="#FFF5E9"/><stop offset="1" stop-color="#FFE7D4"/></linearGradient>
+ <linearGradient id="green" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#53CD91"/><stop offset="1" stop-color="#259C6F"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#FFB766" stop-opacity=".26"/><stop offset="1" stop-color="#FFB766" stop-opacity="0"/></radialGradient>
+ <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2" fill="#F7B77F" opacity=".23"/></pattern>
+ </defs><circle cx="512" cy="496" r="448" fill="#FFF0D9"/><g transform="translate(79 83) scale(2.55)"><g transform="translate(0 0) scale(1)">
+ <path d="M76 56 Q38 30 41 3 Q79 36 108 28 Q167 -2 233 28 Q266 36 294 3 Q305 44 263 62 Q316 111 312 186 Q306 259 240 285 L104 285 Q43 252 36 190 Q31 105 76 56Z" fill="#A95012"/>
+ <ellipse cx="173" cy="169" rx="112" ry="135" fill="#FBB333"/>
+ <path d="M90 175 Q32 181 49 253 Q68 307 100 276 Q124 240 90 175Z" fill="#BE671D"/>
+ <path d="M255 175 Q314 182 297 251 Q274 308 243 276 Q221 240 255 175Z" fill="#C56B1F"/>
+ <ellipse cx="124" cy="136" rx="67" ry="76" fill="#FFC43D"/><ellipse cx="223" cy="136" rx="67" ry="76" fill="#FFC43D"/>
+ <circle cx="129" cy="137" r="55" fill="#352414"/><circle cx="217" cy="137" r="55" fill="#352414"/>
+ <circle cx="129" cy="137" r="43" fill="#A9ED34"/><circle cx="217" cy="137" r="43" fill="#A9ED34"/>
+ <circle cx="134" cy="142" r="28" fill="#241C1A"/><circle cx="212" cy="142" r="28" fill="#241C1A"/>
+ <circle cx="144" cy="121" r="11" fill="#FFFFFF"/><circle cx="221" cy="122" r="11" fill="#FFFFFF"/>
+ <path d="M158 172 Q174 163 191 172 Q184 201 174 204 Q164 196 158 172Z" fill="#452315"/>
+ <path d="M120 284 Q108 301 116 312 Q127 320 141 305 Q154 324 167 309 L179 285 M200 286 Q191 309 205 316 Q223 324 229 307 Q243 316 256 302 L246 283" fill="#3B241A"/>
+ </g></g></svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><title>cumpita. — identidad visual</title><defs>
+ <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FC934D"/><stop offset=".47" stop-color="#F37933"/><stop offset="1" stop-color="#DD5C29"/></linearGradient>
+ <linearGradient id="orangeSoft" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFB56D"/><stop offset="1" stop-color="#E56B35"/></linearGradient>
+ <linearGradient id="night" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2F2937"/><stop offset=".7" stop-color="#211D2C"/><stop offset="1" stop-color="#1D1B26"/></linearGradient>
+ <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFDF7"/><stop offset=".6" stop-color="#FFF5E9"/><stop offset="1" stop-color="#FFE7D4"/></linearGradient>
+ <linearGradient id="green" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#53CD91"/><stop offset="1" stop-color="#259C6F"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#FFB766" stop-opacity=".26"/><stop offset="1" stop-color="#FFB766" stop-opacity="0"/></radialGradient>
+ <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="2" fill="#F7B77F" opacity=".23"/></pattern>
+ </defs><ellipse cx="512" cy="932" rx="255" ry="22" fill="#E68A54" opacity=".1"/><g transform="translate(0 0) scale(2)"><path d="M256 73 C157 73 92 147 92 235 C92 344 211 445 246 481 Q256 491 266 480 C324 421 420 329 420 235 C420 147 353 73 256 73Z" fill="url(#orange)"/>
+ <circle cx="256" cy="233" r="94" fill="#FFF9F0"/>
+ <g transform="rotate(-44 256 233)"><rect x="232" y="176" width="49" height="114" rx="25" fill="url(#orange)"/><path d="M232 231 H281" stroke="#fff9ef" stroke-width="9"/></g></g></svg>

@@ -62,3 +62,13 @@ Son criterios de revisión, no certificaciones de accesibilidad ya obtenidas. La
 
 [README.md](../README.md) · [docs/01-arquitectura-general.md](01-arquitectura-general.md) · [docs/04-base-de-datos.md](04-base-de-datos.md) · [docs/05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) · [docs/06-integraciones-externas-y-resiliencia.md](06-integraciones-externas-y-resiliencia.md) · [docs/releases.md](releases.md).
 <!-- DOCUMENTACION:nivel-2026-10-29:END -->
+
+<!-- IDENTIDAD:2026-10-30 -->
+
+## Recursos de identidad y distribución
+
+[Catálogo de originales y variantes](../branding/README.md) · [Manifest de identidad](../branding/manifest.json).
+
+La cabecera utiliza el logotipo horizontal claro/oscuro; el onboarding conserva la mascota como marca secundaria. Manifest, favicon, Apple Touch y vista previa social utilizan los derivados preparados.
+
+Los banners de presentación se seleccionan por tema en el README. Las aplicaciones incorporan sólo los recursos necesarios, con dimensiones/proporción estables; las variantes y originales permanecen en branding. La identidad visual no amplía funcionalidades ni cambia las condiciones de uso.
