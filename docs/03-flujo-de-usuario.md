@@ -41,7 +41,43 @@ Pulsar reportar ─► ¿GPS ≤300 m? ── no ─► bloqueado ("acércate al
 ```
 
 ## Navegación móvil
+
 - Barra inferior: **Locales · Mapa · Favoritos · Ranking**.
 - Cuenta, cambio de ubicación y filtros avanzados en **bottom sheets** cerrables con gesto o botón.
 - Acciones secundarias de cada tarjeta en el menú **"···"**.
-- Hero de intención rápida: *Farmacia de turno* · *Botillería abierta*.
+- Hero de intención rápida: _Farmacia de turno_ · _Botillería abierta_.
+
+<!-- DOCUMENTACION:nivel-2026-10-29:BEGIN -->
+
+**Nivel:** general / técnica.
+
+## Recorrido operativo y estados
+
+Revisión documental: 2026-10-29. Base `5c8c4528312e` en `main`; árbol inicialmente limpio. La inspección de fuentes no sustituye pruebas de ejecución.
+
+**Estado y alcance:** Piloto web/PWA con referencias remotas actualizadas; distribución APK es un objetivo confirmado y no se acredita por la release actual de fuentes/notas.
+
+1. Elegir zona o conceder ubicación.
+2. Filtrar categoría y revisar procedencia/vigencia.
+3. Abrir ficha y decidir desplazamiento.
+4. Reportar desde proximidad cuando corresponda.
+5. Recibir avisos consentidos o volver a consultar tras caducidad.
+
+### Confirmación y resultado
+
+Distancias y geofencing usan ubicación con incertidumbre; denegar GPS permite una zona manual.
+
+Los puntos y privilegios no se aceptan como una afirmación editable del cliente.
+
+En formularios/operaciones, distinguir captura, revisión, confirmación, resultado y fallo. Cancelar una previsualización no debe anunciar un cambio no confirmado; cuando existe una operación persistente, su recuperación sigue el contrato específico. En juegos, las fases de simulación se definen en el núcleo y la vista refleja esas transiciones.
+
+### Criterio de aceptación del recorrido
+
+Viajes evitados y proporción de consultas con dato vigente, medidos con consentimiento; latencia y cobertura por zona/categoría.
+
+Validar inicio, camino principal, error relevante, cancelación y reapertura según la plataforma; registrar también los escenarios aún no ejecutados. Para cumpita., atender especialmente: baja participación o reportes falsos.
+
+## Fuentes de implementación y contratos
+
+[README.md](../README.md) · [docs/01-arquitectura-general.md](01-arquitectura-general.md) · [docs/04-base-de-datos.md](04-base-de-datos.md) · [docs/05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) · [docs/06-integraciones-externas-y-resiliencia.md](06-integraciones-externas-y-resiliencia.md) · [docs/releases.md](releases.md).
+<!-- DOCUMENTACION:nivel-2026-10-29:END -->

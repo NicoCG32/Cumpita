@@ -1,57 +1,34 @@
 # cumpita.
 
-![Estado](https://img.shields.io/badge/estado-piloto-amber) ![PWA](https://img.shields.io/badge/PWA-instalable-green) ![Zonas](https://img.shields.io/badge/zonas-Calama%20%C2%B7%20La%20Serena%20%C2%B7%20Coquimbo-blue)
+Aplicación comunitaria para consultar locales cercanos y su estado de apertura en Calama, La Serena y Coquimbo. Combina fuentes públicas con confirmaciones recientes de vecinos para ayudar a decidir dónde ir.
 
-> **Saber qué está abierto cerca, de verdad, a cualquier hora de la noche.**
+**Estado:** Piloto web/PWA. La distribución Android está planificada; la release de fuentes y notas todavía no incluye una APK.
 
-Publicada en https://cumpita.lovable.app
+## Usar o descargar
 
-## Resumen ejecutivo
-De noche, en ciudades intermedias de Chile, los horarios publicados no reflejan la realidad y la farmacia de turno cambia cada día. Las personas se desplazan a locales cerrados, con pérdida de tiempo y riesgo de seguridad. **cumpita.** es una PWA comunitaria que combina datos oficiales con confirmaciones recientes de vecinos ("cumpitas") para mostrar farmacias, botillerías, librerías/bazares, almacenes/minimarkets y ferreterías realmente abiertos, ordenados por distancia.
+[Abrir la aplicación](https://cumpita.lovable.app) · [Release 1.0.0: fuentes y notas](https://github.com/NicoCG32/cumpita/releases/tag/v1.0.0). Elige ciudad o ubicación, busca un local y revisa la fuente y antigüedad de su estado.
 
-Dirigida a vecinos, trabajadores de turno, cuidadores en urgencias leves y comercios locales; con potencial para municipios y servicios de salud.
+## Ejecutar desde el código
 
-## Diferenciadores
+Con Bun y el entorno del backend configurado según la [guía de instalación](docs/09-instalacion-y-despliegue.md), desde la raíz:
 
-| | Mapas generalistas | **cumpita.** |
-| --- | --- | --- |
-| Horarios | Estimados o desactualizados | Oficiales o "no informado": nunca inventados |
-| Farmacia de turno | No siempre | Turno diario MINSAL / SEREMI en vivo |
-| Verificación | Reseñas antiguas | Confirmación a ≤300 m con caducidad de 1 h |
-| Uso nocturno | Genérico | Diseño, filtros y avisos pensados para la noche |
-| Fallas de fuente | Sin respaldo | Caché persistente y refresco automático |
-
-## Arquitectura en resumen
-TanStack Start v1 (React 19, SSR) en edge · Tailwind CSS v4 · Lovable Cloud (PostgreSQL con RLS, Auth, Realtime) · OpenStreetMap/Overpass · Firebase Cloud Messaging.
-
-```text
-PWA ─► Server functions (edge) ─► Caché (memoria / BD) ─► OSM · Turnos · MINSAL
-  ▲                                        │
-  └──────── Realtime: reportes y tags ◄────┘     Cron horario: precarga y respaldo
-```
-
-## Flujo de la plataforma
-1. Elegir ciudad o activar GPS (una sola vez).
-2. Ver el feed de locales cercanos con su estado.
-3. Filtrar o buscar por nombre, calle o producto.
-4. Ir, compartir por WhatsApp o activar "voy en camino".
-5. En el local, confirmar abierto/cerrado y sumar etiquetas.
-
-## Qué obtiene el usuario
-Un local abierto confirmado, la ruta para llegar, avisos si cierra mientras va y el turno de farmacias del día cada noche.
-
-## Puesta en marcha rápida
 ```sh
-bun install
-bun run dev    # http://localhost:8080
-bun run test
+bun install --frozen-lockfile
+bun run dev
 ```
+
+Abre la dirección indicada por Vite. Las funciones de servidor necesitan sus servicios y configuración; una copia estática no los reemplaza.
 
 ## Documentación
-**→ [Índice y rutas de lectura en `docs/`](docs/README.md)**: perfiles para inversión, desarrollo y operación.
 
-## Visión estratégica
-El modelo "dato oficial incierto ↔ verificación humana reciente" se replica a nuevas ciudades del norte de Chile y a rubros como veterinarias de urgencia, vulcanizaciones y cerrajerías 24H. Ver [Escalabilidad y nuevos mercados](docs/15-escalabilidad-y-nuevos-mercados.md).
+[Índice completo y rutas de lectura](docs/README.md) · [Recorrido de uso](docs/03-flujo-de-usuario.md).
 
-## Licencia
-Privado. © cumpita.
+| Tipo       | Lectura                                                                                                                                                                          |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| General    | [Problema, cliente y solución](docs/00-problematica-cliente-y-valor.md) · [Motivación](docs/16-motivacion-y-contexto.md)                                                         |
+| Técnica    | [Arquitectura y diagramas](docs/01-arquitectura-general.md) · [Dominio y datos](docs/04-base-de-datos.md)                                                                        |
+| Desarrollo | [Etapas y metodología](docs/17-desarrollo-y-metodologia.md) · [Proyección](docs/15-escalabilidad-y-nuevos-mercados.md) · [Costos CLP/USD](docs/18-analisis-economico-clp-usd.md) |
+
+## Licencia y créditos
+
+Código y documentación propios: [PolyForm Noncommercial 1.0.0](LICENSE), con [atribución](NOTICE). Uso comercial fuera de sus permisos: acuerdo previo de créditos y compensación. [Alcance y contacto](LICENSING.md).
