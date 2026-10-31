@@ -1,40 +1,373 @@
 {
   "schemaVersion": 1,
   "project": "Cumpita",
-  "bannerLight": "cumpita-banner-claro.png",
-  "bannerDark": "cumpita-banner-oscuro.png",
+  "bannerLight": "banners/cumpita-banner-claro.png",
+  "bannerDark": "banners/cumpita-banner-oscuro.png",
   "resources": [
-    "apple-touch-icon.png",
-    "cumpita-banner-claro-alta-resolucion.png",
-    "cumpita-banner-claro.png",
-    "cumpita-banner-claro.svg",
-    "cumpita-banner-ilustrado-3D.png",
-    "cumpita-banner-ilustrado-3D.webp",
-    "cumpita-banner-oscuro-alta-resolucion.png",
-    "cumpita-banner-oscuro.png",
-    "cumpita-banner-oscuro.svg",
-    "cumpita-icono-app-claro.png",
-    "cumpita-icono-app-claro.svg",
-    "cumpita-icono-app-oscuro.png",
-    "cumpita-icono-app-oscuro.svg",
-    "cumpita-isotipo-transparente.png",
-    "cumpita-isotipo-transparente.svg",
-    "cumpita-logo-horizontal-dark.png",
-    "cumpita-logo-horizontal-dark.svg",
-    "cumpita-logo-horizontal.png",
-    "cumpita-logo-horizontal.svg",
-    "cumpita-mascota-buho.png",
-    "cumpita-mascota-buho.svg",
-    "cumpita-open-graph-1200x630.jpg",
-    "cumpita-open-graph.png",
-    "cumpita-open-graph.svg",
-    "cumpita-portada-cuadrada-oscura.png",
-    "cumpita-portada-cuadrada-oscura.svg",
-    "cumpita-portada-cuadrada.png",
-    "cumpita-portada-cuadrada.svg",
-    "favicon-32.png",
-    "favicon-64.png",
-    "icon-192.png",
-    "icon-512.png"
-  ]
+    "banners/cumpita-banner-claro-alta-resolucion.png",
+    "banners/cumpita-banner-claro.png",
+    "banners/cumpita-banner-claro.svg",
+    "banners/cumpita-banner-ilustrado-3D.png",
+    "banners/cumpita-banner-ilustrado-3D.webp",
+    "banners/cumpita-banner-oscuro-alta-resolucion.png",
+    "banners/cumpita-banner-oscuro.png",
+    "banners/cumpita-banner-oscuro.svg",
+    "iconos/apple-touch-icon.png",
+    "iconos/cumpita-icono-app-claro.png",
+    "iconos/cumpita-icono-app-claro.svg",
+    "iconos/cumpita-icono-app-oscuro.png",
+    "iconos/cumpita-icono-app-oscuro.svg",
+    "iconos/favicon-32.png",
+    "iconos/favicon-64.png",
+    "iconos/icon-192.png",
+    "iconos/icon-512.png",
+    "logos/cumpita-isotipo-transparente.png",
+    "logos/cumpita-isotipo-transparente.svg",
+    "logos/cumpita-logo-horizontal-dark.png",
+    "logos/cumpita-logo-horizontal-dark.svg",
+    "logos/cumpita-logo-horizontal.png",
+    "logos/cumpita-logo-horizontal.svg",
+    "logos/cumpita-mascota-buho.png",
+    "logos/cumpita-mascota-buho.svg",
+    "portadas/cumpita-open-graph-1200x630.jpg",
+    "portadas/cumpita-open-graph.png",
+    "portadas/cumpita-open-graph.svg",
+    "portadas/cumpita-portada-cuadrada-oscura.png",
+    "portadas/cumpita-portada-cuadrada-oscura.svg",
+    "portadas/cumpita-portada-cuadrada.png",
+    "portadas/cumpita-portada-cuadrada.svg"
+  ],
+  "groups": {
+    "logos": [
+      "logos/cumpita-isotipo-transparente.png",
+      "logos/cumpita-isotipo-transparente.svg",
+      "logos/cumpita-logo-horizontal-dark.png",
+      "logos/cumpita-logo-horizontal-dark.svg",
+      "logos/cumpita-logo-horizontal.png",
+      "logos/cumpita-logo-horizontal.svg",
+      "logos/cumpita-mascota-buho.png",
+      "logos/cumpita-mascota-buho.svg"
+    ],
+    "iconos": [
+      "iconos/apple-touch-icon.png",
+      "iconos/cumpita-icono-app-claro.png",
+      "iconos/cumpita-icono-app-claro.svg",
+      "iconos/cumpita-icono-app-oscuro.png",
+      "iconos/cumpita-icono-app-oscuro.svg",
+      "iconos/favicon-32.png",
+      "iconos/favicon-64.png",
+      "iconos/icon-192.png",
+      "iconos/icon-512.png"
+    ],
+    "banners": [
+      "banners/cumpita-banner-claro-alta-resolucion.png",
+      "banners/cumpita-banner-claro.png",
+      "banners/cumpita-banner-claro.svg",
+      "banners/cumpita-banner-ilustrado-3D.png",
+      "banners/cumpita-banner-ilustrado-3D.webp",
+      "banners/cumpita-banner-oscuro-alta-resolucion.png",
+      "banners/cumpita-banner-oscuro.png",
+      "banners/cumpita-banner-oscuro.svg"
+    ],
+    "portadas": [
+      "portadas/cumpita-open-graph-1200x630.jpg",
+      "portadas/cumpita-open-graph.png",
+      "portadas/cumpita-open-graph.svg",
+      "portadas/cumpita-portada-cuadrada-oscura.png",
+      "portadas/cumpita-portada-cuadrada-oscura.svg",
+      "portadas/cumpita-portada-cuadrada.png",
+      "portadas/cumpita-portada-cuadrada.svg"
+    ],
+    "referencias": []
+  },
+  "metadata": {
+    "banners/cumpita-banner-claro-alta-resolucion.png": {
+      "format": "png",
+      "bytes": 626199,
+      "sha256": "7b99bc5cb67c51a1ccd1e751b68c742adeb258cff19076fb479c351b13697f8b",
+      "width": 3600,
+      "height": 1485,
+      "scalable": false,
+      "alpha": true
+    },
+    "banners/cumpita-banner-claro.png": {
+      "format": "png",
+      "bytes": 369843,
+      "sha256": "54d25f1bcd7716ab8e6518ccc1de7318acb61e7c4692201ddb54b7c3fd2dcdef",
+      "width": 2400,
+      "height": 990,
+      "scalable": false,
+      "alpha": true
+    },
+    "banners/cumpita-banner-claro.svg": {
+      "format": "svg",
+      "bytes": 27188,
+      "sha256": "861cc9872ba82f3ee864cbb6ce6d6f47cef9ee32ddc2b6946af3e7a840c96373",
+      "width": 2400.0,
+      "height": 990.0,
+      "viewBox": [0.0, 0.0, 2400.0, 990.0],
+      "scalable": true
+    },
+    "banners/cumpita-banner-ilustrado-3D.png": {
+      "format": "png",
+      "bytes": 1827726,
+      "sha256": "9f77c91a8b1f36e63b3936b541e70ac75c813d2aa293184827f5af4e5668f721",
+      "width": 1672,
+      "height": 940,
+      "scalable": false,
+      "alpha": false
+    },
+    "banners/cumpita-banner-ilustrado-3D.webp": {
+      "format": "webp",
+      "bytes": 138724,
+      "sha256": "65df7c67af9a66d4c8ed905f577322888832393899561b39705b76f76bb770cc",
+      "width": 1672,
+      "height": 940,
+      "scalable": false,
+      "alpha": false
+    },
+    "banners/cumpita-banner-oscuro-alta-resolucion.png": {
+      "format": "png",
+      "bytes": 624526,
+      "sha256": "38f9cc3f1e2dd7e2379999f0dada7b5b8bd7932165921b33cafa55ef953ad30f",
+      "width": 3600,
+      "height": 1485,
+      "scalable": false,
+      "alpha": true
+    },
+    "banners/cumpita-banner-oscuro.png": {
+      "format": "png",
+      "bytes": 374894,
+      "sha256": "c84f3694ad08bb8d6cb13225e73e34895888f27645fb57208169a12e64dbc56a",
+      "width": 2400,
+      "height": 990,
+      "scalable": false,
+      "alpha": true
+    },
+    "banners/cumpita-banner-oscuro.svg": {
+      "format": "svg",
+      "bytes": 27190,
+      "sha256": "2c185242bdee5a743b51214fdebe9d4e8bf65d7f9b9129a343c20f4a83fefe78",
+      "width": 2400.0,
+      "height": 990.0,
+      "viewBox": [0.0, 0.0, 2400.0, 990.0],
+      "scalable": true
+    },
+    "iconos/apple-touch-icon.png": {
+      "format": "png",
+      "bytes": 15215,
+      "sha256": "52925881186e3332bdbb1bd28817ac468c7adcbb0e9caa2aa45ec1198c6dcdb5",
+      "width": 180,
+      "height": 180,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/cumpita-icono-app-claro.png": {
+      "format": "png",
+      "bytes": 89257,
+      "sha256": "079650f853063b19983e04a16683412db3ac13527c87e235d852a48b7dbdd201",
+      "width": 1024,
+      "height": 1024,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/cumpita-icono-app-claro.svg": {
+      "format": "svg",
+      "bytes": 1901,
+      "sha256": "9d97256b390fb088a1adf2ce77aef471b4bf5eacf23b1b76f3f731357a43b983",
+      "width": 1024.0,
+      "height": 1024.0,
+      "viewBox": [0.0, 0.0, 1024.0, 1024.0],
+      "scalable": true
+    },
+    "iconos/cumpita-icono-app-oscuro.png": {
+      "format": "png",
+      "bytes": 97612,
+      "sha256": "f1d117c3425f677f0161be96d13aea4dafd34cd9f11f9b0cb551e3c61303048c",
+      "width": 1024,
+      "height": 1024,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/cumpita-icono-app-oscuro.svg": {
+      "format": "svg",
+      "bytes": 1901,
+      "sha256": "fa365dfd4bf4bf385b4cd4cc959d800df8dec0ed8b278fe76d8b8988c4fdcf81",
+      "width": 1024.0,
+      "height": 1024.0,
+      "viewBox": [0.0, 0.0, 1024.0, 1024.0],
+      "scalable": true
+    },
+    "iconos/favicon-32.png": {
+      "format": "png",
+      "bytes": 2067,
+      "sha256": "588135e5736e64add593ed330d53e745772ad44974b27e39862f4a877a8e56e4",
+      "width": 32,
+      "height": 32,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/favicon-64.png": {
+      "format": "png",
+      "bytes": 4893,
+      "sha256": "5ccded9a2e4469be5dd60f121400d489a5dacf3760665004fb12ed1505108c65",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/icon-192.png": {
+      "format": "png",
+      "bytes": 16152,
+      "sha256": "10a75e12386665d953633b57af14be0cc4098fdabf6605c2a4174d8b27e3bff2",
+      "width": 192,
+      "height": 192,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/icon-512.png": {
+      "format": "png",
+      "bytes": 46405,
+      "sha256": "02035aa3f10583b2bb77242a98e974209c8e6d1bf64509c00f37774e42368b28",
+      "width": 512,
+      "height": 512,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/cumpita-isotipo-transparente.png": {
+      "format": "png",
+      "bytes": 66019,
+      "sha256": "58df75557e563a713ed6512b69b6b9e56fba0ee56270bde600387dc59a5c6b5a",
+      "width": 1024,
+      "height": 1024,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/cumpita-isotipo-transparente.svg": {
+      "format": "svg",
+      "bytes": 1782,
+      "sha256": "67237bd3106a8ebeafb86d7c9f9b356c59bd4384a2ea368d0308c6aaa765a705",
+      "width": 1024.0,
+      "height": 1024.0,
+      "viewBox": [0.0, 0.0, 1024.0, 1024.0],
+      "scalable": true
+    },
+    "logos/cumpita-logo-horizontal-dark.png": {
+      "format": "png",
+      "bytes": 51033,
+      "sha256": "a680cff7accaf0bc0e8619c7be03b97e7066956f153b49dbaa8d43cc9a7ec07d",
+      "width": 1640,
+      "height": 426,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/cumpita-logo-horizontal-dark.svg": {
+      "format": "svg",
+      "bytes": 9835,
+      "sha256": "1e792642ae4f6b4a4519f33bc65b9443c0110ff2e5ae8fc06e9f6039a53ed78c",
+      "width": 1640.0,
+      "height": 426.0,
+      "viewBox": [0.0, 0.0, 1640.0, 426.0],
+      "scalable": true
+    },
+    "logos/cumpita-logo-horizontal.png": {
+      "format": "png",
+      "bytes": 51999,
+      "sha256": "df1b3880ac75c2d788a393bd77da7d55d7c6146dfa9fc6668e67c93f333e57fd",
+      "width": 1640,
+      "height": 426,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/cumpita-logo-horizontal.svg": {
+      "format": "svg",
+      "bytes": 9835,
+      "sha256": "3c9ed972ef18f360691c142b183c45aa1a457e770859c26cc1fa2a104682a862",
+      "width": 1640.0,
+      "height": 426.0,
+      "viewBox": [0.0, 0.0, 1640.0, 426.0],
+      "scalable": true
+    },
+    "logos/cumpita-mascota-buho.png": {
+      "format": "png",
+      "bytes": 91735,
+      "sha256": "d574839943ef7c5ecf0da708c9c494ef1e8c21c6d430b6ff6f77486dd786b1e2",
+      "width": 1024,
+      "height": 1024,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/cumpita-mascota-buho.svg": {
+      "format": "svg",
+      "bytes": 2621,
+      "sha256": "6759b467f73ab0d3d32fe13c587164dd81ea842ce53301b1613aafdeb7d79d3e",
+      "width": 1024.0,
+      "height": 1024.0,
+      "viewBox": [0.0, 0.0, 1024.0, 1024.0],
+      "scalable": true
+    },
+    "portadas/cumpita-open-graph-1200x630.jpg": {
+      "format": "jpg",
+      "bytes": 51834,
+      "sha256": "7859753caa9102bb3e42b55ac5482a08308186967834f88be8560f83acd930f7",
+      "width": 1200,
+      "height": 630,
+      "scalable": false,
+      "alpha": false
+    },
+    "portadas/cumpita-open-graph.png": {
+      "format": "png",
+      "bytes": 115513,
+      "sha256": "35e95096d46acf6b2f1a297121e6f3e0f30806230ed07df0952907df9a80d98d",
+      "width": 1200,
+      "height": 630,
+      "scalable": false,
+      "alpha": false
+    },
+    "portadas/cumpita-open-graph.svg": {
+      "format": "svg",
+      "bytes": 18174,
+      "sha256": "5774a04fbd1510f4eea0da8ec3da9b2ce37ef4142f816773af026cadc7854a68",
+      "width": 1200.0,
+      "height": 630.0,
+      "viewBox": [0.0, 0.0, 1200.0, 630.0],
+      "scalable": true
+    },
+    "portadas/cumpita-portada-cuadrada-oscura.png": {
+      "format": "png",
+      "bytes": 118215,
+      "sha256": "da3336b8a586c4e033a59849bb3bbc537b74493b7812639006cf00f2aaf4b5f2",
+      "width": 1200,
+      "height": 1200,
+      "scalable": false,
+      "alpha": true
+    },
+    "portadas/cumpita-portada-cuadrada-oscura.svg": {
+      "format": "svg",
+      "bytes": 12556,
+      "sha256": "42a6215cdf41dda70cb638b0b4d45d95cc4bf036651b3febcd50861e0cd720e6",
+      "width": 1200.0,
+      "height": 1200.0,
+      "viewBox": [0.0, 0.0, 1200.0, 1200.0],
+      "scalable": true
+    },
+    "portadas/cumpita-portada-cuadrada.png": {
+      "format": "png",
+      "bytes": 127095,
+      "sha256": "d83e0bf6b27d024c6d38c582b74a6b3280f4a743d18305e7b41a8d706dfe3366",
+      "width": 1200,
+      "height": 1200,
+      "scalable": false,
+      "alpha": true
+    },
+    "portadas/cumpita-portada-cuadrada.svg": {
+      "format": "svg",
+      "bytes": 12555,
+      "sha256": "f76f6ad590df9af9e65784873dda907e94dbf5fb3b08a2ea699351d3b6e231b8",
+      "width": 1200.0,
+      "height": 1200.0,
+      "viewBox": [0.0, 0.0, 1200.0, 1200.0],
+      "scalable": true
+    }
+  }
 }

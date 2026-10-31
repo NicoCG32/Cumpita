@@ -890,15 +890,15 @@ function Index() {
             <img
               src="/brand/cumpita-logo-horizontal.svg"
               alt=""
-              width={1640}
-              height={426}
+              width={1092}
+              height={405}
               className="h-8 w-auto max-w-36 object-contain dark:hidden"
             />
             <img
               src="/brand/cumpita-logo-horizontal-dark.svg"
               alt=""
-              width={1640}
-              height={426}
+              width={1092}
+              height={405}
               className="hidden h-8 w-auto max-w-36 object-contain dark:block"
             />
           </h1>

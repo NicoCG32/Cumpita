@@ -1,8 +1,8 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="branding/cumpita-banner-oscuro.png" />
-  <img src="branding/cumpita-banner-claro.png" alt="Identidad visual de Cumpita" width="100%" />
+  <source media="(prefers-color-scheme: dark)" srcset="branding/banners/cumpita-banner-oscuro.png" />
+  <img src="branding/banners/cumpita-banner-claro.png" alt="Identidad visual de Cumpita" width="100%" />
 </picture>
 
 # cumpita.
