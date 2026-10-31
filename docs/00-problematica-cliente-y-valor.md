@@ -46,15 +46,9 @@ El resultado son **desplazamientos infructuosos de noche**, con costo de tiempo,
 - **PWA instalable:** sin pasar por tiendas de aplicaciones; una sola base de código para Android, iOS y escritorio.
 - **Diferenciación frente a mapas generalistas:** foco hiperlocal y nocturno, con confirmación reciente de personas que estuvieron ahí.
 
-<!-- DOCUMENTACION:nivel-2026-10-29:BEGIN -->
-
-**Nivel:** general.
-
 ## Síntesis general — cumpita.
 
-Revisión documental: 2026-10-29. Base `5c8c4528312e` en `main`; árbol inicialmente limpio. La inspección de fuentes no sustituye pruebas de ejecución.
-
-**Estado y alcance:** Piloto web/PWA con referencias remotas actualizadas; distribución APK es un objetivo confirmado y no se acredita por la release actual de fuentes/notas.
+**Disponibilidad:** Piloto web/PWA para consultar comercios cercanos y reportes de apertura. La APK para Android está en planificación; la release actual distribuye el código fuente.
 
 ### Problemática
 
@@ -84,9 +78,8 @@ Feed y mapa reúnen fuentes de lugares/turnos con reportes comunitarios geolocal
 
 Viajes evitados y proporción de consultas con dato vigente, medidos con consentimiento; latencia y cobertura por zona/categoría.
 
-La motivación del creador se presenta en [16-motivacion-y-contexto.md](16-motivacion-y-contexto.md); el análisis de costos y proyección se separa en [18-analisis-economico-clp-usd.md](18-analisis-economico-clp-usd.md). Afinidad personal, un prototipo o cercanía con una organización no equivalen a demanda/venta demostrada.
+Puedes conocer el origen del proyecto en [16-motivacion-y-contexto.md](16-motivacion-y-contexto.md); el análisis de costos y proyección se separa en [18-analisis-economico-clp-usd.md](18-analisis-economico-clp-usd.md).
 
-## Fuentes de implementación y contratos
+## Código y documentación relacionada
 
 [README.md](../README.md) · [docs/01-arquitectura-general.md](01-arquitectura-general.md) · [docs/04-base-de-datos.md](04-base-de-datos.md) · [docs/05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) · [docs/06-integraciones-externas-y-resiliencia.md](06-integraciones-externas-y-resiliencia.md) · [docs/releases.md](releases.md).
-<!-- DOCUMENTACION:nivel-2026-10-29:END -->

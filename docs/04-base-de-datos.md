@@ -46,15 +46,7 @@ Todas las tablas viven en el esquema `public` de Lovable Cloud (PostgreSQL), con
 
 Regla: cada migración que crea una tabla incluye `GRANT`, `ENABLE ROW LEVEL SECURITY` y sus políticas en el mismo archivo.
 
-<!-- DOCUMENTACION:nivel-2026-10-29:BEGIN -->
-
-**Nivel:** técnica.
-
 ## Dominio y representación de datos
-
-Revisión documental: 2026-10-29. Base `5c8c4528312e` en `main`; árbol inicialmente limpio. La inspección de fuentes no sustituye pruebas de ejecución.
-
-**Estado y alcance:** Piloto web/PWA con referencias remotas actualizadas; distribución APK es un objetivo confirmado y no se acredita por la release actual de fuentes/notas.
 
 ### Entidades y conceptos
 
@@ -89,7 +81,7 @@ Revisión documental: 2026-10-29. Base `5c8c4528312e` en `main`; árbol inicialm
 
 Migraciones en drizzle/migrations definen las tablas, GRANT y RLS. El esquema TypeScript generado puede estar vacío; no es una prueba de ausencia de base de datos. Favoritos/apodo y preferencias locales se distinguen de reportes y roles remotos. Las políticas presentes en el repo no prueban su aplicación en producción.
 
-La cardinalidad de dominio no prueba que exista una FK física. Revisar adaptadores/migraciones para identificar qué se valida por esquema, por caso de uso o por lectura. No usar «RLS» para almacenamiento que no dispone de esas políticas.
+El diagrama describe relaciones del dominio. Los adaptadores y el esquema de persistencia determinan cómo se mantienen esas relaciones al guardar o recuperar datos.
 
 ### Consistencia y evolución
 
@@ -99,9 +91,8 @@ La cardinalidad de dominio no prueba que exista una FK física. Revisar adaptado
 - Las categorías proceden de categories.ts e incluyen ferreterías en la revisión actual.
 - Los puntos y privilegios no se aceptan como una afirmación editable del cliente.
 
-Cambios de formato, referencias y restauración se comprueban con datos de prueba. El respaldo/artefacto debe indicar versión; la documentación no autoriza transformar datos reales ni rebajar un esquema para abrirlo con un ejecutable anterior.
+Antes de cambiar el formato de almacenamiento, comprueba la migración y la restauración con una copia de prueba. Conserva la versión del respaldo y verifica su compatibilidad con la aplicación que lo abrirá.
 
-## Fuentes de implementación y contratos
+## Código y documentación relacionada
 
 [README.md](../README.md) · [docs/01-arquitectura-general.md](01-arquitectura-general.md) · [docs/05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) · [docs/06-integraciones-externas-y-resiliencia.md](06-integraciones-externas-y-resiliencia.md) · [docs/releases.md](releases.md).
-<!-- DOCUMENTACION:nivel-2026-10-29:END -->

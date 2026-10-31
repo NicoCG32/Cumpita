@@ -92,19 +92,13 @@ Se gestionan en **Lovable Cloud → Secrets**. Durante una rotación, el cron ac
 | Pantalla en blanco tras deploy | Recargar; si persiste, abrir con `?sw=off`      |
 | Cambió `start_url` o `display` | Reinstalar la PWA                               |
 
-<!-- DOCUMENTACION:nivel-2026-10-29:BEGIN -->
-
-**Nivel:** técnica.
-
 ## Puesta en marcha y distribución por plataforma
 
-Revisión documental: 2026-10-29. Base `5c8c4528312e` en `main`; árbol inicialmente limpio. La inspección de fuentes no sustituye pruebas de ejecución.
-
-**Estado y alcance:** Piloto web/PWA con referencias remotas actualizadas; distribución APK es un objetivo confirmado y no se acredita por la release actual de fuentes/notas.
+**Disponibilidad:** Piloto web/PWA para consultar comercios cercanos y reportes de apertura. La APK para Android está en planificación; la release actual distribuye el código fuente.
 
 **Destinos:** APK en GitHub Releases + Webpage.
 
-Entorno declarado: engines `{}`; packageManager `consultar lockfile/guía específica`. No actualizar dependencias por redactar documentación.
+Utiliza el gestor de paquetes y las instrucciones de la guía de instalación de este repositorio.
 
 | Script existente | Definición en package.json                   |
 | ---------------- | -------------------------------------------- |
@@ -121,37 +115,20 @@ Entorno declarado: engines `{}`; packageManager `consultar lockfile/guía espec�
 2. Ejecutar la modalidad local y sus comprobaciones existentes desde la carpeta indicada por esa guía. No confundir preview web con el runtime nativo o montaje físico.
 3. Construir/instalar el artefacto de ese target y comprobar recorrido principal, error relevante y reapertura/actualización antes de declararlo entregado.
 
-Los comandos se enumeran desde archivos presentes; esta actualización documental no los ejecuta de nuevo ni certifica sus resultados. Estado de pruebas y CI se informa por revisión/fecha, separado de capacidades propuestas.
+Ejecuta los comandos de comprobación antes de distribuir una compilación. Puedes consultar sus resultados remotos en la pestaña Actions del repositorio.
 
 ### Datos, servicios y distribución
 
 Migraciones en drizzle/migrations definen las tablas, GRANT y RLS. El esquema TypeScript generado puede estar vacío; no es una prueba de ausencia de base de datos. Favoritos/apodo y preferencias locales se distinguen de reportes y roles remotos. Las políticas presentes en el repo no prueban su aplicación en producción.
 
-Para APK: application ID estable, versión/código creciente, firma privada preservada, permisos y prueba en dispositivo; adjuntar APK y SHA-256 a la release. Para escritorio: distinguir portable/instalador y dependencias. Para web: base/rutas, servidor/servicios y cambio de origen. Para firmware: dispositivo, cableado, compilación y prueba física separados. Aplicar sólo los targets aprobados.
+La versión web necesita sus servicios de datos y funciones servidor. Para Android se prevé un APK con permisos de ubicación y notificaciones; su distribución se realizará mediante GitHub Releases cuando esté disponible.
 
-GitHub Releases no aloja el backend ni convierte un ZIP de fuentes en instalador. No hacer push como parte de una revisión documental: en proyectos con publicación automática desde main, ese push puede generar una nueva APK o despliegue.
+GitHub Releases distribuye los archivos de cada versión. Los servicios de servidor se despliegan por separado; consulta la guía de la plataforma para instalar o alojar la aplicación.
 
 ### Recuperación
 
-Conservar el artefacto anterior y su procedencia. Retroceder código no revierte automáticamente datos o migraciones. Revisar compatibilidad de guardado/snapshot y restauración antes de instalar una versión antigua. La aceptación debe identificar archivo/URL, commit, target, fecha y limitaciones.
+Conservar el artefacto anterior y su procedencia. Retroceder código no revierte automáticamente datos o migraciones. Revisar compatibilidad de guardado/snapshot y restauración antes de instalar una versión antigua. Consulta las notas de la versión para conocer los requisitos y límites de la entrega.
 
-## Fuentes de implementación y contratos
+## Código y documentación relacionada
 
 [README.md](../README.md) · [docs/01-arquitectura-general.md](01-arquitectura-general.md) · [docs/04-base-de-datos.md](04-base-de-datos.md) · [docs/05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) · [docs/06-integraciones-externas-y-resiliencia.md](06-integraciones-externas-y-resiliencia.md) · [docs/releases.md](releases.md).
-<!-- DOCUMENTACION:nivel-2026-10-29:END -->
-
-<!-- DOCUMENTACION:evidencia-ci-2026-10-29:BEGIN -->
-
-## Estado remoto consultado el 29 de octubre de 2026
-
-Consulta para el commit `5c8c4528312ed59fad29496228b46ea919fc8700`. Se leyó GitHub Actions; no se ejecutó de nuevo la aplicación ni se repitieron sus pruebas.
-
-No se obtuvo una ejecución de workflow para este SHA en la consulta. Esto no demuestra ausencia de pruebas ni valida el runtime.
-
-Releases consultadas (no una comprobación nueva de instalación):
-
-| Tag                                                               | Canal                          | Adjuntos identificados       |
-| ----------------------------------------------------------------- | ------------------------------ | ---------------------------- |
-| [v1.0.0](https://github.com/NicoCG32/cumpita/releases/tag/v1.0.0) | Publicada sin marca prerelease | Sin assets binarios listados |
-
-<!-- DOCUMENTACION:evidencia-ci-2026-10-29:END -->

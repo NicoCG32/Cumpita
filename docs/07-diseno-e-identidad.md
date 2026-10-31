@@ -37,15 +37,7 @@
 - Service worker con modo offline básico; `?sw=off` lo desregistra.
 - Banner de instalación (`InstallBanner.tsx`): botón en Android, instrucciones en iOS; se oculta 7 días al cerrarlo.
 
-<!-- DOCUMENTACION:nivel-2026-10-29:BEGIN -->
-
-**Nivel:** técnica / producto.
-
 ## Identidad y experiencia de uso
-
-Revisión documental: 2026-10-29. Base `5c8c4528312e` en `main`; árbol inicialmente limpio. La inspección de fuentes no sustituye pruebas de ejecución.
-
-**Estado y alcance:** Piloto web/PWA con referencias remotas actualizadas; distribución APK es un objetivo confirmado y no se acredita por la release actual de fuentes/notas.
 
 Identidad nocturna y cercana, categorías compartidas, temas y paneles inferiores controlados para cuenta/ubicación/filtros. Los estados deben distinguir horario, confirmación y ausencia de información. La accesibilidad de los paneles y errores importa más que añadir efectos decorativos.
 
@@ -56,14 +48,11 @@ Identidad nocturna y cercana, categorías compartidas, temas y paneles inferiore
 - Legibilidad y controles suficientes para el dispositivo objetivo; considerar área segura y ciclo de vida en móvil.
 - Evitar que animación, espera o respuesta tardía apliquen efectos ajenos a la selección vigente.
 
-Son criterios de revisión, no certificaciones de accesibilidad ya obtenidas. La aceptación se registra por resolución/plataforma y recorrido; no se extrapola desde una captura aislada.
+Comprueba estos criterios en los recorridos principales y en los tamaños de pantalla de la plataforma que vas a utilizar.
 
-## Fuentes de implementación y contratos
+## Código y documentación relacionada
 
 [README.md](../README.md) · [docs/01-arquitectura-general.md](01-arquitectura-general.md) · [docs/04-base-de-datos.md](04-base-de-datos.md) · [docs/05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) · [docs/06-integraciones-externas-y-resiliencia.md](06-integraciones-externas-y-resiliencia.md) · [docs/releases.md](releases.md).
-<!-- DOCUMENTACION:nivel-2026-10-29:END -->
-
-<!-- IDENTIDAD:2026-10-30 -->
 
 ## Recursos de identidad y distribución
 

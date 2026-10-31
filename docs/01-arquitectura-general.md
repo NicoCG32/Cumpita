@@ -73,15 +73,7 @@ drizzle/migrations/  historial SQL del esquema (0000–0013)
 
 > El módulo `ai-search.*` existe en el código pero **no se usa** en la interfaz: la búsqueda es directa y local por decisión de producto.
 
-<!-- DOCUMENTACION:nivel-2026-10-29:BEGIN -->
-
-**Nivel:** técnica.
-
 ## Arquitectura del sistema por niveles
-
-Revisión documental: 2026-10-29. Base `5c8c4528312e` en `main`; árbol inicialmente limpio. La inspección de fuentes no sustituye pruebas de ejecución.
-
-**Estado y alcance:** Piloto web/PWA con referencias remotas actualizadas; distribución APK es un objetivo confirmado y no se acredita por la release actual de fuentes/notas.
 
 ### Nivel 1 — Contexto y fronteras de ejecución
 
@@ -110,7 +102,7 @@ Feed y mapa reúnen fuentes de lugares/turnos con reportes comunitarios geolocal
 | Turnos              | Adaptación de datos disponibles       | [src/lib/turnos-live.ts](../src/lib/turnos-live.ts)           |
 | Esquema             | Migraciones SQL y controles           | [drizzle/migrations](../drizzle/migrations)                   |
 
-Las flechas del contexto representan comunicación/flujo. No se deduce una dependencia de código o transacción compartida sólo porque dos componentes intercambien datos.
+Las flechas muestran el flujo de información entre componentes. Las transacciones y dependencias de código se detallan en los contratos de cada módulo.
 
 ### Nivel 3 — Dominio, contratos y adaptadores
 
@@ -120,7 +112,7 @@ Migraciones en drizzle/migrations definen las tablas, GRANT y RLS. El esquema Ty
 - Un reporte abierto/cerrado caduca; no convierte el dato comunitario en estado oficial permanente.
 - El código documenta 300 m para reporte y una hora de vigencia; consultar constantes para límites efectivos.
 
-Consultar [04-base-de-datos.md](04-base-de-datos.md) para entidades, cardinalidades y representación; [05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) para invariantes. En un prototipo, las piezas rotuladas propuestas no son clases implementadas.
+Consultar [04-base-de-datos.md](04-base-de-datos.md) para entidades, cardinalidades y representación; [05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) para invariantes. Las piezas marcadas como propuestas pertenecen al diseño del prototipo.
 
 ### Nivel 4 — Despliegue y distribución
 
@@ -134,7 +126,7 @@ Consultar [04-base-de-datos.md](04-base-de-datos.md) para entidades, cardinalida
                                                           [Usuario y sus datos]
 ```
 
-La persistencia y los servicios del contexto anterior conservan sus propias fronteras. Distribuir un APK no incorpora automáticamente el servidor, una PWA no acredita un instalador y el firmware requiere dispositivo. El capítulo [09-instalacion-y-despliegue.md](09-instalacion-y-despliegue.md) concreta la puesta en marcha.
+La versión web necesita sus servicios de datos y funciones servidor. Para Android se prevé un APK con permisos de ubicación y notificaciones; su distribución se realizará mediante GitHub Releases cuando esté disponible. El capítulo [09-instalacion-y-despliegue.md](09-instalacion-y-despliegue.md) concreta la puesta en marcha.
 
 ### Calidad y límites arquitectónicos
 
@@ -143,9 +135,8 @@ La persistencia y los servicios del contexto anterior conservan sus propias fron
 - GPS impreciso y datos personales
 - Avisos o TWA/servicios Android no certificados por pruebas web
 
-No se publican garantías de latencia, disponibilidad o escala sin medición para la revisión/entorno concretos. Un diagrama explica responsabilidades; no es una certificación de ejecución o seguridad del servicio desplegado.
+El rendimiento y la capacidad dependen del entorno de ejecución. Consulta las guías de instalación y las limitaciones de cada plataforma antes de desplegar.
 
-## Fuentes de implementación y contratos
+## Código y documentación relacionada
 
 [README.md](../README.md) · [docs/04-base-de-datos.md](04-base-de-datos.md) · [docs/05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) · [docs/06-integraciones-externas-y-resiliencia.md](06-integraciones-externas-y-resiliencia.md) · [docs/releases.md](releases.md).
-<!-- DOCUMENTACION:nivel-2026-10-29:END -->

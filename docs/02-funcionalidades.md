@@ -32,15 +32,9 @@ Definidas en una sola fuente, `src/lib/categories.ts` (`CATEGORIES`, `osmCategor
 - **Fuentes externas caídas:** se sirve la última copia válida de `places_cache`.
 - **Carga lenta:** a los 8 s aparece "La conexión está tardando más de lo habitual" con **Actualizar**.
 
-<!-- DOCUMENTACION:nivel-2026-10-29:BEGIN -->
+## Capacidades y límites
 
-**Nivel:** general / técnica.
-
-## Catálogo de capacidades — revisión 2026-10-29
-
-Revisión documental: 2026-10-29. Base `5c8c4528312e` en `main`; árbol inicialmente limpio. La inspección de fuentes no sustituye pruebas de ejecución.
-
-**Estado y alcance:** Piloto web/PWA con referencias remotas actualizadas; distribución APK es un objetivo confirmado y no se acredita por la release actual de fuentes/notas.
+**Disponibilidad:** Piloto web/PWA para consultar comercios cercanos y reportes de apertura. La APK para Android está en planificación; la release actual distribuye el código fuente.
 
 | Módulo         | Capacidad / propósito           | Caso borde o límite                         |
 | -------------- | ------------------------------- | ------------------------------------------- |
@@ -51,9 +45,8 @@ Revisión documental: 2026-10-29. Base `5c8c4528312e` en `main`; árbol inicialm
 | Avisos         | Suscripciones y en camino       | Permisos y disponibilidad de proveedor      |
 | Operación      | Caché y ops_events              | Tiempo de espera, reintento y degradación   |
 
-Los módulos propuestos se identifican expresamente. La disponibilidad en una plataforma no se extrapola a las demás; la aceptación debe cubrir los casos borde del recorrido principal.
+Las capacidades previstas se distinguen de las disponibles. Consulta los requisitos de la plataforma que vas a utilizar.
 
-## Fuentes de implementación y contratos
+## Código y documentación relacionada
 
 [README.md](../README.md) · [docs/01-arquitectura-general.md](01-arquitectura-general.md) · [docs/04-base-de-datos.md](04-base-de-datos.md) · [docs/05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) · [docs/06-integraciones-externas-y-resiliencia.md](06-integraciones-externas-y-resiliencia.md) · [docs/releases.md](releases.md).
-<!-- DOCUMENTACION:nivel-2026-10-29:END -->
