@@ -12,9 +12,17 @@ export const Route = createFileRoute("/api/public/cron/refresh")({
         const denied = await authenticateCronRequest(request);
         if (denied) return denied;
         const t0 = Date.now();
-        const turnos = await Promise.all(TURNO_SLUGS.map((s) => cityTurnos(s, true).then((r) => (r ? r.length : -1))));
+        const turnos = await Promise.all(
+          TURNO_SLUGS.map((s) => cityTurnos(s, true).then((r) => (r ? r.length : -1))),
+        );
         const zones = await refreshStalestZones(2);
-        await logOps("refresh", "cron", turnos.every((n) => n >= 0), Date.now() - t0, `zonas: ${zones.join(", ") || "ninguna"}`);
+        await logOps(
+          "refresh",
+          "cron",
+          turnos.every((n) => n >= 0),
+          Date.now() - t0,
+          `zonas: ${zones.join(", ") || "ninguna"}`,
+        );
         return Response.json({ turnos, zones });
       },
     },

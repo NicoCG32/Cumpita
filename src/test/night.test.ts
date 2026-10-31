@@ -12,5 +12,6 @@ describe("madrugada y zonas", () => {
     expect(isServicentro({ name: "Almacén Doña Rosa" })).toBe(false);
   });
   it("busca sin tildes", () => expect(norm("Peñuelas Ávila")).toBe("penuelas avila"));
-  it("incluye Coquimbo como ciudad", () => expect(ZONES.filter((z) => z.city === "Coquimbo").length).toBe(5));
+  it("incluye Coquimbo como ciudad", () =>
+    expect(ZONES.filter((z) => z.city === "Coquimbo").length).toBe(5));
 });

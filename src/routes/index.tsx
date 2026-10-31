@@ -740,7 +740,7 @@ function Index() {
                   ? p.cumpa.status === "open"
                   : is24h(p))),
         )
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
         .sort((a, b) => a.dist - b.dist)
         .slice(0, 40),
     [places, live, loc, reports, now, filter, cat, mode, tagFilter, tags, favs],

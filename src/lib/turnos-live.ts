@@ -1,3 +1,4 @@
+import type { Json } from "@/integrations/supabase/types";
 import { distanceM, type Place } from "./places";
 
 /** Turnos en vivo leídos del boletín diario MINSAL publicado por mifarmaciadeturno.cl (datos JSON-LD). */
@@ -9,7 +10,26 @@ const CITIES = [
 const TTL = 2 * 60 * 60 * 1000;
 const cache = new Map<string, { at: number; data: Place[] }>();
 
-const title = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim().replace(/(^|[\s(])(\p{L})/gu, (_m, a, b) => a + b.toUpperCase());
+const title = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/(^|[\s(])(\p{L})/gu, (_m, a, b) => a + b.toUpperCase());
+
+interface PharmacyList {
+  "@type"?: string;
+  itemListElement?: {
+    item?: {
+      "@type"?: string;
+      name?: string;
+      geo?: { latitude: number | string; longitude: number | string };
+      openingHoursSpecification?: { opens?: string; closes?: string }[];
+      address?: { streetAddress?: string; addressLocality?: string };
+      telephone?: string;
+    };
+  }[];
+}
 
 async function scrape(slug: string): Promise<Place[]> {
   const res = await fetch(`https://www.mifarmaciadeturno.cl/farmacia-de-turno-${slug}`, {
@@ -20,23 +40,36 @@ async function scrape(slug: string): Promise<Place[]> {
   const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
   const out: Place[] = [];
   for (const b of blocks) {
-    let j: any;
-    try { j = JSON.parse(b[1]!); } catch { continue; }
+    let j: PharmacyList;
+    try {
+      j = JSON.parse(b[1]!) as PharmacyList;
+    } catch {
+      continue;
+    }
     if (j?.["@type"] !== "ItemList") continue;
     for (const li of j.itemListElement ?? []) {
       const it = li.item;
       if (it?.["@type"] !== "Pharmacy" || !it.geo) continue;
       const h = it.openingHoursSpecification?.[0];
-      const from = h?.opens ?? "00:00", to = h?.closes ?? "23:59";
-      const lat = Number(it.geo.latitude), lng = Number(it.geo.longitude);
+      const from = h?.opens ?? "00:00",
+        to = h?.closes ?? "23:59";
+      const lat = Number(it.geo.latitude),
+        lng = Number(it.geo.longitude);
       out.push({
         id: `turno/${slug}/${lat.toFixed(5)},${lng.toFixed(5)}`,
-        name: title(it.name ?? "Farmacia"), category: "farmacia",
-        street: title(it.address?.streetAddress ?? ""), city: title(it.address?.addressLocality ?? ""),
-        lat, lng, openingHours: null, phone: it.telephone ?? null,
+        name: title(it.name ?? "Farmacia"),
+        category: "farmacia",
+        street: title(it.address?.streetAddress ?? ""),
+        city: title(it.address?.addressLocality ?? ""),
+        lat,
+        lng,
+        openingHours: null,
+        phone: it.telephone ?? null,
         osmUrl: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
-        hoursText: from === "00:00" && to === "23:59" ? "De turno: 24 horas" : `De turno: ${from} – ${to}`,
-        source: "turno", liveTurno: { from, to },
+        hoursText:
+          from === "00:00" && to === "23:59" ? "De turno: 24 horas" : `De turno: ${from} – ${to}`,
+        source: "turno",
+        liveTurno: { from, to },
       });
     }
   }
@@ -56,20 +89,38 @@ export async function liveTurnos(lat: number, lng: number): Promise<Place[] | nu
 async function dbGet(slug: string): Promise<{ at: number; data: Place[] } | null> {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin.from("places_cache").select("places, updated_at").eq("key", `turnos:${slug}`).maybeSingle();
-    return data ? { at: new Date(data.updated_at).getTime(), data: data.places as unknown as Place[] } : null;
-  } catch { return null; }
+    const { data } = await supabaseAdmin
+      .from("places_cache")
+      .select("places, updated_at")
+      .eq("key", `turnos:${slug}`)
+      .maybeSingle();
+    return data
+      ? { at: new Date(data.updated_at).getTime(), data: data.places as unknown as Place[] }
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Momento en que se obtuvieron los turnos de la ciudad (ms) o null. */
-export function turnosAt(slug: string): number | null { return cache.get(slug)?.at ?? null; }
-export function citySlugsNear(lat: number, lng: number) { return CITIES.filter((c) => distanceM(c, { lat, lng }) < 25000).map((c) => c.slug); }
+export function turnosAt(slug: string): number | null {
+  return cache.get(slug)?.at ?? null;
+}
+export function citySlugsNear(lat: number, lng: number) {
+  return CITIES.filter((c) => distanceM(c, { lat, lng }) < 25000).map((c) => c.slug);
+}
 export const TURNO_SLUGS = CITIES.map((c) => c.slug);
 
 /** force = ignora la caché (lo usa la tarea programada). Guarda el último resultado válido en la base. */
 export async function cityTurnos(slug: string, force = false): Promise<Place[] | null> {
   let hit = cache.get(slug);
-  if (!hit && !force) { const d = await dbGet(slug); if (d) { hit = d; cache.set(slug, d); } }
+  if (!hit && !force) {
+    const d = await dbGet(slug);
+    if (d) {
+      hit = d;
+      cache.set(slug, d);
+    }
+  }
   if (!force && hit && Date.now() - hit.at < TTL) return hit.data;
   const t0 = Date.now();
   const { logOps } = await import("./ops.server");
@@ -81,12 +132,30 @@ export async function cityTurnos(slug: string, force = false): Promise<Place[] |
     void logOps("source", `turnos:${slug}`, true, at - t0);
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await supabaseAdmin.from("places_cache").upsert({ key: `turnos:${slug}`, places: data as any, updated_at: new Date(at).toISOString() });
-    } catch { /* ignore */ }
+      await supabaseAdmin.from("places_cache").upsert({
+        key: `turnos:${slug}`,
+        places: data as unknown as Json,
+        updated_at: new Date(at).toISOString(),
+      });
+    } catch {
+      /* ignore */
+    }
     return data;
   } catch (e) {
-    void logOps("source", `turnos:${slug}`, false, Date.now() - t0, String((e as Error)?.message ?? e));
-    if (!hit) { const d = await dbGet(slug); if (d) { cache.set(slug, d); return d.data; } }
+    void logOps(
+      "source",
+      `turnos:${slug}`,
+      false,
+      Date.now() - t0,
+      String((e as Error)?.message ?? e),
+    );
+    if (!hit) {
+      const d = await dbGet(slug);
+      if (d) {
+        cache.set(slug, d);
+        return d.data;
+      }
+    }
     return hit?.data ?? null;
   }
 }
@@ -99,7 +168,14 @@ export function mergeTurnos(places: Place[], turnos: Place[]): Place[] {
     const t = turnos.find((t) => distanceM(t, p) < 35);
     if (!t) return p;
     used.add(t.id);
-    return { ...p, liveTurno: t.liveTurno ?? null, hoursText: t.hoursText ?? null, phone: p.phone ?? t.phone, street: t.street || p.street, name: t.name };
+    return {
+      ...p,
+      liveTurno: t.liveTurno ?? null,
+      hoursText: t.hoursText ?? null,
+      phone: p.phone ?? t.phone,
+      street: t.street || p.street,
+      name: t.name,
+    };
   });
   return [...turnos.filter((t) => !used.has(t.id)), ...merged];
 }

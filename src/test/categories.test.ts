@@ -9,7 +9,9 @@ describe("osmCategory", () => {
   it("almacenes, supermercados y tiendas de servicentro son minimarkets", () => {
     expect(osmCategory({ shop: "convenience" })).toBe("minimarket");
     expect(osmCategory({ shop: "supermarket" })).toBe("minimarket");
-    expect(osmCategory({ amenity: "fuel", shop: "convenience", brand: "Copec" })).toBe("minimarket");
+    expect(osmCategory({ amenity: "fuel", shop: "convenience", brand: "Copec" })).toBe(
+      "minimarket",
+    );
   });
   it("servicentro sin tienda no aparece", () => {
     expect(osmCategory({ amenity: "fuel" })).toBeNull();

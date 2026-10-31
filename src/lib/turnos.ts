@@ -34,7 +34,12 @@ const ANCHOR = Date.UTC(2026, 9, 1);
 
 /** Fecha local de Chile (UTC-3/-4 aprox.) como "día de turno": el turno corre 09:00–21:00. */
 function chileDay(d: Date) {
-  const s = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+  const s = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Santiago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
   const [y, m, dd] = s.split("-").map(Number);
   return Date.UTC(y!, m! - 1, dd!);
 }
@@ -44,7 +49,11 @@ export function calamaTurnoHoy(d = new Date()) {
   return CALAMA_CYCLE[((days % 26) + 26) % 26]!;
 }
 
-const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const norm = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 const numsOf = (s: string): string[] => s.match(/\d{3,4}/g) ?? [];
 
 export function isTurno(p: Place, d = new Date()) {
@@ -52,11 +61,23 @@ export function isTurno(p: Place, d = new Date()) {
   const t = calamaTurnoHoy(d);
   const tn = numsOf(t.street);
   const pn = numsOf(p.street ?? "");
-  return tn.some((n) => pn.includes(n)) && norm(p.street ?? "").includes(norm(t.street).split(" ").find((w) => w.length > 3) ?? "");
+  return (
+    tn.some((n) => pn.includes(n)) &&
+    norm(p.street ?? "").includes(
+      norm(t.street)
+        .split(" ")
+        .find((w) => w.length > 3) ?? "",
+    )
+  );
 }
 
 function chileMinutes(d: Date) {
-  const s = new Intl.DateTimeFormat("en-GB", { timeZone: "America/Santiago", hour: "2-digit", minute: "2-digit", hour12: false }).format(d);
+  const s = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "America/Santiago",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(d);
   const [h, m] = s.split(":").map(Number);
   return h! * 60 + m!;
 }
@@ -65,14 +86,25 @@ function chileMinutes(d: Date) {
 export function minsalPlaces(d = new Date()): Place[] {
   const now = chileMinutes(d);
   return MINSAL_PHARMACIES.map((f) => {
-    const [oh, om] = f.open.split(":").map(Number), [ch, cm] = f.close.split(":").map(Number);
-    const o = oh! * 60 + om!, c = ch! * 60 + cm!;
+    const [oh, om] = f.open.split(":").map(Number),
+      [ch, cm] = f.close.split(":").map(Number);
+    const o = oh! * 60 + om!,
+      c = ch! * 60 + cm!;
     const openNow = c > o ? now >= o && now < c : now >= o || now < c;
     return {
-      id: f.id, name: f.name, category: "farmacia", street: f.street, city: f.city,
-      lat: f.lat, lng: f.lng, openingHours: null, phone: f.phone,
+      id: f.id,
+      name: f.name,
+      category: "farmacia",
+      street: f.street,
+      city: f.city,
+      lat: f.lat,
+      lng: f.lng,
+      openingHours: null,
+      phone: f.phone,
       osmUrl: `https://www.google.com/maps/search/?api=1&query=${f.lat},${f.lng}`,
-      openNow, hoursText: `Horario MINSAL: ${f.open} – ${f.close}`, source: "minsal" as const,
+      openNow,
+      hoursText: `Horario MINSAL: ${f.open} – ${f.close}`,
+      source: "minsal" as const,
     };
   });
 }
@@ -80,6 +112,8 @@ export function minsalPlaces(d = new Date()): Place[] {
 /** Une MINSAL con otras fuentes: si hay un local a <60 m de una farmacia MINSAL, se reemplaza por la versión oficial. */
 export function mergeMinsal(places: Place[], d = new Date()): Place[] {
   const official = minsalPlaces(d);
-  const rest = places.filter((p) => p.category !== "farmacia" || !official.some((o) => distanceM(o, p) < 60));
+  const rest = places.filter(
+    (p) => p.category !== "farmacia" || !official.some((o) => distanceM(o, p) < 60),
+  );
   return [...official, ...rest];
 }
