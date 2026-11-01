@@ -4,7 +4,7 @@ Este catálogo reúne los originales y variantes de la identidad. Las dimensione
 
 - [Banner claro](banners/cumpita-banner-claro.png) · [Banner oscuro](banners/cumpita-banner-oscuro.png).
 - Utiliza logos horizontales en cabeceras, isotipos en espacios compactos y banners en presentaciones. Conserva la proporción y deja espacio alrededor de la marca.
-- Los iconos cuadrados se reservan para favicon, PWA y aplicaciones; el archivo ICO contiene sus tamaños de navegador o escritorio.
+- Los iconos cuadrados se reservan para favicon, PWA y aplicaciones. En este catálogo hay variantes PNG y SVG; no incluye un archivo `.ico`.
 - Las variantes de mayor tamaño sirven para exportación. Ampliar un raster no añade detalle al original.
 - La aplicación carga sólo los recursos que necesita. Los originales de este catálogo se mantienen separados de las variantes de interfaz.
 - [Licencia y créditos](../LICENSING.md).

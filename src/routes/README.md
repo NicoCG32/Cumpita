@@ -1,21 +1,18 @@
-# Routes
+# Rutas de Cumpita
 
-TanStack Start uses **file-based routing**. Every `.tsx` file in this directory
-defines a route. Do **not** create `src/pages/`, `src/routes/_app/index.tsx`, or
-`app/layout.tsx` — those are Next.js / Remix conventions. The only root layout
-is `src/routes/__root.tsx`.
+TanStack Start define las rutas a partir de los archivos de este directorio.
+`__root.tsx` contiene el layout compartido y renderiza las páginas mediante `<Outlet />`.
 
-## Conventions
+| Archivo                      | Ruta                            | Finalidad                                                            |
+| ---------------------------- | ------------------------------- | -------------------------------------------------------------------- |
+| `index.tsx`                  | `/`                             | Consulta de locales y aportes comunitarios                           |
+| `local.$.tsx`                | `/local/$`                      | Ficha compartida; el identificador se obtiene del parámetro `_splat` |
+| `revision.tsx`               | `/revision`                     | Panel de revisión administrativa                                     |
+| `api/public/cron/refresh.ts` | `POST /api/public/cron/refresh` | Refresco de datos mediante una tarea autenticada                     |
+| `api/public/cron/turnos.ts`  | `POST /api/public/cron/turnos`  | Envío programado de avisos de turnos mediante una tarea autenticada  |
 
-| File | URL |
-| --- | --- |
-| `index.tsx` | `/` |
-| `about.tsx` | `/about` |
-| `users/index.tsx` | `/users` |
-| `users/$id.tsx` | `/users/:id` (dynamic — bare `$`, no curly braces) |
-| `posts/{-$category}.tsx` | `/posts/:category?` (optional segment) |
-| `files/$.tsx` | `/files/*` (splat — read via `_splat` param, never `*`) |
-| `_layout.tsx` | layout route (renders children via `<Outlet />`) |
-| `__root.tsx` | app shell — wraps every page; preserve `<Outlet />` |
+El árbol `src/routeTree.gen.ts` se genera automáticamente; no se edita a mano.
+La autorización de las operaciones sensibles depende de las comprobaciones de servidor
+y las políticas de datos, además de los controles visibles en la interfaz.
 
-`routeTree.gen.ts` is auto-generated. Don't edit it by hand.
+[Mapa de rutas](../../docs/desarrollo/05-mapa-de-rutas.md) · [Arquitectura](../../docs/tecnica/01-arquitectura.md)

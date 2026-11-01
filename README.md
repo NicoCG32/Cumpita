@@ -1,67 +1,75 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="branding/banners/cumpita-banner-oscuro.png" />
-  <img src="branding/banners/cumpita-banner-claro.png" alt="Identidad visual de Cumpita" width="100%" />
+  <source media="(prefers-color-scheme: dark)" srcset="branding/banners/cumpita-banner-oscuro.svg" />
+  <img src="branding/banners/cumpita-banner-claro.svg" alt="Cumpita: identidad visual del proyecto" width="100%" />
 </picture>
 
 # cumpita.
 
-**Saber qué está abierto cerca, con información reciente.**
+**Antes de salir, averigua si vale la pena el pique.**
 
-[![Estado: Piloto](https://img.shields.io/badge/Estado-Piloto-C55B18?style=flat-square&labelColor=263244)](#sobre-el-proyecto) [![Plataforma: Web / PWA](https://img.shields.io/badge/Plataforma-Web%20%2F%20PWA-386B8F?style=flat-square&labelColor=263244)](#usar-o-descargar) [![Licencia: PolyForm NC](https://img.shields.io/badge/Licencia-PolyForm%20NC-596273?style=flat-square&labelColor=263244)](LICENSING.md) [![Calidad](https://github.com/NicoCG32/cumpita/actions/workflows/calidad.yml/badge.svg)](https://github.com/NicoCG32/cumpita/actions/workflows/calidad.yml)
+Una web instalable para encontrar comercios cercanos y contrastar sus horarios con lo que otros acaban de observar.
 
-[![React 19](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#tecnologías) [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=FFFFFF)](#tecnologías) [![TanStack Start](https://img.shields.io/badge/TanStack%20Start-155E75?style=for-the-badge&logo=tanstack&logoColor=FFFFFF)](#tecnologías) [![Supabase](https://img.shields.io/badge/Supabase-166534?style=for-the-badge&logo=supabase&logoColor=FFFFFF)](#tecnologías)
-
-[Abrir aplicación](https://cumpita.lovable.app) · [Releases y descargas](https://github.com/NicoCG32/cumpita/releases/tag/v1.0.0) · [Documentación](docs/README.md) · [Arquitectura](docs/01-arquitectura-general.md) · [Inicio rápido](#ejecutar-desde-el-código)
+[Probar la web](https://cumpita.lovable.app) · [Explorar la documentación](docs/README.md) · [Entender la arquitectura](docs/tecnica/01-arquitectura.md) · [Licencia](LICENSING.md)
 
 </div>
 
----
+## Resumen ejecutivo
 
-## Sobre el proyecto
+Cumpita es una web instalable (PWA) que ayuda a encontrar comercios cercanos y decidir si vale la pena salir a comprar. Combina horarios publicados, farmacias de turno y reportes comunitarios de abierto o cerrado, con aportes sin necesidad de crear una cuenta. Su objetivo es reducir viajes innecesarios y facilitar la colaboración local. Está en fase piloto; la información depende de las fuentes disponibles y de la antigüedad de cada reporte.
 
-Aplicación comunitaria para consultar locales cercanos y su estado de apertura en Calama, La Serena y Coquimbo. Combina fuentes públicas con confirmaciones recientes de vecinos para ayudar a decidir dónde ir.
+## De dónde salió
 
-**Estado:** Piloto web/PWA. La distribución Android está planificada; la release de fuentes y notas todavía no incluye una APK.
+Cumpita nació de algo que me comentó mi padre: a veces uno sale a comprar y recién al llegar descubre que el negocio está cerrado. Quise hacer una herramienta que respondiera una pregunta simple —**¿hay algo abierto cerca, ahora?**— sin fingir que los horarios publicados siempre están correctos.
 
-## Tecnologías
+La aplicación combina datos de lugares, horarios cuando están disponibles, farmacias de turno y reportes comunitarios recientes. Cada señal tiene sus límites: un horario publicado puede estar desactualizado y un reporte representa lo que alguien observó en un momento, no una garantía.
 
-| Área                    | Tecnologías y responsabilidad                                                     |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| **Interfaz y servidor** | React 19, TypeScript, TanStack Start y Tailwind CSS.                              |
-| **Datos y cuentas**     | Supabase/PostgreSQL, autenticación y Realtime.                                    |
-| **Servicios**           | Leaflet y OpenStreetMap/Overpass; turnos de farmacias y Firebase Cloud Messaging. |
+**Cumpita es un proyecto personal e independiente.** Lo desarrollo yo, iterando directamente con **Lovable**: planteo cambios, reviso el resultado y vuelvo a ajustar lo necesario. La conversación con mi padre dio origen al problema; el desarrollo no corresponde a un trabajo universitario ni a un curso.
 
-> **Enfoque técnico:** Fuentes externas y reportes recientes; las funciones de servidor requieren backend.
+Quiero que aportar sea tan sencillo como consultar: **se puede reportar un local sin crear una cuenta**, siguiendo la idea de participación rápida de aplicaciones comunitarias como Waze. No confundo esa facilidad con una garantía de veracidad; limitar el abuso sin obligar al registro sigue siendo un desafío técnico que debo atender.
 
-## Usar o descargar
+## Qué hay en este repositorio
 
-[Abrir la aplicación](https://cumpita.lovable.app) · [Release 1.0.0: fuentes y notas](https://github.com/NicoCG32/cumpita/releases/tag/v1.0.0). Elige ciudad o ubicación, busca un local y revisa la fuente y antigüedad de su estado.
+| Disponible en el código                                       | Límite que conviene conocer                                                                                                      |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Sitio React instalable como PWA, con feed, filtros y mapa     | La consulta requiere servicios de servidor; el modo sin conexión depende de datos guardados previamente                          |
+| Búsqueda textual, favoritos y fichas compartibles             | La búsqueda con IA tiene módulos de código, pero **no está activada en la interfaz**                                             |
+| Reportes anónimos de abierto/cerrado y etiquetas comunitarias | No se exige cuenta para reportar; la proximidad se comprueba en el cliente y el límite SQL de frecuencia no cubre a los anónimos |
+| Propuestas y panel de revisión                                | Algunas categorías y etiquetas de la interfaz no coinciden todavía con restricciones SQL                                         |
+| Notificaciones y tareas de actualización                      | Requieren permisos, credenciales, ejecución de cron y pruebas en el despliegue real                                              |
 
-## Ejecutar desde el código
+**Estado de entrega:** piloto web/PWA. Este repositorio no incluye un proyecto Android ni un flujo de generación de APK en los archivos revisados. Las releases del repositorio publican código fuente y notas, no un instalador Android.
 
-Con Bun y el entorno del backend configurado según la [guía de instalación](docs/09-instalacion-y-despliegue.md), desde la raíz:
+## Tecnologías que realmente utiliza
+
+**React 19 + TypeScript + TanStack Start** para interfaz y funciones de servidor; **Tailwind CSS 4** para los estilos; **Supabase/PostgreSQL** para autenticación, reportes, propuestas y persistencia; **Leaflet/OpenStreetMap** para el mapa; datos de **Overpass**, **MINSAL**, turnos obtenidos desde una fuente externa y, de forma opcional, **Google Places**. Las notificaciones web utilizan **Firebase Cloud Messaging** a través de un conector.
+
+No hace falta conocer toda la infraestructura para usar la aplicación. Para entender la implementación, dejé los detalles y diagramas separados en el área técnica.
+
+## Empezar
+
+Con los servicios y variables configurados según la [guía de desarrollo](docs/desarrollo/01-entorno-y-despliegue.md):
 
 ```sh
 bun install --frozen-lockfile
 bun run dev
 ```
 
-Abre la dirección indicada por Vite. Las funciones de servidor necesitan sus servicios y configuración; una copia estática no los reemplaza.
+Los controles locales habituales son `bun run test`, `bun run lint`, `bunx tsc --noEmit` y `bun run build`. **No compartas archivos `.env` con credenciales reales.**
 
-## Documentación
+## Leer la documentación
 
-[Índice completo y rutas de lectura](docs/README.md) · [Recorrido de uso](docs/03-flujo-de-usuario.md).
+- **[General](docs/general/01-origen-y-alcance.md):** por qué hice Cumpita, qué puede hacer una persona y qué significa su información.
+- **[Técnica](docs/tecnica/01-arquitectura.md):** arquitectura, diagramas, datos, reglas, integraciones y límites de seguridad.
+- **[Desarrollo](docs/desarrollo/01-entorno-y-despliegue.md):** ponerlo en marcha, operarlo, probarlo y decidir cómo continuar.
 
-| Tipo       | Lectura                                                                                                                                                                          |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| General    | [Problema, cliente y solución](docs/00-problematica-cliente-y-valor.md) · [Motivación](docs/16-motivacion-y-contexto.md)                                                         |
-| Técnica    | [Arquitectura y diagramas](docs/01-arquitectura-general.md) · [Dominio y datos](docs/04-base-de-datos.md)                                                                        |
-| Desarrollo | [Etapas y metodología](docs/17-desarrollo-y-metodologia.md) · [Proyección](docs/15-escalabilidad-y-nuevos-mercados.md) · [Costos CLP/USD](docs/18-analisis-economico-clp-usd.md) |
+El [índice](docs/README.md) ofrece rutas más concretas. La [auditoría documental](docs/AUDITORIA.md) explica qué corregí y qué sigue pendiente en el código.
 
-[Identidad visual](branding/README.md): logos, banners y variantes de aplicación.
+## Autoría
 
-## Licencia y créditos
+Desarrollo y decisiones del proyecto: **Pablo Guzmán**. Herramienta principal utilizada para construirlo mediante iteraciones: **Lovable**. No hubo otros integrantes en el desarrollo.
 
-Código y documentación propios: [PolyForm Noncommercial 1.0.0](LICENSE), con [atribución](NOTICE). Uso comercial fuera de sus permisos: acuerdo previo de créditos y compensación. [Alcance y contacto](LICENSING.md).
+## Identidad y condiciones de uso
+
+Los recursos gráficos están en [`branding/`](branding/README.md); los banners claro y oscuro se adaptan a GitHub sin cargar ambos al mismo tiempo. El código se distribuye con las condiciones descritas en [LICENSE](LICENSE), [LICENSING.md](LICENSING.md) y [NOTICE](NOTICE). Lee esos archivos antes de reutilizarlo o redistribuirlo.

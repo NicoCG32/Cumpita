@@ -1,50 +1,33 @@
-# Documentación de cumpita.
+# Documentación · cumpita.
 
-Piloto web/PWA para consultar comercios cercanos y reportes de apertura. La APK para Android está en planificación; la release actual distribuye el código fuente.
+> Una pregunta cotidiana merece una respuesta comprensible, incluso cuando la información no es perfecta.
 
-## Documentación por cuatro tipos
+Esta documentación se lee en **tres áreas**: la idea y la experiencia, su funcionamiento técnico y el trabajo necesario para mantenerla. No incluyo un área educativa independiente porque su autor confirmó que **Cumpita es un proyecto personal**, ajeno a cursos o encargos universitarios.
 
-| Tipo                    | Qué encontrarás                                                 | Por dónde empezar                                                                                                                                |
-| ----------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| General                 | Problemática, público, solución y motivación personal           | [Propuesta](00-problematica-cliente-y-valor.md) · [Origen](16-motivacion-y-contexto.md)                                                          |
-| Técnica                 | Arquitectura, dominio, datos, interfaz y puesta en marcha       | [Arquitectura](01-arquitectura-general.md) · [Instalación](09-instalacion-y-despliegue.md)                                                       |
-| Desarrollo del proyecto | Etapas, metodología, justificación, proyección y costos CLP/USD | [Metodología](17-desarrollo-y-metodologia.md) · [Proyección](15-escalabilidad-y-nuevos-mercados.md) · [Costos](18-analisis-economico-clp-usd.md) |
-| Académica/formativa     | No aplica al origen de este proyecto                            | —                                                                                                                                                |
+| Área           | Qué responde                                       | Documentos                                                                                                                                                                                                                                                                                                 |
+| -------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **General**    | ¿Para qué existe, qué resuelve y cómo se usa?      | [Origen y alcance](general/01-origen-y-alcance.md) · [Experiencia de uso](general/02-experiencia-de-uso.md) · [Identidad](general/03-identidad-y-accesibilidad.md)                                                                                                                                         |
+| **Técnica**    | ¿Cómo funciona y de dónde sale cada dato?          | [Arquitectura](tecnica/01-arquitectura.md) · [Dominio y base de datos](tecnica/02-dominio-y-datos.md) · [Reglas y estados](tecnica/03-reglas-y-flujos.md) · [Integraciones](tecnica/04-integraciones-y-resiliencia.md)                                                                                     |
+| **Desarrollo** | ¿Cómo lo ejecuto, mantengo, verifico y evoluciono? | [Entorno y despliegue](desarrollo/01-entorno-y-despliegue.md) · [Operación y seguridad](desarrollo/02-operacion-calidad-y-seguridad.md) · [Evolución](desarrollo/03-evolucion.md) · [Contribuciones y releases](desarrollo/04-contribuir-y-versionar.md) · [Mapa de rutas](desarrollo/05-mapa-de-rutas.md) |
 
-## Rutas de lectura
+## Rutas recomendadas
 
-- **Conocer el proyecto:** [propuesta](00-problematica-cliente-y-valor.md) → [motivación](16-motivacion-y-contexto.md) → [funcionalidades](02-funcionalidades.md).
-- **Utilizarlo o desplegarlo:** [recorrido](03-flujo-de-usuario.md) → [instalación](09-instalacion-y-despliegue.md).
-- **Desarrollar o contribuir:** [arquitectura](01-arquitectura-general.md) → [dominio y datos](04-base-de-datos.md) → [reglas](05-motor-o-nucleo-de-negocio.md).
-- **Evaluar su evolución:** [metodología](17-desarrollo-y-metodologia.md) → [proyección](15-escalabilidad-y-nuevos-mercados.md) → [costos](18-analisis-economico-clp-usd.md).
+**Para conocer la idea:** [origen](general/01-origen-y-alcance.md) → [uso real](general/02-experiencia-de-uso.md) → [evolución](desarrollo/03-evolucion.md).
 
-## Tabla de contenidos
+**Para revisar la ingeniería:** [arquitectura](tecnica/01-arquitectura.md) → [dominio](tecnica/02-dominio-y-datos.md) → [reglas](tecnica/03-reglas-y-flujos.md) → [integraciones](tecnica/04-integraciones-y-resiliencia.md).
 
-| Capítulo | Documento                                                                    |
-| -------- | ---------------------------------------------------------------------------- |
-| 00       | [Problemática, clientes y justificación](00-problematica-cliente-y-valor.md) |
-| 01       | [Arquitectura general](01-arquitectura-general.md)                           |
-| 02       | [Catálogo funcional](02-funcionalidades.md)                                  |
-| 03       | [Flujo de usuario](03-flujo-de-usuario.md)                                   |
-| 04       | [Modelo de datos y persistencia](04-base-de-datos.md)                        |
-| 05       | [Lógica de negocio y algoritmos](05-motor-o-nucleo-de-negocio.md)            |
-| 06       | [Integraciones y asistencia](06-capa-de-ia-o-analisis.md)                    |
-| 07       | [Diseño, UI y accesibilidad](07-diseno-e-identidad.md)                       |
-| 08       | [Salidas y entregables](08-exportacion-e-informes.md)                        |
-| 09       | [Instalación y despliegue](09-instalacion-y-despliegue.md)                   |
-| 15       | [Escalabilidad y visión de negocio](15-escalabilidad-y-nuevos-mercados.md)   |
-| 16       | [Motivación personal y contexto](16-motivacion-y-contexto.md)                |
-| 17       | [Etapas y metodología](17-desarrollo-y-metodologia.md)                       |
-| 18       | [Escenarios económicos CLP / USD](18-analisis-economico-clp-usd.md)          |
+**Para conocer el método de desarrollo:** [origen y autoría](general/01-origen-y-alcance.md) → [cómo itero con Lovable](desarrollo/04-contribuir-y-versionar.md).
 
-## Guías especializadas
+**Para empezar a colaborar:** [instalación](desarrollo/01-entorno-y-despliegue.md) → [calidad y seguridad](desarrollo/02-operacion-calidad-y-seguridad.md) → [convenciones](desarrollo/04-contribuir-y-versionar.md).
 
-- [Integraciones externas y resiliencia](06-integraciones-externas-y-resiliencia.md).
-- [Moderación y telemetría operativa](08-moderacion-y-telemetria-operativa.md).
+## Cómo leer los diagramas
 
-- [Contribuir](contribuir.md).
-- [Versiones y GitHub Releases](releases.md).
+Los diagramas están escritos en **Mermaid** para que GitHub pueda representarlos y sea posible editarlos desde Markdown. Los agrupé junto a las decisiones que explican, en vez de repetir el mismo dibujo en cada documento: contexto, contenedores, componentes, despliegue, secuencias, entidades y estados.
 
-## Uso y distribución
+- **Implementado:** comportamiento visible en el código que recibí.
+- **Condicionado:** depende de configuración, servicios, permisos o entorno.
+- **Pendiente:** todavía no existe o tiene inconsistencias sin resolver.
 
-[Presentación y descargas](../README.md) · [Licencia y créditos](../LICENSING.md).
+Estos términos no equivalen a una certificación de funcionamiento en producción. El alcance y las observaciones concretas están en la [auditoría](AUDITORIA.md).
+
+[Volver al README principal](../README.md)
