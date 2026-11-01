@@ -1,8 +1,8 @@
 # Reglas, secuencias y estados
 
-El núcleo de Cumpita no es un modelo de IA: son reglas explícitas para calcular cercanía, combinar lugares y limitar la vida de la información comunitaria. Las reglas se pueden seguir en el código, pero sus resultados no deben confundirse con una verificación presencial.
+El núcleo de Cumpita calcula distancias, combina fuentes y limita la vigencia de la información comunitaria mediante reglas explícitas.
 
-## Reglas verificadas en el código
+## Reglas de funcionamiento
 
 | Decisión                            | Valor / comportamiento                                                                                                   | Implementación                                           |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
@@ -19,19 +19,19 @@ El núcleo de Cumpita no es un modelo de IA: son reglas explícitas para calcula
 | Caché de turnos                     | Fresca hasta 2 h                                                                                                         | `turnos-live.ts`                                         |
 | Carga lenta                         | Mensaje y opción de reintento al cabo de 8 s                                                                             | `index.tsx`                                              |
 
-**Importante:** un control de distancia basado en la geolocalización enviada al navegador **no es garantía antifraude en backend**. Además, el trigger SQL de 10 minutos se aplica si `user_id` no es nulo; los reportes anónimos no están cubiertos por esa misma restricción. La documentación anterior confundía las dos capas.
+La distancia de 300 m se comprueba en el navegador; el servidor no verifica la presencia física. El trigger SQL de diez minutos solo limita reportes con `user_id`. Los controles locales pueden eludirse mediante peticiones directas.
 
 ## Anonimato como regla del producto
 
-Mantener reportes sin registro es una decisión del autor, inspirada en la participación rápida de Waze. En el código, la interfaz escribe `user_id: user?.id ?? null`, y la política RLS admite inserciones desde el rol `anon` cuando el identificador es nulo. **Eso habilita la participación sin cuenta, pero no hace al sistema resistente al abuso**: el trigger de diez minutos no opera para `NULL` y el límite guardado en `localStorage` puede eludirse fuera de ese navegador.
+La interfaz envía `user_id: user?.id ?? null`. La política RLS admite inserciones desde el rol `anon` cuando el identificador es nulo, de modo que se puede reportar sin iniciar sesión.
 
-La solución futura debe conservar la publicación sin registro y añadir protecciones en una capa confiable: límites de volumen, detección de patrones anómalos y mecanismos de revisión proporcionales, con cuidado por la privacidad. Estas son recomendaciones, **no características implementadas ni garantías actuales**.
+Quedan pendientes los controles de frecuencia en servidor para reportes anónimos. Su implementación debe conservar la participación sin registro y respetar la privacidad.
 
 ## Cómo se resuelve el estado visible
 
 Cuando hay un reporte comunitario dentro de su hora de vigencia, el código toma el más reciente y cuenta los reportes de ese mismo estado. Si no hay reporte, el estado puede provenir de horarios aprobados, un estado `openNow` de proveedor u `opening_hours` interpretable. Un turno de farmacia se representa además como **señal de turno**, no como sinónimo universal de apertura garantizada.
 
-Para botillerías sin horario específico, `botillerias.ts` introduce una heurística de cierre basada en un límite legal codificado. No debe describirse como validación jurídica actualizada ni inferirse de ella un horario completo de apertura.
+Para botillerías sin horario específico, `botillerias.ts` aplica una heurística de cierre con un límite codificado. Ese respaldo requiere mantenimiento y no contiene el horario completo de cada comercio.
 
 ```mermaid
 flowchart TD
@@ -51,7 +51,7 @@ flowchart TD
 
 ## Ciclo de un reporte
 
-El vencimiento es **lógico**: no hace falta borrar la fila exactamente después de una hora para dejar de usarla como confirmación actual. Las políticas SQL permiten consultar reportes de hasta un día, mientras la pantalla filtra a una hora.
+El vencimiento es **lógico**: la pantalla deja de usar un reporte después de una hora, aunque la fila siga guardada. Las políticas SQL permiten consultar registros de hasta un día.
 
 ```mermaid
 stateDiagram-v2
@@ -101,7 +101,7 @@ sequenceDiagram
     end
 ```
 
-La aplicación puede recibir avisos en primer plano mediante Realtime. El envío push, por su parte, exige configuración y registro previos; no está garantizado solo porque exista la función.
+Los avisos en primer plano usan Realtime. El envío push requiere permisos, registro del dispositivo y configuración del conector.
 
 ## Moderación: propuesta, decisión y visibilidad
 
@@ -118,10 +118,10 @@ Una sugerencia de local aprobada puede entrar al catálogo agregado; una propues
 
 ## Detección pasiva y aviso en camino
 
-Son dos recorridos distintos. El primero depende de la geolocalización continua de una sesión abierta y puede generar un reporte `open` luego de cierta permanencia. El segundo conserva temporalmente un token y un local para enviar aviso si se registra un cierre reciente. Ninguno sustituye la comprobación de proximidad segura en el servidor.
+La detección pasiva usa la geolocalización mientras la aplicación está abierta y puede generar un reporte `open` después de cinco minutos de permanencia. El aviso en camino guarda temporalmente el token del dispositivo y el local para notificar un cierre reciente.
 
 ## Qué debe probarse
 
-Como mínimo: un reporte aceptado, otro rechazado, caducidad, empate de señales, conflicto entre fuente y comunidad, geolocalización denegada, datos desactualizados, y creación desde cliente sin cuenta. Las pruebas existentes no cubren todas estas situaciones; son **casos recomendados**, no resultados ya obtenidos.
+La cobertura debe incluir reportes aceptados y rechazados, caducidad, empate de señales, conflicto entre fuente y comunidad, geolocalización denegada, datos desactualizados y participación sin cuenta. Consulta los [casos pendientes](../desarrollo/02-operacion-calidad-y-seguridad.md) para ampliar las pruebas.
 
 [Modelo de datos](02-dominio-y-datos.md) · [Calidad y riesgos](../desarrollo/02-operacion-calidad-y-seguridad.md)

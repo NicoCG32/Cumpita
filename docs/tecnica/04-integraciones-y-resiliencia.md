@@ -1,6 +1,6 @@
 # Integraciones, caché y recuperación
 
-Cumpita trabaja con fuentes que no controlo. Por eso el objetivo no es prometer disponibilidad permanente: es **distinguir una respuesta reciente, una respuesta antigua y una fuente que no respondió**.
+Cumpita combina fuentes externas y distingue entre datos recientes, copias antiguas y consultas fallidas.
 
 ## Origen de la información
 
@@ -12,10 +12,10 @@ Cumpita trabaja con fuentes que no controlo. Por eso el objetivo no es prometer 
 | **mifarmaciadeturno.cl**                    | Turnos por ciudad a partir de JSON-LD                                       | Consulta externa que puede cambiar formato o fallar; caché de 2 h                       |
 | **Calendario de Calama en código**          | Turno calculado cuando se utiliza esa ruta de respaldo                      | Es una rotación local codificada, no una respuesta oficial consultada en ese momento    |
 | **Supabase**                                | Reportes, etiquetas, horarios aprobados, sugerencias, bajas, roles y cachés | Las políticas RLS y las claves de servidor delimitan el acceso                          |
-| **Leaflet + teselas OSM + OSRM**            | Mapa y cálculo de ruta                                                      | La ruta depende de un servicio externo y no certifica el estado del local               |
+| **Leaflet + teselas OSM + OSRM**            | Mapa y cálculo de ruta                                                      | La carga de teselas y el cálculo de rutas dependen de servicios externos                |
 | **Firebase Messaging vía conector Lovable** | Avisos web optativos                                                        | Requiere credenciales, dispositivo admitido, token, permiso y backend                   |
 
-No utilizo la IA en la búsqueda activa. Aunque `ai-search.functions.ts` y `ai-search.server.ts` contienen una integración de modelo, `index.tsx` deja el formulario como búsqueda local y no invoca ese servicio.
+La búsqueda activa es textual y local. Los módulos `ai-search.functions.ts` y `ai-search.server.ts` contienen una integración de IA que la interfaz no invoca.
 
 ## Secuencia de consulta y combinación
 
@@ -85,10 +85,10 @@ Los endpoints son **POST** protegidos por un secreto de cron, con posibilidad de
 
 El horario de invocación —por ejemplo, cada hora o a cierta hora de Chile— **no queda definido en estas funciones**. Debe verificarse en la plataforma que programa las solicitudes. Si se usan expresiones UTC, considerar horario de verano/invierno de `America/Santiago`; una hora UTC fija no equivale a las 20:00 chilenas durante todo el año.
 
-Los avisos «voy en camino» tienen una duración de 45 min y buscan reportes de cierre de los últimos 3 min antes de intentar enviar push. Las suscripciones a un lugar para conocer cuando abre incluyen un mecanismo de aviso en primer plano y de registro en `place_alerts`; no documentaría una entrega push de apertura asegurada en segundo plano sin encontrar y probar esa ruta específica.
+Los avisos «voy en camino» duran 45 min y buscan reportes de cierre de los últimos 3 min antes de intentar enviar push. Las suscripciones de apertura usan avisos en primer plano y registros en `place_alerts`.
 
 ## Límites operativos
 
-El registro de `ops_events` incluye `kind`, origen, resultado, duración opcional y detalle corto. No contiene campos de coordenadas o identidad, pero eso no significa que toda la aplicación deje de tratar identificadores: las tablas de suscripción push contienen **tokens de dispositivo** y secretos asociados.
+`ops_events` registra tipo, origen, resultado, duración opcional y un detalle breve, sin campos de coordenadas o identidad. Las suscripciones push almacenan tokens de dispositivo y secretos asociados; limita su acceso a las funciones de servidor correspondientes.
 
 [Arquitectura](01-arquitectura.md) · [Operación y seguridad](../desarrollo/02-operacion-calidad-y-seguridad.md)

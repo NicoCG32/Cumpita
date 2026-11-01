@@ -1,6 +1,6 @@
 # Mapa de rutas de aplicación
 
-Esta tabla corresponde al código incluido en el ZIP. Para ampliar los detalles se usa el índice `src/routes/README.md` del repositorio.
+Las rutas se definen en `src/routes/`. El [índice de archivos](../../src/routes/README.md) relaciona cada ruta con su implementación.
 
 | Ruta                            | Finalidad                                       |
 | ------------------------------- | ----------------------------------------------- |

@@ -1,6 +1,6 @@
 # Identidad y experiencia visual
 
-Cumpita habla con cercanía, pero no necesita exagerar ni disfrazar una duda técnica. Quise que el nombre, el búho y los tonos cálidos se sintieran familiares, mientras los estados, fechas y permisos se explican de manera directa.
+El nombre, el búho y los tonos cálidos buscan una identidad cercana. Los estados, fechas y permisos se explican con mensajes breves y directos.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../../branding/logos/cumpita-logo-horizontal-dark.svg" />
@@ -9,7 +9,7 @@ Cumpita habla con cercanía, pero no necesita exagerar ni disfrazar una duda té
 
 ## Recursos existentes
 
-La identidad original está documentada en [`branding/README.md`](../../branding/README.md). En el repositorio ya existen logos claro/oscuro, isotipo, mascota, banners, portadas para redes e iconos PWA. No hace falta insertar todas las variantes en cada capítulo: usar la correcta para el contexto reduce ruido visual.
+El [catálogo de identidad](../../branding/README.md) reúne logos claros y oscuros, isotipo, mascota, banners, portadas para redes e iconos PWA. Conserva las proporciones y elige la variante que corresponda al fondo y tamaño de uso.
 
 | Uso                     | Recurso                                                        |
 | ----------------------- | -------------------------------------------------------------- |
@@ -29,6 +29,6 @@ La identidad original está documentada en [`branding/README.md`](../../branding
 
 ## Accesibilidad: criterio y comprobación
 
-El proyecto usa componentes Radix y estilos semánticos, pero eso **no demuestra cumplimiento WCAG** por sí solo. Para dar por cerrada esta área faltan comprobaciones de teclado, foco visible, contraste en temas claro/oscuro, etiquetas de controles, tamaño táctil y anuncios accesibles de estados dinámicos. La estructura del documento es una pauta de evaluación, no una certificación.
+El proyecto usa componentes Radix y estilos semánticos. La validación de accesibilidad debe cubrir navegación por teclado, foco visible, contraste en temas claro y oscuro, etiquetas de controles, tamaño táctil y anuncios accesibles de los cambios de estado.
 
 [Archivo de recursos](../../branding/README.md) · [Operación y pruebas](../desarrollo/02-operacion-calidad-y-seguridad.md)

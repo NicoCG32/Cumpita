@@ -1,6 +1,6 @@
 # Arquitectura, de afuera hacia adentro
 
-El recorrido de la aplicación responde a una pregunta: «¿qué local cercano tiene información útil ahora?». La arquitectura responde reuniendo varias fuentes sin obligar al usuario a conocer cada una. Esta página muestra **cuatro niveles complementarios**, no cuatro sistemas diferentes.
+Cumpita reúne datos de lugares, horarios, turnos y aportes comunitarios. La arquitectura se describe en cuatro niveles: contexto, contenedores, componentes y despliegue.
 
 ## Nivel 1 · Contexto
 
@@ -60,7 +60,7 @@ flowchart TB
 
 **Fronteras importantes:** el navegador accede a Supabase con una clave publicable y sus políticas RLS; algunas funciones servidor usan `supabaseAdmin` y una clave de servicio capaz de eludir RLS. Esa clave **no** debe exponerse ni al cliente ni a un repositorio. Las funciones que usan privilegios deben validar sus propias entradas y autorización.
 
-El proyecto importa `@lovable.dev/vite-tanstack-config`; su configuración declara Nitro con un destino Cloudflare predeterminado. Esto no demuestra que el sitio público se ejecute allí. El ZIP no demuestra por sí mismo dónde corre la instalación pública ni qué servicios están configurados actualmente.
+`@lovable.dev/vite-tanstack-config` configura la compilación con Nitro y un destino Cloudflare predeterminado. Los servicios y secretos se configuran en el entorno de despliegue.
 
 ## Nivel 3 · Componentes de la aplicación
 
@@ -81,7 +81,7 @@ flowchart LR
     class Q,R,P,CACHE,SOURCES,HOURS,HIDDEN,CATS,MOD module;
 ```
 
-| Módulo                                          | Responsabilidad comprobable                                                    |
+| Módulo                                          | Responsabilidad                                                                |
 | ----------------------------------------------- | ------------------------------------------------------------------------------ |
 | `src/routes/index.tsx`                          | Pantalla principal, filtros, estado comunitario, suscripciones y acciones      |
 | `src/routes/local.$.tsx`                        | Ficha compartible de un lugar                                                  |
@@ -102,7 +102,7 @@ flowchart TB
     HOST --> WEB[Web y PWA en navegador]
     HOST --> ENV[Variables y secretos de servidor]
     HOST <-->|REST / Realtime / Auth| DB[Backend Supabase]
-    SCHED[Programador externo · por configurar/verificar] -->|POST con Bearer| CRON[Endpoints /api/public/cron/*]
+    SCHED[Programador externo] -->|POST con Bearer| CRON[Endpoints /api/public/cron/*]
     CRON --> HOST
     CI[Workflow de GitHub Releases] -->|Tag v*| SRC[Release de fuentes y notas]
     classDef release fill:#fff2e9,stroke:#bb6233,color:#263244;
@@ -111,14 +111,14 @@ flowchart TB
     class HOST,WEB,ENV,DB,SCHED,CRON infra;
 ```
 
-En el repositorio hay dos rutas HTTP para tareas programadas: refrescar datos y enviar turnos. **La programación horaria se configura fuera de estas rutas**; el código del endpoint no demuestra que exista un cron activo. GitHub Releases tampoco despliega la web ni genera APK.
+Las dos rutas de cron refrescan datos y envían turnos. Un programador externo las invoca mediante POST autenticado. GitHub Releases publica el código fuente y las notas de versión; la web se despliega por separado.
 
 ## Decisiones con consecuencias
 
-- **Datos con fechas:** no persistir «abierto para siempre» por una observación puntual.
-- **Backend obligatorio para agregación:** no describir la app como una web estática autónoma.
+- **Datos con fechas:** los reportes tienen una vigencia limitada y muestran su antigüedad.
+- **Agregación en servidor:** la consulta de lugares necesita un runtime de servidor.
 - **Supabase directo desde navegador:** RLS es una frontera de seguridad indispensable para tablas comunitarias.
 - **Funciones privilegiadas:** los secretos y la autorización servidor requieren revisión específica, especialmente antes de ampliar el piloto.
-- **Un módulo no equivale a una funcionalidad activa:** `ai-search.*` no aparece en el recorrido de búsqueda actual.
+- **Búsqueda textual:** los módulos `ai-search.*` están inactivos en el recorrido actual.
 
 [Modelo de datos](02-dominio-y-datos.md) · [Integraciones y fallas](04-integraciones-y-resiliencia.md) · [Despliegue](../desarrollo/01-entorno-y-despliegue.md)

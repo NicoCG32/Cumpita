@@ -1,6 +1,6 @@
 # Operación, pruebas y límites de seguridad
 
-Para que Cumpita sea útil no basta con que una tarjeta aparezca bonita. También debo poder explicar por qué apareció, cuándo se actualizó y qué ocurre si una persona envía un reporte incorrecto.
+La operación del piloto incluye moderar propuestas, comprobar el estado de las fuentes y revisar los controles de acceso y reporte.
 
 ## Qué puede revisar el administrador
 
@@ -13,29 +13,29 @@ La ruta `/revision` contiene acceso, revisión de horarios, sugerencias de local
 | Ocultar o reactivar local     | `hidden_places`     | El servidor excluye identificadores ocultos al componer resultados |
 | Revisar salud de fuentes      | `ops_events`        | Se consultan eventos recientes, errores y duraciones               |
 
-**No prometer una prevención antifraude inexistente:** el límite de 300 m para reportes es un control UI; el servidor no verifica con prueba fiable la presencia física del usuario. El trigger de frecuencia cubre reportes identificados, no todos los anónimos. La consulta y modificación de datos con `service_role` evita RLS, por lo que cada server function debe tratar sus entradas como no confiables.
+El control de distancia se aplica en el navegador. Sus límites y los de frecuencia están descritos en las [reglas de reporte](../tecnica/03-reglas-y-flujos.md). Las funciones que usan `service_role` eluden RLS y deben validar las entradas y la autorización de cada operación.
 
 ## Seguridad sin exigir registro
 
-**El anonimato es un requisito de Cumpita, no un defecto que deba eliminarse.** Quiero que una persona pueda avisar si un comercio está abierto o cerrado sin abrir una cuenta, como ocurre con la lógica de participación rápida que inspira el producto. La seguridad debe adaptarse a ese objetivo, no reemplazarlo por un inicio de sesión obligatorio.
+Los reportes sin cuenta forman parte de la experiencia de Cumpita. Las medidas contra el abuso deben conservar esa posibilidad y respetar la privacidad.
 
-En las migraciones actuales, la política RLS permite el `INSERT` de un reporte con `user_id = NULL` desde el rol `anon`. El límite de diez minutos del trigger SQL solo se aplica cuando hay `user_id`; por eso una persona o un cliente automatizado puede evitar la restricción del navegador. Antes de escalar el uso, conviene explorar medidas del lado del servidor contra frecuencia excesiva, automatización y reportes contradictorios. Cualquier identificación técnica adicional debería evaluarse por su proporcionalidad y efecto sobre la privacidad; **no se propone convertir una cuenta en requisito**.
+La política RLS permite insertar reportes con `user_id = NULL` desde el rol `anon`. El trigger de diez minutos solo limita a usuarios identificados; sigue pendiente un control de frecuencia en servidor para aportes anónimos. También se deben evaluar controles de volumen, automatización y reportes contradictorios antes de ampliar el uso.
 
 ## Datos personales y credenciales
 
-La estructura de `ops_events` no contiene ubicación ni identidad del usuario; sus detalles sí deben mantenerse breves y sin secretos. Otras tablas guardan `user_id`, tokens push y secretos por dispositivo. No corresponde asegurar que **toda la aplicación** es anónima o que no almacena identificadores.
+`ops_events` no tiene campos de ubicación ni identidad del usuario; sus detalles deben mantenerse breves y sin secretos. Las tablas de cuentas y suscripciones guardan `user_id`, tokens push y secretos por dispositivo.
 
-Mantener secretos fuera del repositorio, revisar privilegios de `SUPABASE_SERVICE_ROLE_KEY` y rotar claves comprometidas. El ZIP original incluía `.env`; el paquete documental generado no lo contiene. Las credenciales que hayan sido publicadas o compartidas deben tratarse como potencialmente expuestas.
+Mantén los secretos fuera del repositorio, limita el uso de `SUPABASE_SERVICE_ROLE_KEY` a funciones de servidor y rota cualquier clave comprometida.
 
 ## Observabilidad
 
-`ops.server.ts` registra clases de evento: `source`, `cache`, `slow`, `retry`, `load_error` y `refresh`; los registros escriben en `ops_events`. El panel presenta una síntesis por fuente y por tipo de evento. No se encontró una suite completa de alertas automáticas, por lo que no la describo como existente.
+`ops.server.ts` registra eventos `source`, `cache`, `slow`, `retry`, `load_error` y `refresh` en `ops_events`. El panel presenta una síntesis por fuente y por tipo de evento para su revisión manual.
 
 Como práctica, revisar fallos repetidos de fuente, edad de caché, errores de carga y ausencia de ejecuciones esperadas de cron. Confirmar los resultados contra los logs de hosting y la instancia real antes de atribuir una incidencia a un proveedor.
 
 ## Estado de las pruebas
 
-El repositorio contiene Vitest y pruebas en `src/test/` para categorías, modo nocturno y rutas; `scripts/release-notes.test.mjs` verifica notas de release. `.github/workflows/calidad.yml` ejecuta lint, TypeScript, tests y compilación en push/PR. Esta revisión es **estática**: no ejecuté el proyecto contra una instancia Supabase ni verifiqué comportamiento en móviles de producción.
+Las pruebas de Vitest en `src/test/` cubren categorías, modo nocturno y rutas. `scripts/release-notes.test.mjs` verifica las notas de versión. El workflow `.github/workflows/calidad.yml` ejecuta lint, TypeScript, pruebas y compilación en cada push o PR a `main`.
 
 ### Casos prioritarios por completar
 
@@ -46,12 +46,12 @@ El repositorio contiene Vitest y pruebas en `src/test/` para categorías, modo n
 | Sugerir locales de todas las categorías                                | Detecta `CHECK` de categorías restringido a dos valores                |
 | Validar permisos RLS desde distintos roles                             | Evita confiar en controles visuales                                    |
 | Probar «voy en camino» y turnos diarios desde dispositivo real         | Determina disponibilidad real de push, permisos y cron                 |
-| Simular fuente caía, caché vieja y pérdida de Internet                 | Comprueba degradación y ausencia de garantías falsas                   |
+| Simular una fuente caída, caché antigua y pérdida de Internet          | Comprueba la recuperación y la información de antigüedad mostrada      |
 | Revisar sesgo/actualización del calendario de turnos y límites locales | Evita confundir respaldo codificado con fuente viva                    |
 | Evaluar navegación por teclado, contraste y anuncios dinámicos         | Completa la validación de accesibilidad                                |
 
 ## Antes de ampliar el piloto
 
-Primero corregiría la consistencia entre interfaz y restricciones SQL. Después reforzaría validaciones de servidor y defensas antiabuso compatibles con los reportes anónimos, además de pruebas de autorización, secretos y observabilidad. Recién entonces ampliaría cobertura o promocionaría la distribución móvil.
+Las prioridades son sincronizar categorías y etiquetas entre interfaz y SQL, reforzar los controles de servidor para reportes anónimos y ampliar las pruebas de autorización y operación.
 
-[Auditoría concreta](../AUDITORIA.md) · [Reglas](../tecnica/03-reglas-y-flujos.md)
+[Entorno y despliegue](01-entorno-y-despliegue.md) · [Reglas](../tecnica/03-reglas-y-flujos.md)

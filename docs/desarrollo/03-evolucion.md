@@ -1,29 +1,29 @@
 # Cómo quiero hacer crecer el proyecto
 
-La ampliación del piloto debería apoyarse primero en una zona que pueda comprobarse. Más categorías no garantizan una mejor experiencia si los datos son antiguos o difíciles de interpretar.
+Quiero consolidar primero el piloto en sus zonas actuales, con datos recientes y estados fáciles de interpretar, antes de ampliar la cobertura.
 
 ## Estado y siguientes decisiones
 
-| Etapa                                | Situación en el código revisado                                                          | Próximo criterio de avance                                                                |
+| Etapa                                | Situación actual                                                                         | Próximo paso                                                                              |
 | ------------------------------------ | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | Piloto web/PWA                       | Interfaz, datos externos, reportes, moderación y caché presentes                         | Probar recorridos reales y errores de fuentes                                             |
 | Consistencia del dominio             | Desajustes entre UI y SQL en etiquetas/categorías                                        | Resolver migraciones y cubrirlas con pruebas                                              |
 | Seguridad de contribuciones anónimas | Participación sin cuenta implementada; controles de frecuencia incompletos para anónimos | Reforzar protección en servidor **sin exigir cuentas**, y revisar funciones privilegiadas |
 | Operación continua                   | Endpoints de cron y telemetría presentes                                                 | Verificar scheduler, permisos y logs de despliegue                                        |
-| Experiencia Android                  | PWA disponible como base; no se encontró APK                                             | Decidir si basta la instalación PWA o hace falta empaquetado Android y pruebas propias    |
+| Experiencia Android                  | PWA disponible; empaquetado Android pendiente                                            | Preparar el empaquetado y las pruebas en dispositivos                                     |
 | Nuevos mercados                      | Ideas por evaluar                                                                        | Priorizar por disponibilidad de fuentes y calidad de validación                           |
 
 ## Otras necesidades posibles
 
-Una farmacia de urgencia, una vulcanización o un comercio de barrio comparten el problema de buscar atención cercana en un momento concreto. Sin embargo, cada categoría necesita reglas propias para **definir disponibilidad**, mantener fuentes y evitar afirmaciones peligrosas. No las describo como módulos futuros confirmados.
+Una posible ampliación es incorporar servicios como vulcanizaciones u otros comercios de barrio. Cada categoría requiere fuentes, horarios y criterios de disponibilidad propios; su incorporación dependerá de poder mantener esos datos.
 
 ## Medir antes de concluir
 
-Me gustaría observar proporción de consultas con datos recientes, tiempo hasta una respuesta útil, cobertura por zona, reportes rechazados y experiencias de usuarios. No hay métricas reales verificadas en los archivos recibidos; por eso las presento como preguntas de evaluación, no como logros.
+Para evaluar el piloto, me interesa medir la proporción de consultas con datos recientes, el tiempo hasta una respuesta útil, la cobertura por zona, los reportes rechazados y la experiencia de quienes lo usan.
 
 ## Financiamiento y costos
 
-La documentación anterior incluía rangos CLP/USD para servicios y operación, sin un modelo de costos medido ni evidencia de cotizaciones. **No los trasladé como precios recomendados:** podrían confundirse con tarifas oficiales, costos reales o proyecciones ya validadas. Si se requiere una propuesta comercial, debería ser un documento separado con supuestos explícitos: tráfico, uso de Google Places o Overpass, hosting, esfuerzo de moderación, soporte y horas de desarrollo.
+El presupuesto de operación dependerá del tráfico, los proveedores de datos, el hosting, la moderación, el soporte y las horas de desarrollo. Las propuestas comerciales deben detallar esos supuestos y su alcance.
 
 La licencia del proyecto y las condiciones de eventual uso comercial siguen en [LICENSE](../../LICENSE) y [LICENSING.md](../../LICENSING.md).
 

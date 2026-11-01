@@ -4,9 +4,7 @@ Para que una mejora en Cumpita sea revisable, tiene que explicar qué recorrido 
 
 ## Cómo he construido Cumpita
 
-Este es un proyecto personal que desarrollo yo, sin otros integrantes. Mi forma de trabajo ha sido **iterar directamente en Lovable**: le planteo lo que quiero cambiar, observo el resultado y ajusto el siguiente paso. Lovable es la herramienta con la que construyo la aplicación; no es un segundo autor humano ni un integrante del proyecto.
-
-La revisión de este repositorio permite describir su arquitectura actual, pero no demuestra por sí sola que haya aplicado una metodología formal, una batería completa de pruebas manuales o una secuencia determinada de prompts. No atribuyo esas actividades a mi proceso si no están documentadas.
+Desarrollo Cumpita mediante iteraciones en **Lovable**: planteo un cambio, reviso el resultado y ajusto lo necesario. Para cada contribución, describe el problema, el comportamiento esperado y cómo lo comprobaste.
 
 ## Convenciones de desarrollo
 
@@ -15,8 +13,8 @@ La revisión de este repositorio permite describir su arquitectura actual, pero 
 - Usar `createServerFn` para lógica de servidor y revisar sus permisos cuando empleen `supabaseAdmin`.
 - Tratar resultados externos como datos no confiables, con límites, fallbacks y procedencia.
 - Mantener tokens visuales en `src/styles.css`; no introducir colores aislados por comodidad.
-- No editar manualmente `src/routeTree.gen.ts` ni los archivos marcados como generados. `drizzle/schema.ts` está vacío en el ZIP: cualquier cambio al modelado debe contrastarse con las migraciones existentes, no asumirse como regenerable automáticamente.
-- No incluir `.env`, tokens, credenciales ni volcado de datos reales en commits o ZIP de intercambio.
+- No editar manualmente `src/routeTree.gen.ts` ni los archivos marcados como generados. Las migraciones existentes son la referencia del esquema; contrasta con ellas cualquier cambio de modelado.
+- Mantener archivos de entorno, credenciales y volcados de datos reales fuera del repositorio.
 
 ## Comprobación previa a PR
 
@@ -29,20 +27,20 @@ bun run test:release
 bun run build
 ```
 
-Agregar pruebas que ejerciten casos de aceptación y rechazo, especialmente en SQL/RLS o en funciones privilegiadas. Una prueba de interfaz por sí sola no demuestra que una restricción sea segura frente a llamadas directas.
+Agrega pruebas de aceptación y rechazo. Para SQL/RLS y funciones privilegiadas, prueba también las llamadas directas al backend con distintos roles.
 
 ## Releases del código fuente
 
-La convención existente usa tags `vMAYOR.MENOR.PARCHE` y entradas correspondientes en `CHANGELOG.md`. `scripts/release-notes.mjs` genera las notas y `.github/workflows/release.yml` valida un tag antes de crear la release.
+Cada versión usa un tag `vMAYOR.MENOR.PARCHE`, la misma versión sin prefijo en `package.json` y una sección en `CHANGELOG.md`. `scripts/release-notes.mjs` extrae las notas y `.github/workflows/release.yml` valida el tag, ejecuta pruebas y compila antes de publicar.
 
 ```sh
-# Ejemplo para una próxima versión, tras actualizar package.json y CHANGELOG.md
+# Tras actualizar package.json y CHANGELOG.md y subir el commit a main:
 bun run release:notes v1.0.1
 git tag -a v1.0.1 -m "cumpita. v1.0.1"
 git push origin v1.0.1
 ```
 
-**Ejemplo, no una instrucción para publicar la versión ahora.** El workflow publica notas y archivos fuente en GitHub; el despliegue web y cualquier empaquetado móvil requieren un proceso separado. Evitar reescribir tags o forzar pushes en la rama sincronizada con Lovable.
+Sustituye `v1.0.1` por la versión que vayas a publicar. El workflow distribuye notas y código fuente; el despliegue web y el empaquetado móvil tienen procesos separados. Conserva los tags publicados y evita forzar pushes en la rama sincronizada con Lovable.
 
 ## Documentación como parte del cambio
 

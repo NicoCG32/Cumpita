@@ -1,6 +1,6 @@
 # Dominio, persistencia y modelo de datos
 
-Para razonar sobre Cumpita separo **un lugar**, **lo que una fuente dice sobre él** y **lo que alguien observó**. Que estén unidos en una tarjeta no significa que se guarden en una sola tabla.
+El dominio distingue **un lugar**, **la información de sus fuentes** y **los aportes comunitarios**. La pantalla reúne esos datos en una tarjeta; la persistencia se organiza por tipo de aporte.
 
 ## Modelo conceptual
 
@@ -27,7 +27,7 @@ En el código, `Place` es un objeto de agregación (`src/lib/places.ts`) constru
 
 ## Modelo físico de PostgreSQL
 
-Estas son las tablas presentes en las migraciones `0000`–`0013`, no una base de datos imaginada a partir de la interfaz.
+Las migraciones `0000`–`0013` definen las siguientes tablas.
 
 | Tabla                 | Guarda                                                      | Acceso o característica relevante                                                                              |
 | --------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -90,7 +90,7 @@ erDiagram
     }
 ```
 
-Este dibujo representa la **única FK explícita** de la muestra y las estructuras que participan del dominio. Los campos homónimos (`place_id` y otros `user_id`) **no son flechas físicas** si las migraciones no declaran esas restricciones.
+La clave foránea explícita relaciona `user_roles.user_id` con `auth.users.id`. Los demás campos `place_id` y `user_id` se asocian mediante consultas, sin restricciones de clave foránea declaradas en estas migraciones.
 
 ### Suscripciones, caché y operación
 
@@ -141,7 +141,7 @@ Se muestran sin relaciones porque la base no declara claves foráneas entre esta
 
 ## Referencias lógicas que no son claves foráneas
 
-Además de la FK entre cuentas y roles, muchos registros comparten identificadores en forma de texto o UUID. Estas uniones son **lógicas** (se realizan en consultas/código), no relaciones garantizadas por `FOREIGN KEY`. El siguiente diagrama ayuda a leerlas sin atribuir restricciones que no existen en SQL.
+Los registros comparten identificadores de texto o UUID. El siguiente diagrama muestra esas asociaciones lógicas, resueltas mediante consultas y código.
 
 ```mermaid
 flowchart LR
@@ -164,7 +164,7 @@ flowchart LR
     class R,T,H,S,SUB,C store;
 ```
 
-El nombre `place_id` común a varias tablas **no implica integridad referencial automática**. Una futura refactorización podría añadir un catálogo maestro, pero no está implementado en esta versión.
+El código resuelve las asociaciones por `place_id`; PostgreSQL no comprueba la existencia del lugar en un catálogo maestro.
 
 ## Persistencia en el dispositivo
 
@@ -172,8 +172,8 @@ El nombre `place_id` común a varias tablas **no implica integridad referencial 
 
 ## Autorización y evolución del esquema
 
-Las migraciones SQL incorporan `GRANT`, RLS, políticas, funciones y triggers. El archivo `drizzle/schema.ts` aparece vacío en el ZIP; no hay evidencia suficiente para afirmar por qué. **Las migraciones SQL disponibles son la referencia verificable** para el esquema entregado. Los tipos en `src/integrations/supabase/types.ts` ayudan a consumirlo, pero no reemplazan la verificación contra la instancia desplegada.
+Las migraciones SQL definen el esquema, los permisos, las políticas RLS, las funciones y los triggers. `drizzle/schema.ts` no contiene el modelado completo. Los tipos en `src/integrations/supabase/types.ts` permiten consumir los datos desde TypeScript; mantén ambos en consonancia con las migraciones aplicadas.
 
-Antes de introducir una nueva categoría, etiqueta o mecanismo de notificación, hay que modificar juntos la interfaz, los validadores, las restricciones SQL y las pruebas. Las discrepancias observadas están detalladas en la [auditoría](../AUDITORIA.md).
+Antes de introducir categorías, etiquetas o notificaciones, actualiza de forma coordinada la interfaz, los validadores, las restricciones SQL y las pruebas. Los desajustes pendientes se recogen en [operación y calidad](../desarrollo/02-operacion-calidad-y-seguridad.md).
 
 [Reglas del dominio](03-reglas-y-flujos.md) · [Seguridad y operaciones](../desarrollo/02-operacion-calidad-y-seguridad.md)

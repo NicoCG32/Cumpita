@@ -28,33 +28,33 @@ flowchart TD
     class F,K decision;
 ```
 
-La **cuenta no es obligatoria para reportar**. El apodo del recorrido inicial y una posible sesión autenticada no son requisitos de registro para enviar una observación. Quiero conservar esa baja fricción de participación; los puntos asociados a una cuenta son un recorrido distinto.
+Se puede **reportar sin crear una cuenta**. El apodo se guarda en el navegador; los puntos y otras funciones de cuenta requieren iniciar sesión.
 
 ## Capacidades y condiciones
 
-| Acción                   | Cómo está planteada                                                                           | Qué hay que tener presente                                                                                                                                       |
-| ------------------------ | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Consultar lugares        | Feed ordenado por distancia, búsqueda textual y categorías                                    | Se muestran hasta 40 resultados en la lista construida por la pantalla; los datos proceden de fuentes y cachés                                                   |
-| Ubicarse                 | Zonas manuales o geolocalización                                                              | El permiso GPS es opcional para consultar, pero necesario para habilitar el botón de reporte                                                                     |
-| Consultar estados        | Horario, turno disponible o reporte reciente                                                  | Un reporte vence a la hora; el horario publicado puede estar incompleto                                                                                          |
-| Reportar abierto/cerrado | No requiere cuenta; las acciones se habilitan a 300 m o menos según la posición del navegador | El control espacial está en la interfaz; no debe considerarse una defensa antifraude del servidor y el límite SQL de 10 min solo afecta a reportes identificados |
-| Añadir una etiqueta      | Información breve sobre pago, fila o productos                                                | Algunas etiquetas visibles todavía no tienen soporte en el `CHECK` de la base de datos                                                                           |
-| Sugerir un local         | Formulario con advertencia de posibles duplicados                                             | La base de datos solo acepta actualmente dos categorías para nuevas sugerencias                                                                                  |
-| Corregir horarios        | Propuesta con nota de evidencia                                                               | La publicación requiere revisión administrativa                                                                                                                  |
-| Guardar favoritos        | Preferencia local del navegador                                                               | No se sincroniza automáticamente entre dispositivos                                                                                                              |
-| Activar avisos           | Suscripciones, aviso en camino y turnos diarios                                               | Depende de permisos, FCM y de la ejecución del backend y tareas programadas                                                                                      |
-| Instalar la PWA          | Funciones del navegador compatible                                                            | No equivale a contar con una APK nativa                                                                                                                          |
+| Acción                   | Cómo está planteada                                          | Qué hay que tener presente                                                                                     |
+| ------------------------ | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Consultar lugares        | Feed ordenado por distancia, búsqueda textual y categorías   | Se muestran hasta 40 resultados en la lista construida por la pantalla; los datos proceden de fuentes y cachés |
+| Ubicarse                 | Zonas manuales o geolocalización                             | El permiso GPS es opcional para consultar, pero necesario para habilitar el botón de reporte                   |
+| Consultar estados        | Horario, turno disponible o reporte reciente                 | Un reporte vence a la hora; el horario publicado puede estar incompleto                                        |
+| Reportar abierto/cerrado | Sin cuenta, a 300 m o menos según la ubicación del navegador | Requiere permiso de ubicación; consulta los [controles de reporte](../tecnica/03-reglas-y-flujos.md)           |
+| Añadir una etiqueta      | Información breve sobre pago, fila o productos               | Algunas etiquetas visibles todavía no tienen soporte en el `CHECK` de la base de datos                         |
+| Sugerir un local         | Formulario con advertencia de posibles duplicados            | La base de datos solo acepta actualmente dos categorías para nuevas sugerencias                                |
+| Corregir horarios        | Propuesta con nota de evidencia                              | La publicación requiere revisión administrativa                                                                |
+| Guardar favoritos        | Preferencia local del navegador                              | No se sincroniza automáticamente entre dispositivos                                                            |
+| Activar avisos           | Suscripciones, aviso en camino y turnos diarios              | Depende de permisos, FCM y de la ejecución del backend y tareas programadas                                    |
+| Instalar la PWA          | Instalación desde el navegador                               | Depende de la compatibilidad del navegador y el sistema operativo                                              |
 
 La búsqueda con IA no está activada en la interfaz, aunque existen módulos `ai-search.*`. La búsqueda que se usa es textual, normalizada para ignorar tildes y mayúsculas.
 
 ## Sobre la confianza del estado
 
-La tarjeta puede ofrecer varias señales a la vez. No se deben mezclar conceptualmente: **“un cumpita lo vio abierto”** no significa **“el horario oficial garantiza que está abierto”**. Si no hay información suficiente, debe mostrarse la incertidumbre.
+La tarjeta distingue horarios, turnos y reportes comunitarios. Cada reporte indica cuándo se observó el estado del local. Si faltan datos, se muestra el estado como desconocido.
 
-El mapa ofrece marcadores y puede consultar una ruta externa. Ni el trayecto calculado ni un marcador sustituyen la comprobación física del local.
+El mapa permite ubicar un local y consultar una ruta para llegar.
 
 ## Sin conexión
 
-La PWA dispone de service worker y la aplicación conserva una última lista en `localStorage`. Si una consulta falla, puede mostrar esa copia con una indicación de desconexión. **No es una base offline completa ni asegura datos frescos**: depende de que se hayan obtenido lugares previamente y de que la navegación esté disponible en caché.
+La PWA dispone de service worker y conserva la última lista de lugares en el navegador. Si una consulta falla, puede mostrar esa copia con un aviso de desconexión. Para usarla, los datos y la navegación deben haberse guardado previamente; pueden estar desactualizados.
 
 [Reglas exactas](../tecnica/03-reglas-y-flujos.md) · [Datos y su origen](../tecnica/04-integraciones-y-resiliencia.md)

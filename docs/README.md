@@ -1,8 +1,6 @@
 # Documentación · cumpita.
 
-> Una pregunta cotidiana merece una respuesta comprensible, incluso cuando la información no es perfecta.
-
-Esta documentación se lee en **tres áreas**: la idea y la experiencia, su funcionamiento técnico y el trabajo necesario para mantenerla. No incluyo un área educativa independiente porque su autor confirmó que **Cumpita es un proyecto personal**, ajeno a cursos o encargos universitarios.
+Las guías se organizan en tres áreas: la idea y la experiencia de uso, el funcionamiento técnico y el desarrollo del proyecto.
 
 | Área           | Qué responde                                       | Documentos                                                                                                                                                                                                                                                                                                 |
 | -------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -22,12 +20,6 @@ Esta documentación se lee en **tres áreas**: la idea y la experiencia, su func
 
 ## Cómo leer los diagramas
 
-Los diagramas están escritos en **Mermaid** para que GitHub pueda representarlos y sea posible editarlos desde Markdown. Los agrupé junto a las decisiones que explican, en vez de repetir el mismo dibujo en cada documento: contexto, contenedores, componentes, despliegue, secuencias, entidades y estados.
-
-- **Implementado:** comportamiento visible en el código que recibí.
-- **Condicionado:** depende de configuración, servicios, permisos o entorno.
-- **Pendiente:** todavía no existe o tiene inconsistencias sin resolver.
-
-Estos términos no equivalen a una certificación de funcionamiento en producción. El alcance y las observaciones concretas están en la [auditoría](AUDITORIA.md).
+Los diagramas usan **Mermaid** y se pueden editar desde Markdown. Cada guía incluye los que corresponden a su tema: arquitectura, despliegue, entidades, secuencias o estados.
 
 [Volver al README principal](../README.md)
