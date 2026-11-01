@@ -16,10 +16,7 @@ dist-ssr
 .nitro
 *.local
 
-# Local environment and exchange archives
-.env
-.env.*
-!.env.example
+# Local exchange archives
 /cumpita.zip
 
 # Wrangler / Cloudflare

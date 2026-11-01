@@ -17,28 +17,29 @@ Abre la URL que imprima Vite.
 
 ## Variables de entorno
 
-Copia [`.env.example`](../../.env.example) como `.env` y configura los valores de tu instancia. Las variables `VITE_*` se incluyen en el cliente; las demás se usan en el servidor.
+Lovable mantiene la configuración pública del proyecto en el archivo `.env` versionado. Consérvalo para la sincronización y el despliegue. Las variables `VITE_*` se incluyen en el cliente; los secretos se configuran en el hosting o en un `.env.local` ignorado por Git.
 
 ```dotenv
-# Navegador: valores publicables
+# Configuración pública (.env)
 VITE_SUPABASE_URL="https://TU-PROYECTO.supabase.co"
 VITE_SUPABASE_PUBLISHABLE_KEY="TU-CLAVE-PUBLICABLE"
 
-# Servidor: endpoint de Supabase y credenciales de ejecución
+# Servidor: endpoint y clave publicable
 SUPABASE_URL="https://TU-PROYECTO.supabase.co"
 SUPABASE_PUBLISHABLE_KEY="TU-CLAVE-PUBLICABLE"
-SUPABASE_SERVICE_ROLE_KEY="TU-CLAVE-DE-SERVICIO-PRIVADA"
-
-# Fuente opcional de lugares
-GOOGLE_PLACES_API_KEY=""
 
 # Push: configuración web publicable
 VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_PROJECT_ID=""
 VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_APP_ID=""
 VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_WEB_API_KEY=""
 VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_VAPID_KEY=""
+```
 
-# Solo servidor: conector de push y autenticación cron
+Configura las credenciales privadas exclusivamente en el servidor. Para desarrollo local, usa `.env.local`:
+
+```dotenv
+SUPABASE_SERVICE_ROLE_KEY="TU-CLAVE-DE-SERVICIO-PRIVADA"
+GOOGLE_PLACES_API_KEY=""
 LOVABLE_API_KEY=""
 FIREBASE_MESSAGING_API_KEY=""
 LOVABLE_CRON_SECRET=""

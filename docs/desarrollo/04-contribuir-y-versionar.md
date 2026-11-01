@@ -14,7 +14,7 @@ Desarrollo Cumpita mediante iteraciones en **Lovable**: planteo un cambio, revis
 - Tratar resultados externos como datos no confiables, con límites, fallbacks y procedencia.
 - Mantener tokens visuales en `src/styles.css`; no introducir colores aislados por comodidad.
 - No editar manualmente `src/routeTree.gen.ts` ni los archivos marcados como generados. Las migraciones existentes son la referencia del esquema; contrasta con ellas cualquier cambio de modelado.
-- Mantener archivos de entorno, credenciales y volcados de datos reales fuera del repositorio.
+- Conservar el `.env` con la configuración pública de Lovable. Guardar secretos en el hosting o en `.env.local`, y mantener credenciales privadas y volcados de datos reales fuera del repositorio.
 
 ## Comprobación previa a PR
 
