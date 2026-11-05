@@ -16,6 +16,14 @@ Desarrollo Cumpita mediante iteraciones en **Lovable**: planteo un cambio, revis
 - No editar manualmente `src/routeTree.gen.ts` ni los archivos marcados como generados. Las migraciones existentes son la referencia del esquema; contrasta con ellas cualquier cambio de modelado.
 - Conservar el `.env` con la configuración pública de Lovable. Guardar secretos en el hosting o en `.env.local`, y mantener credenciales privadas y volcados de datos reales fuera del repositorio.
 
+## Sincronización con Lovable
+
+Lovable sincroniza una rama activa del repositorio; en este proyecto se trabaja con `main`. Antes de editar, trae los cambios con `git pull --ff-only` y comprueba que esa sea también la rama seleccionada en Lovable. Los commits subidos a la rama activa vuelven al editor.
+
+Mantén `.lovable/project.json` y la configuración compartida de `@lovable.dev/vite-tanstack-config`. Ese paquete ya incorpora React, TanStack Start, Tailwind, resolución de rutas, Nitro e inyección de variables públicas; agregar de nuevo esos plugins puede duplicarlos.
+
+Conserva el historial publicado con commits nuevos, sin force push, rebase ni amend sobre commits ya subidos. La [guía de GitHub de Lovable](https://docs.lovable.dev/integrations/github) explica la selección de rama y el estado de sincronización.
+
 ## Comprobación previa a PR
 
 ```sh

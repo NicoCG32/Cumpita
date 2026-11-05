@@ -48,7 +48,7 @@ bun install --frozen-lockfile
 bun run dev
 ```
 
-Los controles locales habituales son `bun run test`, `bun run lint`, `bunx tsc --noEmit` y `bun run build`. **No compartas archivos `.env` con credenciales reales.**
+Los controles locales habituales son `bun run test`, `bun run lint`, `bunx tsc --noEmit` y `bun run build`. El `.env` versionado conserva la configuración pública de Lovable; los secretos del servidor se gestionan por separado según la guía de desarrollo.
 
 ## Leer la documentación
 
