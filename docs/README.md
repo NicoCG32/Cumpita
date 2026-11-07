@@ -1,25 +1,74 @@
-# Documentación · cumpita.
+<div align="center">
 
-Las guías se organizan en tres áreas: la idea y la experiencia de uso, el funcionamiento técnico y el desarrollo del proyecto.
+<img src="../branding/logos/cumpita-mascota-buho.svg" alt="Mascota búho de Cumpita" width="105" />
 
-| Área           | Qué responde                                       | Documentos                                                                                                                                                                                                                                                                                                 |
-| -------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **General**    | ¿Para qué existe, qué resuelve y cómo se usa?      | [Origen y alcance](general/01-origen-y-alcance.md) · [Experiencia de uso](general/02-experiencia-de-uso.md) · [Identidad](general/03-identidad-y-accesibilidad.md)                                                                                                                                         |
-| **Técnica**    | ¿Cómo funciona y de dónde sale cada dato?          | [Arquitectura](tecnica/01-arquitectura.md) · [Dominio y base de datos](tecnica/02-dominio-y-datos.md) · [Reglas y estados](tecnica/03-reglas-y-flujos.md) · [Integraciones](tecnica/04-integraciones-y-resiliencia.md)                                                                                     |
-| **Desarrollo** | ¿Cómo lo ejecuto, mantengo, verifico y evoluciono? | [Entorno y despliegue](desarrollo/01-entorno-y-despliegue.md) · [Operación y seguridad](desarrollo/02-operacion-calidad-y-seguridad.md) · [Evolución](desarrollo/03-evolucion.md) · [Contribuciones y releases](desarrollo/04-contribuir-y-versionar.md) · [Mapa de rutas](desarrollo/05-mapa-de-rutas.md) |
+# Documentación de cumpita.
 
-## Rutas recomendadas
+**Una guía para quienes quieren usarlo, comprenderlo o mejorarlo.**
 
-**Para conocer la idea:** [origen](general/01-origen-y-alcance.md) → [uso real](general/02-experiencia-de-uso.md) → [evolución](desarrollo/03-evolucion.md).
+[**Volver a la portada**](../README.md) · [**Abrir la web**](https://cumpita.lovable.app) · [**Guía de uso**](general/02-experiencia-de-uso.md) · [**Estado actual**](desarrollo/02-operacion-calidad-y-seguridad.md)
 
-**Para revisar la ingeniería:** [arquitectura](tecnica/01-arquitectura.md) → [dominio](tecnica/02-dominio-y-datos.md) → [reglas](tecnica/03-reglas-y-flujos.md) → [integraciones](tecnica/04-integraciones-y-resiliencia.md).
+</div>
 
-**Para conocer el método de desarrollo:** [origen y autoría](general/01-origen-y-alcance.md) → [cómo itero con Lovable](desarrollo/04-contribuir-y-versionar.md).
+---
 
-**Para empezar a colaborar:** [instalación](desarrollo/01-entorno-y-despliegue.md) → [calidad y seguridad](desarrollo/02-operacion-calidad-y-seguridad.md) → [convenciones](desarrollo/04-contribuir-y-versionar.md).
+## Tres áreas, tres formas de leer el proyecto
 
-## Cómo leer los diagramas
+| Área | ¿Qué explica? | Primera lectura |
+| --- | --- | --- |
+| **01 · General** | Por qué nació, cómo se usa y qué decisiones puede tomar una persona | [Origen y alcance](general/01-origen-y-alcance.md) |
+| **02 · Técnica** | De dónde vienen los datos, qué reglas se ejecutan y dónde están los límites de confianza | [Arquitectura](tecnica/01-arquitectura.md) |
+| **03 · Desarrollo** | Cómo preparar el entorno, verificar cambios, operar el piloto y conservar atribuciones | [Entorno y despliegue](desarrollo/01-entorno-y-despliegue.md) |
 
-Los diagramas usan **Mermaid** y se pueden editar desde Markdown. Cada guía incluye los que corresponden a su tema: arquitectura, despliegue, entidades, secuencias o estados.
+> Cumpita es un **piloto web/PWA**. Reportar sin crear cuenta está implementado; no significa que el servidor compruebe físicamente la ubicación. La búsqueda con IA tiene módulos de código, pero no está disponible en el recorrido de la interfaz.
 
-[Volver al README principal](../README.md)
+## 01 · General — la experiencia de la persona
+
+- [**Origen y alcance**](general/01-origen-y-alcance.md) — la conversación que dio origen a Cumpita y su carácter personal.
+- [**Experiencia y guía de uso**](general/02-experiencia-de-uso.md) — consulta, GPS, reportes, propuestas, favoritos, turnos y avisos.
+- [**Identidad y accesibilidad**](general/03-identidad-y-accesibilidad.md) — búho, banners, estados visibles, contraste y navegación móvil.
+
+## 02 · Técnica — ingeniería y evidencia
+
+| Capítulo | Diagramas y decisiones |
+| --- | --- |
+| [Arquitectura](tecnica/01-arquitectura.md) | Contexto, contenedores, componentes y despliegue |
+| [Dominio y persistencia](tecnica/02-dominio-y-datos.md) | Modelo de lugar agregado, tablas reales, relaciones lógicas y RLS |
+| [Reglas, flujos y estados](tecnica/03-reglas-y-flujos.md) | Reportes, caducidad, confianza, secuencias y moderación |
+| [Integraciones y resiliencia](tecnica/04-integraciones-y-resiliencia.md) | Proveedores, cachés, fallos y notificaciones opcionales |
+
+<details>
+<summary><strong>Ver el mapa general de arquitectura</strong></summary>
+
+```mermaid
+flowchart LR
+    U["Persona<br/>sin cuenta o autenticada"] --> WEB["Navegador<br/>React / PWA"]
+    WEB --> FN["Funciones de servidor<br/>TanStack Start"]
+    WEB --> DB[("Supabase · PostgreSQL<br/>RLS / Auth / Realtime")]
+    FN --> DB
+    FN --> EXT["OSM / Overpass<br/>turnos · Google opcional"]
+    FN --> PUSH["Conector Firebase<br/>avisos opcionales"]
+    WEB --> LOC[("Datos locales<br/>favoritos / preferencias")]
+```
+
+La consulta de fuentes externas y ciertas acciones privilegiadas se ejecutan en funciones del servidor. El navegador también llama directamente a Supabase con políticas RLS. Los diagramas más específicos están en los capítulos enlazados arriba.
+
+</details>
+
+## 03 · Desarrollo — mantener y comprobar
+
+- [**Entorno, publicación y cron**](desarrollo/01-entorno-y-despliegue.md) — Bun, variables, migraciones y despliegue.
+- [**Operación, calidad y seguridad**](desarrollo/02-operacion-calidad-y-seguridad.md) — riesgos reales, moderación y pruebas prioritarias.
+- [**Evolución del piloto**](desarrollo/03-evolucion.md) — propuestas diferenciadas de funciones existentes.
+- [**Contribuir y versionar**](desarrollo/04-contribuir-y-versionar.md) — iteración con Lovable, convenciones, releases y revisión.
+- [**Mapa de rutas**](desarrollo/05-mapa-de-rutas.md) — páginas, rutas de administración y endpoints cron.
+- [**Licencias y fuentes externas**](desarrollo/06-licencias-y-fuentes.md) — derechos sobre código, fuentes de datos, atribuciones y pendientes.
+
+## Cómo interpretar el estado
+
+- **Implementado:** hay código y un recorrido identificable, no necesariamente pruebas de producción.
+- **En validación:** requiere comprobación de datos, seguridad, accesibilidad o comportamiento en dispositivos.
+- **Propuesto / inactivo:** no está disponible aunque existan diseños o archivos preparatorios.
+- **Externo:** los datos de terceros pueden cambiar, no responder o presentar condiciones legales propias.
+
+La documentación distingue los **datos obtenidos**, el **estado deducido** y la **observación comunitaria**. Esa distinción importa tanto para el funcionamiento como para la confianza de quien consulta.
