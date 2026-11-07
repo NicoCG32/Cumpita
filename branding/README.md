@@ -2,7 +2,7 @@
 
 Este catálogo reúne los originales y variantes de la identidad. La **mascota del búho** nació de una idea propuesta por **Lovable**, que generó su primera versión. Después fui guiando su evolución visual y realicé cambios en el diseño. Esta historia describe su proceso creativo; no equivale a una afirmación de autoría exclusivamente manual ni determina por sí sola los permisos legales de cada recurso.
 
-La procedencia de los demás logos, banners, iconos e ilustraciones se verifica por separado en [Licencias y fuentes](../docs/desarrollo/06-licencias-y-fuentes.md).
+Los **demás logos, banners, iconos e ilustraciones** también fueron generados con herramientas de **IA bajo mi dirección**, siguiendo especificaciones e instrucciones que definí en detalle. No atribuyo estos archivos a una herramienta específica sin identificarla. El origen creativo y las condiciones de uso se distinguen en [Licencias y fuentes](../docs/desarrollo/06-licencias-y-fuentes.md).
 
 Las dimensiones indican el lienzo del archivo: en SVG son unidades vectoriales; en PNG, WebP y JPG son píxeles.
 
@@ -11,7 +11,7 @@ Las dimensiones indican el lienzo del archivo: en SVG son unidades vectoriales; 
 - Los iconos cuadrados en PNG y SVG se reservan para favicon, PWA y aplicaciones.
 - Las variantes de mayor tamaño sirven para exportación. Ampliar un raster no añade detalle al original.
 - La aplicación carga sólo los recursos que necesita. Los originales de este catálogo se mantienen separados de las variantes de interfaz.
-- [Licencia y créditos](../LICENSING.md) · [Atribuciones y recursos externos por verificar](../docs/desarrollo/06-licencias-y-fuentes.md). La presencia de estos archivos en el repositorio no demuestra por sí sola su procedencia autoral; la titularidad de los diseños queda pendiente de confirmación.
+- [Licencia y créditos](../LICENSING.md) · [Atribuciones y recursos externos por verificar](../docs/desarrollo/06-licencias-y-fuentes.md). La dirección creativa y la generación asistida están documentadas según mi declaración; los términos de las herramientas y eventuales recursos externos deben revisarse por separado.
 
 ## Logos e isotipos
 

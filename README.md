@@ -116,7 +116,7 @@ El archivo `.env` versionado está destinado a configuración **publicable**; la
 
 ## Autoría y condiciones de reutilización
 
-Desarrollado como **proyecto personal por Pablo Guzmán**, con **Lovable** como herramienta principal de iteración. La autoría de cada recurso gráfico o dependencia de terceros se considera por separado; publicar el código no permite atribuirse las obras ajenas.
+Desarrollado como **proyecto personal por Pablo Guzmán**, con **Lovable** como herramienta principal de iteración. La mascota del búho surgió de una propuesta y primera generación de Lovable, y después dirigí su evolución y realicé modificaciones. Los demás recursos visuales se generaron con **herramientas de IA bajo mis instrucciones y especificaciones detalladas**. Estos créditos describen el proceso creativo sin afirmar que todo fuera creado manualmente ni sustituir los términos de los proveedores.
 
 El código y la documentación originales sobre los que el titular puede conceder derechos están bajo [PolyForm Noncommercial 1.0.0](LICENSE), con explicación en [LICENSING.md](LICENSING.md) y avisos en [NOTICE](NOTICE). [Licencias y atribuciones de fuentes externas](docs/desarrollo/06-licencias-y-fuentes.md).
 
