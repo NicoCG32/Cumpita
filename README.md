@@ -19,6 +19,21 @@ Una web instalable para encontrar comercios cercanos y contrastar sus horarios c
 
 Cumpita es una web instalable (PWA) para encontrar comercios cercanos en Calama, La Serena y Coquimbo. Combina horarios, farmacias de turno y reportes comunitarios para ayudar a decidir dónde comprar y reducir viajes innecesarios. Permite aportar sin crear una cuenta y consultar la fuente y antigüedad de cada dato. El proyecto está en fase piloto.
 
+## Estado real del proyecto
+
+| Nivel | Alcance de esta versión |
+| --- | --- |
+| ✅ **Implementado** | PWA para explorar comercios, consultar horarios y farmacias de turno, guardar favoritos y aportar reportes comunitarios **sin crear cuenta**. |
+| 🧪 **En validación** | Cobertura y actualidad de datos externos, moderación/calidad de reportes, permisos del dispositivo y funcionamiento de avisos en navegadores compatibles. |
+| 🧭 **Evolución futura** | Extensiones territoriales y automatizaciones sujetas a las prioridades del proyecto; no se presumen ya desplegadas ni verificadas. |
+
+<details>
+<summary><strong>¿Cómo leer este estado?</strong></summary>
+
+«Implementado» significa que hay código o una entrega identificable; no equivale por sí solo a una prueba exhaustiva. «En validación» señala pruebas y límites todavía abiertos. «Propuesto» describe una intención, **no una función disponible**. Para evaluación técnica, consulta los documentos y las releases de cada versión.
+
+</details>
+
 ## De dónde salió
 
 Cumpita nació de algo que me comentó mi padre: a veces uno sale a comprar y recién al llegar descubre que el negocio está cerrado. Quise hacer una herramienta que respondiera una pregunta simple: **¿hay algo abierto cerca, ahora?**
