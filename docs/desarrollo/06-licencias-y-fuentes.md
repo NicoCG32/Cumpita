@@ -20,7 +20,8 @@ El archivo `NOTICE` conserva actualmente los avisos `Required Notice:` del proye
 | **Turnos externos** | Lectura de JSON-LD desde `mifarmaciadeturno.cl` | Revisar procedencia, actualización y condiciones del sitio; la consulta no es una API oficial garantizada |
 | **Google Places opcional** | Lugares alternativos si existe clave de proveedor | Uso condicionado a configuración y términos del servicio; **no** se presume activo en todas las instalaciones |
 | **Firebase/conector Lovable** | Notificaciones optativas | Requiere permisos y secretos de servidor; verificar avisos de paquetes y condiciones del conector |
-| **`branding/` y recursos de interfaz** | Identidad, mascota, iconos, banners y otras imágenes | **Autoría y procedencia pendientes de confirmar** con el responsable; no inventar derechos ni propietarios |
+| **Mascota del búho** | Identidad visual de Cumpita | **Origen confirmado por el responsable:** Lovable propuso la idea inicial y generó la primera versión; posteriormente el responsable dirigió la evolución del diseño y realizó modificaciones. Esta procedencia no determina por sí sola los derechos de explotación de cada versión. |
+| **Otros recursos de `branding/` y la interfaz** | Logos, iconos, banners y otras imágenes | **Autoría y procedencia todavía por confirmar**; no atribuirlos automáticamente al mismo proceso que la mascota |
 
 Referencias primarias: [OpenStreetMap, copyright y ODbL](https://www.openstreetmap.org/copyright) · [OSMF, pautas de atribución](https://osmfoundation.org/wiki/Licence/Attribution_Guidelines) · [Leaflet, licencia BSD-2-Clause](https://github.com/Leaflet/Leaflet/blob/main/LICENSE) · [PolyForm Noncommercial](https://polyformproject.org/licenses/noncommercial/1.0.0).
 
@@ -33,7 +34,7 @@ Referencias primarias: [OpenStreetMap, copyright y ODbL](https://www.openstreetm
 
 ## Antes de declarar completo NOTICE
 
-1. Confirmar quién creó los logos, banners, mascota y otros recursos de marca, y si contienen fragmentos de obras ajenas.
+1. **Mascota:** registrar la generación inicial con Lovable y los cambios posteriores dirigidos y realizados por el responsable; revisar los términos aplicables de Lovable y cualquier recurso externo incorporado. **Otros gráficos:** confirmar por separado quién creó logos, banners, iconos e ilustraciones y si incluyen obras ajenas.
 2. Revisar dependencias efectivamente incluidas en el bundle y sus licencias/avisos; no copiar nombres ni licencias de una plantilla.
 3. Comprobar atribución OSM en los distintos tamaños de pantalla y cuando el mapa se use con tecnologías de asistencia.
 4. Confirmar términos de los proveedores de turnos, rutas y datos MINSAL, especialmente para publicación y almacenamiento en caché.
