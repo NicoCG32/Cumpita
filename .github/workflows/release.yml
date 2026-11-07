@@ -14,24 +14,33 @@ concurrency:
 
 jobs:
   verify:
-    name: Validar versión, tests y build
+    name: Validar versión y calidad
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: "24"
+          node-version: "24.22.1"
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: "1.4.3"
-      - name: Validar tag y CHANGELOG
+      - name: Validar tag, CHANGELOG y pertenencia a main
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-        run: bun run release:notes "$RELEASE_TAG"
+        run: |
+          node scripts/release-notes.mjs "$RELEASE_TAG"
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::El tag debe señalar un commit integrado en main."
+            exit 1
+          fi
       - run: bun install --frozen-lockfile
+      - run: bun run check:docs
+      - run: bun run lint
+      - run: bunx tsc --noEmit
       - run: bun run test:release
       - run: bun run test
       - run: bun run build
@@ -49,7 +58,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: "24"
+          node-version: "24.22.1"
       - name: Extraer notas de la versión
         env:
           RELEASE_TAG: ${{ github.ref_name }}

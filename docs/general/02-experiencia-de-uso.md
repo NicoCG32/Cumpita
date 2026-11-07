@@ -34,18 +34,18 @@ Se puede **reportar sin crear una cuenta**. El apodo se guarda en el navegador; 
 
 ## Capacidades y condiciones
 
-| Acción                   | Cómo está planteada                                          | Qué hay que tener presente                                                                                     |
-| ------------------------ | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| Consultar lugares        | Feed ordenado por distancia, búsqueda textual y categorías   | Se muestran hasta 40 resultados en la lista construida por la pantalla; los datos proceden de fuentes y cachés |
-| Ubicarse                 | Zonas manuales o geolocalización                             | El permiso GPS es opcional para consultar, pero necesario para habilitar el botón de reporte                   |
-| Consultar estados        | Horario, turno disponible o reporte reciente                 | Un reporte vence a la hora; el horario publicado puede estar incompleto                                        |
+| Acción                   | Cómo está planteada                                            | Qué hay que tener presente                                                                                       |
+| ------------------------ | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Consultar lugares        | Feed ordenado por distancia, búsqueda textual y categorías     | Se muestran hasta 40 resultados en la lista construida por la pantalla; los datos proceden de fuentes y cachés   |
+| Ubicarse                 | Zonas manuales o geolocalización                               | El permiso GPS es opcional para consultar, pero necesario para habilitar el botón de reporte                     |
+| Consultar estados        | Horario, turno disponible o reporte reciente                   | Un reporte vence a la hora; el horario publicado puede estar incompleto                                          |
 | Reportar abierto/cerrado | Sin cuenta; proximidad de hasta 300 m **calculada en cliente** | El servidor no valida la ubicación física; consulta los [controles de reporte](../tecnica/03-reglas-y-flujos.md) |
-| Añadir una etiqueta      | Información breve sobre pago, fila o productos               | Algunas etiquetas visibles todavía no tienen soporte en el `CHECK` de la base de datos                         |
-| Sugerir un local         | Formulario con advertencia de posibles duplicados            | La base de datos solo acepta actualmente dos categorías para nuevas sugerencias                                |
-| Corregir horarios        | Propuesta con nota de evidencia                              | La publicación requiere revisión administrativa                                                                |
-| Guardar favoritos        | Preferencia local del navegador                              | No se sincroniza automáticamente entre dispositivos                                                            |
-| Activar avisos           | Suscripciones, aviso en camino y turnos diarios              | Depende de permisos, FCM y de la ejecución del backend y tareas programadas                                    |
-| Instalar la PWA          | Instalación desde el navegador                               | Depende de la compatibilidad del navegador y el sistema operativo                                              |
+| Añadir una etiqueta      | Información breve sobre pago, fila o productos                 | Algunas etiquetas visibles todavía no tienen soporte en el `CHECK` de la base de datos                           |
+| Sugerir un local         | Formulario con advertencia de posibles duplicados              | La base de datos solo acepta actualmente dos categorías para nuevas sugerencias                                  |
+| Corregir horarios        | Propuesta con nota de evidencia                                | La publicación requiere revisión administrativa                                                                  |
+| Guardar favoritos        | Preferencia local del navegador                                | No se sincroniza automáticamente entre dispositivos                                                              |
+| Activar avisos           | Suscripciones, aviso en camino y turnos diarios                | Depende de permisos, FCM y de la ejecución del backend y tareas programadas                                      |
+| Instalar la PWA          | Instalación desde el navegador                                 | Depende de la compatibilidad del navegador y el sistema operativo                                                |
 
 La búsqueda con IA no está activada en la interfaz, aunque existen módulos `ai-search.*`. La búsqueda que se usa es textual, normalizada para ignorar tildes y mayúsculas.
 

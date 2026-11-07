@@ -29,12 +29,12 @@ Quedan pendientes los controles de frecuencia en servidor para reportes anónimo
 
 ### La frontera de seguridad del aporte
 
-| Verificación | Navegador | Servidor y base de datos |
-| --- | --- | --- |
-| Distancia de hasta 300 m | Se calcula desde el GPS del dispositivo | **No hay validación de proximidad geográfica** para el INSERT de reporte |
-| Frecuencia de reportes | Control local que el navegador puede perder o eludir | Trigger de 10 minutos **solo si `user_id` no es NULL** |
-| Identidad del aportante | Puede enviar `user_id = NULL` sin cuenta | RLS permite el caso anónimo, y restringe identificadores arbitrarios de otras cuentas |
-| Estado del reporte | Ofrece abierto/cerrado | RLS valida valores `open` y `closed` |
+| Verificación             | Navegador                                            | Servidor y base de datos                                                              |
+| ------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Distancia de hasta 300 m | Se calcula desde el GPS del dispositivo              | **No hay validación de proximidad geográfica** para el INSERT de reporte              |
+| Frecuencia de reportes   | Control local que el navegador puede perder o eludir | Trigger de 10 minutos **solo si `user_id` no es NULL**                                |
+| Identidad del aportante  | Puede enviar `user_id = NULL` sin cuenta             | RLS permite el caso anónimo, y restringe identificadores arbitrarios de otras cuentas |
+| Estado del reporte       | Ofrece abierto/cerrado                               | RLS valida valores `open` y `closed`                                                  |
 
 ```mermaid
 flowchart LR
