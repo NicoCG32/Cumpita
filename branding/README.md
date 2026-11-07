@@ -1,6 +1,10 @@
 # Identidad visual de Cumpita
 
-Este catálogo reúne los originales y variantes de la identidad. Las dimensiones indican el lienzo del archivo: en SVG son unidades vectoriales; en PNG, WebP y JPG son píxeles.
+Este catálogo reúne los originales y variantes de la identidad. La **mascota del búho** nació de una idea propuesta por **Lovable**, que generó su primera versión. Después fui guiando su evolución visual y realicé cambios en el diseño. Esta historia describe su proceso creativo; no equivale a una afirmación de autoría exclusivamente manual ni determina por sí sola los permisos legales de cada recurso.
+
+La procedencia de los demás logos, banners, iconos e ilustraciones se verifica por separado en [Licencias y fuentes](../docs/desarrollo/06-licencias-y-fuentes.md).
+
+Las dimensiones indican el lienzo del archivo: en SVG son unidades vectoriales; en PNG, WebP y JPG son píxeles.
 
 - [Banner claro](banners/cumpita-banner-claro.png) · [Banner oscuro](banners/cumpita-banner-oscuro.png).
 - Utiliza logos horizontales en cabeceras, isotipos en espacios compactos y banners en presentaciones. Conserva la proporción y deja espacio alrededor de la marca.
