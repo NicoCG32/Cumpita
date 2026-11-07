@@ -2,6 +2,8 @@
 
 El nombre, el búho y los tonos cálidos buscan una identidad cercana. Los estados, fechas y permisos se explican con mensajes breves y directos.
 
+La **idea inicial y la primera generación visual del búho** surgieron con Lovable. A partir de esa propuesta fui orientando su estilo y realizando modificaciones para adaptarlo a Cumpita. Los demás logotipos, banners, iconos e ilustraciones fueron creados con **IA siguiendo mis especificaciones detalladas y mi dirección creativa**. Los créditos distinguen este proceso de una realización completamente manual y no presentan a las herramientas como integrantes humanos del proyecto.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../../branding/logos/cumpita-logo-horizontal-dark.svg" />
   <img src="../../branding/logos/cumpita-logo-horizontal.svg" alt="Logotipo horizontal de Cumpita" width="400" />

@@ -25,7 +25,28 @@ La distancia de 300 m se comprueba en el navegador; el servidor no verifica la p
 
 La interfaz envía `user_id: user?.id ?? null`. La política RLS admite inserciones desde el rol `anon` cuando el identificador es nulo, de modo que se puede reportar sin iniciar sesión.
 
-Quedan pendientes los controles de frecuencia en servidor para reportes anónimos. Su implementación debe conservar la participación sin registro y respetar la privacidad.
+Quedan pendientes los controles de frecuencia en servidor para reportes anónimos. Su implementación debe conservar la participación sin registro y respetar la privacidad. **Sin cuenta** describe la experiencia de acceso, no una promesa de anonimato técnico absoluto ni de ausencia de metadatos en red o proveedores.
+
+### La frontera de seguridad del aporte
+
+| Verificación             | Navegador                                            | Servidor y base de datos                                                              |
+| ------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Distancia de hasta 300 m | Se calcula desde el GPS del dispositivo              | **No hay validación de proximidad geográfica** para el INSERT de reporte              |
+| Frecuencia de reportes   | Control local que el navegador puede perder o eludir | Trigger de 10 minutos **solo si `user_id` no es NULL**                                |
+| Identidad del aportante  | Puede enviar `user_id = NULL` sin cuenta             | RLS permite el caso anónimo, y restringe identificadores arbitrarios de otras cuentas |
+| Estado del reporte       | Ofrece abierto/cerrado                               | RLS valida valores `open` y `closed`                                                  |
+
+```mermaid
+flowchart LR
+    U["Persona sin cuenta"] --> GPS["UI valida GPS<br/>y frecuencia local"]
+    GPS --> R["INSERT a Supabase<br/>user_id = NULL"]
+    R --> P["RLS verifica estado<br/>y usuario opcional"]
+    P --> T["Trigger de 10 min<br/>solo con usuario"]
+    T --> DB[("place_reports")]
+    X["Petición directa sin UI"] -. "omite controles de navegador" .-> R
+```
+
+Este gráfico describe una **brecha conocida**, no instrucciones de uso para eludirla. Reforzar controles contra abuso debe preservar el requisito de participación sin registro.
 
 ## Cómo se resuelve el estado visible
 

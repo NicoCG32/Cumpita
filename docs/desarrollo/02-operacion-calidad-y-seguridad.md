@@ -54,4 +54,16 @@ Las pruebas de Vitest en `src/test/` cubren categorías, modo nocturno y rutas. 
 
 Las prioridades son sincronizar categorías y etiquetas entre interfaz y SQL, reforzar los controles de servidor para reportes anónimos y ampliar las pruebas de autorización y operación.
 
+| Riesgo documentado        | Estado al revisar el código                                   | Validación necesaria                                                           |
+| ------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Reportes sin cuenta       | **Implementados**, con RLS y límites de cliente               | Tasa y abuso anónimo limitados en **servidor**, sin obligar a registrarse      |
+| Radio de 300 m            | Comprobación de la UI, **no** de presencia física verificable | Diseñar una política proporcionada y probar casos adversos                     |
+| Etiquetas                 | 12 opciones en `src/lib/tags.ts`, 8 aceptadas por SQL         | Migración/contrato coherentes y pruebas de inserción                           |
+| Sugerencias de lugar      | 5 categorías de interfaz, solo 2 admitidas por CHECK          | Migración/validación coherentes; evitar errores silenciosos                    |
+| Búsqueda IA               | Módulos presentes, flujo **no activo** en la interfaz         | No anunciarla como producto disponible                                         |
+| Push, cron y turnos       | Funciones presentes, ejecución depende del proveedor          | Pruebas reales de dispositivo, scheduler y autorización                        |
+| Archivos de configuración | `.env` versionado para variables públicas                     | Revisar periódicamente que **no** contenga secretos; rotar los que se expongan |
+
+Las pruebas de integración, seguridad y accesibilidad complementan las comprobaciones automáticas de CI.
+
 [Entorno y despliegue](01-entorno-y-despliegue.md) · [Reglas](../tecnica/03-reglas-y-flujos.md)

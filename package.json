@@ -10,6 +10,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "check:docs": "prettier --check README.md CHANGELOG.md LICENSING.md docs branding/README.md src/routes/README.md",
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",

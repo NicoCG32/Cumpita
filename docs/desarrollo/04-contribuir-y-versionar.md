@@ -28,6 +28,7 @@ Conserva el historial publicado con commits nuevos, sin force push, rebase ni am
 
 ```sh
 bun install --frozen-lockfile
+bun run check:docs
 bun run lint
 bunx tsc --noEmit
 bun run test
@@ -40,6 +41,8 @@ Agrega pruebas de aceptación y rechazo. Para SQL/RLS y funciones privilegiadas,
 ## Releases del código fuente
 
 Cada versión usa un tag `vMAYOR.MENOR.PARCHE`, la misma versión sin prefijo en `package.json` y una sección en `CHANGELOG.md`. `scripts/release-notes.mjs` extrae las notas y `.github/workflows/release.yml` valida el tag, ejecuta pruebas y compila antes de publicar.
+
+Registra los cambios pendientes en `[Unreleased]`. Antes de publicar, trasládalos a la sección de la nueva versión y sube su commit a `main`. El flujo de release comprueba formato documental, lint, tipos, pruebas y compilación, y rechaza tags cuyo commit todavía no esté integrado en `main`.
 
 ```sh
 # Tras actualizar package.json y CHANGELOG.md y subir el commit a main:

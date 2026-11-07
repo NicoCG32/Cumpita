@@ -10,7 +10,7 @@ Esta autorización no cambia licencias de dependencias, código ajeno, recursos 
 
 Se permite usar, modificar y distribuir para los fines autorizados por LICENSE. Incluye usos no comerciales y los permisos específicos para usos personales y organizaciones que define ese texto. No se exige pago por esos usos.
 
-Al entregar copias, conserva la licencia y todas las líneas `Required Notice:` de NOTICE, incluidos los avisos de otros autores. El crédito identifica el proyecto original, a NicoCG32 y [el repositorio de origen](https://github.com/NicoCG32/cumpita); indica también tus modificaciones. Una mención en el README, documentación o pantalla de créditos es una forma de presentar ese reconocimiento. Para esos usos, el reconocimiento no económico es suficiente; no se exige un pago simbólico.
+Al entregar copias, conserva la licencia y todas las líneas `Required Notice:` de NOTICE, incluidos los avisos de otros autores. El crédito identifica el proyecto original, a NicoCG32 y [el repositorio de origen](https://github.com/NicoCG32/Cumpita); indica también tus modificaciones. Una mención en el README, documentación o pantalla de créditos es una forma de presentar ese reconocimiento. Para esos usos, el reconocimiento no económico es suficiente; no se exige un pago simbólico.
 
 ## Uso comercial mediante acuerdo separado
 
@@ -19,6 +19,12 @@ Para un uso comercial fuera de los permisos expresos de LICENSE, solicita una au
 La solicitud debe indicar producto/servicio, finalidad, partes reutilizadas, distribución prevista y escala aproximada. El acuerdo puede establecer un pago único, regalías u otra modalidad, su moneda (CLP o USD), período, atribución, actualizaciones y soporte. Ninguna modalidad se considera aceptada hasta que ambas partes la acuerden. Contacto: [perfil de NicoCG32](https://github.com/NicoCG32); no publiques información confidencial en issues.
 
 Que una aplicación sea gratuita para su usuario no determina por sí solo que la reutilización del código sea no comercial. La licencia del código tampoco concede acceso a los servicios alojados, a sus cuentas o a datos reales. El uso de una instancia o APK distribuida por el titular sigue las condiciones que este haya autorizado para esa entrega.
+
+## Datos geográficos, dependencias y recursos visuales
+
+La licencia del código **no sustituye** las licencias de las bibliotecas utilizadas ni los términos de las fuentes de datos y mapas. El mapa incluye Leaflet y cartografía/datos OpenStreetMap; la atribución OSM se muestra mediante un enlace a su página de derechos. Queda por comprobar el conjunto de avisos exigibles por otras dependencias y servicios. **La mascota del búho** partió de una idea y una primera generación de **Lovable**; el responsable dirigió su evolución y realizó modificaciones posteriores. Esta descripción del proceso creativo no concede por sí misma derechos adicionales de uso o redistribución. Los demás logotipos, banners, iconos e ilustraciones fueron generados con **herramientas de IA bajo instrucciones detalladas y dirección creativa del responsable**, según su declaración. Falta verificar, cuando corresponda, qué servicios se utilizaron para cada pieza, sus términos y la existencia de componentes externos.
+
+Consulta el [registro de licencias y fuentes](docs/desarrollo/06-licencias-y-fuentes.md). No se incorporan licencias nuevas ni se atribuyen diseños al responsable sin confirmación expresa.
 
 ## Versiones y distribución
 
