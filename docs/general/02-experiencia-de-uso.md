@@ -30,6 +30,8 @@ flowchart TD
 
 Se puede **reportar sin crear una cuenta**. El apodo se guarda en el navegador; los puntos y otras funciones de cuenta requieren iniciar sesión.
 
+> **Sin cuenta no significa anonimato absoluto.** Un reporte ordinario admite `user_id = NULL`, pero el navegador usa ubicación para habilitarlo y el tráfico pasa por proveedores de red y backend. Cumpita no exige identificarse para reportar, pero eso no garantiza ausencia total de metadatos o posibilidad de correlación técnica.
+
 ## Capacidades y condiciones
 
 | Acción                   | Cómo está planteada                                          | Qué hay que tener presente                                                                                     |
@@ -37,7 +39,7 @@ Se puede **reportar sin crear una cuenta**. El apodo se guarda en el navegador; 
 | Consultar lugares        | Feed ordenado por distancia, búsqueda textual y categorías   | Se muestran hasta 40 resultados en la lista construida por la pantalla; los datos proceden de fuentes y cachés |
 | Ubicarse                 | Zonas manuales o geolocalización                             | El permiso GPS es opcional para consultar, pero necesario para habilitar el botón de reporte                   |
 | Consultar estados        | Horario, turno disponible o reporte reciente                 | Un reporte vence a la hora; el horario publicado puede estar incompleto                                        |
-| Reportar abierto/cerrado | Sin cuenta, a 300 m o menos según la ubicación del navegador | Requiere permiso de ubicación; consulta los [controles de reporte](../tecnica/03-reglas-y-flujos.md)           |
+| Reportar abierto/cerrado | Sin cuenta; proximidad de hasta 300 m **calculada en cliente** | El servidor no valida la ubicación física; consulta los [controles de reporte](../tecnica/03-reglas-y-flujos.md) |
 | Añadir una etiqueta      | Información breve sobre pago, fila o productos               | Algunas etiquetas visibles todavía no tienen soporte en el `CHECK` de la base de datos                         |
 | Sugerir un local         | Formulario con advertencia de posibles duplicados            | La base de datos solo acepta actualmente dos categorías para nuevas sugerencias                                |
 | Corregir horarios        | Propuesta con nota de evidencia                              | La publicación requiere revisión administrativa                                                                |

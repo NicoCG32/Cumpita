@@ -7,7 +7,7 @@ Este catálogo reúne los originales y variantes de la identidad. Las dimensione
 - Los iconos cuadrados en PNG y SVG se reservan para favicon, PWA y aplicaciones.
 - Las variantes de mayor tamaño sirven para exportación. Ampliar un raster no añade detalle al original.
 - La aplicación carga sólo los recursos que necesita. Los originales de este catálogo se mantienen separados de las variantes de interfaz.
-- [Licencia y créditos](../LICENSING.md).
+- [Licencia y créditos](../LICENSING.md) · [Atribuciones y recursos externos por verificar](../docs/desarrollo/06-licencias-y-fuentes.md). La presencia de estos archivos en el repositorio no demuestra por sí sola su procedencia autoral; la titularidad de los diseños queda pendiente de confirmación.
 
 ## Logos e isotipos
 

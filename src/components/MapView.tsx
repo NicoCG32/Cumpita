@@ -56,7 +56,7 @@ export default function MapView({
     const m = L.map(el.current, { zoomControl: false }).setView([origin.lat, origin.lng], 15);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      attribution: "© OpenStreetMap",
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>',
     }).addTo(m);
     L.control.zoom({ position: "topright" }).addTo(m);
     layer.current = L.layerGroup().addTo(m);

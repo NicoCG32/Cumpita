@@ -91,4 +91,10 @@ Los avisos «voy en camino» duran 45 min y buscan reportes de cierre de los úl
 
 `ops_events` registra tipo, origen, resultado, duración opcional y un detalle breve, sin campos de coordenadas o identidad. Las suscripciones push almacenan tokens de dispositivo y secretos asociados; limita su acceso a las funciones de servidor correspondientes.
 
+## Atribución y condiciones de las fuentes
+
+El hecho de poder consultar un proveedor técnicamente no concede derechos generales sobre sus datos o marcas. Para **OpenStreetMap**, el uso público de datos requiere atribución y referencia a la licencia ODbL; el mapa usa además teselas y rutas de servicios externos que deben respetar sus propias políticas. Las condiciones de Google Places, MINSAL, del sitio de turnos y del conector de mensajes requieren comprobación por servicio y uso.
+
+La fuente y la fecha de un dato deben conservarse en la experiencia de consulta cuando estén disponibles; un resultado de caché no es una confirmación actual. [Inventario de atribuciones y cuestiones pendientes](../desarrollo/06-licencias-y-fuentes.md).
+
 [Arquitectura](01-arquitectura.md) · [Operación y seguridad](../desarrollo/02-operacion-calidad-y-seguridad.md)

@@ -20,6 +20,12 @@ La solicitud debe indicar producto/servicio, finalidad, partes reutilizadas, dis
 
 Que una aplicación sea gratuita para su usuario no determina por sí solo que la reutilización del código sea no comercial. La licencia del código tampoco concede acceso a los servicios alojados, a sus cuentas o a datos reales. El uso de una instancia o APK distribuida por el titular sigue las condiciones que este haya autorizado para esa entrega.
 
+## Datos geográficos, dependencias y recursos visuales
+
+La licencia del código **no sustituye** las licencias de las bibliotecas utilizadas ni los términos de las fuentes de datos y mapas. El mapa incluye Leaflet y cartografía/datos OpenStreetMap; la atribución OSM se muestra mediante un enlace a su página de derechos. Queda por comprobar el conjunto de avisos exigibles por otras dependencias y servicios, y confirmar la autoría de las piezas de `branding/`.
+
+Consulta el [registro de licencias y fuentes](docs/desarrollo/06-licencias-y-fuentes.md). No se incorporan licencias nuevas ni se atribuyen diseños al responsable sin confirmación expresa.
+
 ## Versiones y distribución
 
 Consulta los avisos incluidos en cada APK o ZIP para conocer las condiciones de esa versión. Al redistribuir el proyecto, incluye LICENSE, NOTICE y este documento, además de los avisos de terceros aplicables.
